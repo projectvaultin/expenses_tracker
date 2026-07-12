@@ -237,7 +237,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
-  <div class="auth-logo" style="margin-bottom:6px">₹ <span>Expenses</span></div>
+  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="ProjectVault"/><div class="auth-logo">Project<span>Vault</span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
@@ -503,7 +503,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="sendTestStatementNow()">📤 Send Last Month's Statement Now</button>
     </div>
-    <div class="card" id="install-card" style="display:block">
+    <div class="card" id="install-card" style="display:none">
       <div class="card-title">📲 Install App</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Install this app on your device for quick access and offline use, just like a native app.</div>
       <button class="exp-btn" id="install-btn" onclick="doInstallPWA()">
@@ -2161,16 +2161,12 @@ function showToast(msg,c){
 }
 
 // ── PWA: INSTALLABLE APP ──
-// The install card is visible by default for everyone (see its HTML — display:block).
-// beforeinstallprompt doesn't fire for every user (Chrome uses engagement heuristics, and it
-// never fires on iOS/some browsers at all) — so we no longer wait for it to reveal the card.
-// Instead we just capture the event IF it fires, so the button can trigger the real native
-// install prompt when available; otherwise the button falls back to manual instructions.
 let _deferredInstallPrompt=null;
-const isStandalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
 window.addEventListener('beforeinstallprompt',(e)=>{
   e.preventDefault();
   _deferredInstallPrompt=e;
+  const card=document.getElementById('install-card');
+  if(card)card.style.display='block';
 });
 window.addEventListener('appinstalled',()=>{
   _deferredInstallPrompt=null;
@@ -2188,48 +2184,19 @@ function doInstallPWA(){
   if(isIOS){
     showToast('On iPhone/iPad: tap Share ⬆️ then "Add to Home Screen"','#6c63ff');
   } else {
-    showToast('Open your browser menu (⋮ or ≡) and choose "Install App" or "Add to Home Screen"','#6c63ff');
+    showToast('Open your browser menu and choose "Install App" or "Add to Home Screen"','#6c63ff');
   }
 }
-// If the app is already running installed (standalone), hide the install card — nothing to install.
-if(isStandalone){
+// Show the install card on iOS Safari too (no beforeinstallprompt event there)
+if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone){
   window.addEventListener('DOMContentLoaded',()=>{
     const card=document.getElementById('install-card');
-    if(card)card.style.display='none';
+    if(card)card.style.display='block';
   });
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').then((reg)=>{
-      // Force an immediate check for a newer sw.js instead of waiting for the
-      // browser's own schedule (which can be many hours).
-      reg.update();
-      reg.addEventListener('updatefound',()=>{
-        const newWorker=reg.installing;
-        if(!newWorker)return;
-        newWorker.addEventListener('statechange',()=>{
-          if(newWorker.state==='installed' && navigator.serviceWorker.controller){
-            // A new version is installed and ready — reload once so this device
-            // picks up the new files (new branding, new install button, etc.)
-            // automatically, with no manual cache-clearing needed.
-            window.location.reload();
-          }
-        });
-      });
-      // Also re-check for updates whenever the tab becomes visible again (e.g. user
-      // reopens the app after it was in the background), so long-lived tabs update too.
-      document.addEventListener('visibilitychange',()=>{
-        if(document.visibilityState==='visible')reg.update();
-      });
-    }).catch(()=>{/* offline/file:// — ignore */});
-    // If the active service worker ever changes (new one took control), reload once
-    // to guarantee this tab is running the latest files.
-    let _swRefreshed=false;
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      if(_swRefreshed)return;
-      _swRefreshed=true;
-      window.location.reload();
-    });
+    navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
   });
 }
 
