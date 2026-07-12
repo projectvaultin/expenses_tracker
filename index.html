@@ -505,11 +505,16 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="card" id="install-card" style="display:none">
       <div class="card-title">📲 Install App</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Install this app on your device for quick access and offline use, just like a native app.</div>
-      <button class="exp-btn" id="install-btn" onclick="doInstallPWA()">
-        <span style="font-size:20px">⬇️</span>
-        <div><div>Install to Home Screen</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Adds an app icon, opens full-screen</div></div>
-      </button>
+      <div id="install-card-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Install this app on your device for quick access and offline use, just like a native app.</div>
+        <button class="exp-btn" id="install-btn" onclick="doInstallPWA()">
+          <span style="font-size:20px">⬇️</span>
+          <div><div>Install to Home Screen</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Adds an app icon, opens full-screen</div></div>
+        </button>
+      </div>
+      <div id="install-card-installed" style="display:none;font-size:13px;color:var(--green);font-weight:600;align-items:center;gap:8px">
+        ✅ Already installed on this device
+      </div>
     </div>
     <div class="card">
       <div class="card-title">🎯 Monthly Budget Limit</div>
@@ -2162,18 +2167,36 @@ function showToast(msg,c){
 
 // ── PWA: INSTALLABLE APP ──
 let _deferredInstallPrompt=null;
+// True if this page is already running as the installed app (Android/desktop Chrome,
+// or iOS "Add to Home Screen"), rather than in a normal browser tab.
+function isRunningInstalled(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone===true;
+}
+function showInstalledState(){
+  const card=document.getElementById('install-card');
+  const body=document.getElementById('install-card-body');
+  const installed=document.getElementById('install-card-installed');
+  if(card)card.style.display='block';
+  if(body)body.style.display='none';
+  if(installed)installed.style.display='flex';
+}
 window.addEventListener('beforeinstallprompt',(e)=>{
   e.preventDefault();
   _deferredInstallPrompt=e;
+  if(isRunningInstalled())return; // safety net: don't offer install if somehow already installed
   const card=document.getElementById('install-card');
   if(card)card.style.display='block';
 });
 window.addEventListener('appinstalled',()=>{
   _deferredInstallPrompt=null;
-  const card=document.getElementById('install-card');
-  if(card)card.style.display='none';
+  showInstalledState();
   showToast('📲 App installed!');
 });
+// On load, if we're already running installed, show the confirmation state right away
+// instead of leaving the card hidden with no explanation.
+if(isRunningInstalled()){
+  window.addEventListener('DOMContentLoaded',showInstalledState);
+}
 function doInstallPWA(){
   if(_deferredInstallPrompt){
     _deferredInstallPrompt.prompt();
