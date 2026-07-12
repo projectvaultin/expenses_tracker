@@ -2200,7 +2200,36 @@ if(isStandalone){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
+    navigator.serviceWorker.register('sw.js').then((reg)=>{
+      // Force an immediate check for a newer sw.js instead of waiting for the
+      // browser's own schedule (which can be many hours).
+      reg.update();
+      reg.addEventListener('updatefound',()=>{
+        const newWorker=reg.installing;
+        if(!newWorker)return;
+        newWorker.addEventListener('statechange',()=>{
+          if(newWorker.state==='installed' && navigator.serviceWorker.controller){
+            // A new version is installed and ready — reload once so this device
+            // picks up the new files (new branding, new install button, etc.)
+            // automatically, with no manual cache-clearing needed.
+            window.location.reload();
+          }
+        });
+      });
+      // Also re-check for updates whenever the tab becomes visible again (e.g. user
+      // reopens the app after it was in the background), so long-lived tabs update too.
+      document.addEventListener('visibilitychange',()=>{
+        if(document.visibilityState==='visible')reg.update();
+      });
+    }).catch(()=>{/* offline/file:// — ignore */});
+    // If the active service worker ever changes (new one took control), reload once
+    // to guarantee this tab is running the latest files.
+    let _swRefreshed=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(_swRefreshed)return;
+      _swRefreshed=true;
+      window.location.reload();
+    });
   });
 }
 
