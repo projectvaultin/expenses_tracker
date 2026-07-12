@@ -57,7 +57,7 @@ Copy this template's **Template ID** (e.g. `template_statement456`).
 ## 4. Get your Public Key
 Dashboard → **Account** → **General** → copy the **Public Key**.
 
-## 5. Paste your 4 values into the app
+## 5. Paste your values into the app
 Open `index.html`, find this block near the top of the `<script>` section:
 
 ```js
@@ -68,7 +68,11 @@ const EMAILJS_CONFIG={
   statementTemplateId:'YOUR_STATEMENT_TEMPLATE_ID'
 };
 ```
-Replace the four placeholder strings with your real values, save, and re-deploy.
+Replace the placeholder strings with your real values, save, and re-deploy.
+
+Note: only two templates (OTP + statement) are used, which fits EmailJS's free-plan
+limit of 2 templates. A separate "welcome email" template is intentionally not used,
+since adding a 3rd template requires a paid EmailJS plan.
 
 ## 6. Test it
 Log in → **Manage** tab → **"Send Last Month's Statement Now"** button. If it says
