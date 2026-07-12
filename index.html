@@ -237,7 +237,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
-  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="ProjectVault"/><div class="auth-logo">Project<span>Vault</span></div></div>
+  <div class="auth-logo" style="margin-bottom:6px">₹ <span>Expenses</span></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
@@ -503,7 +503,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="sendTestStatementNow()">📤 Send Last Month's Statement Now</button>
     </div>
-    <div class="card" id="install-card" style="display:none">
+    <div class="card" id="install-card" style="display:block">
       <div class="card-title">📲 Install App</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Install this app on your device for quick access and offline use, just like a native app.</div>
       <button class="exp-btn" id="install-btn" onclick="doInstallPWA()">
@@ -589,7 +589,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <!-- Members list (Admin Only) -->
     <div class="card" id="admin-members-section" style="display:none">
       <div class="card-title">👥 Members <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Shows accounts created on this device/browser only — this app has no shared server yet. "Active" = opened the app in the last 30 days.</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Shows accounts created on this device/browser only — this app has no shared server yet.</div>
       <div id="admin-members-summary" style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px"></div>
       <div id="admin-members-list"></div>
     </div>
@@ -1062,11 +1062,6 @@ async function doBiometric(){
 }
 
 function startApp(profile){
-  // Record this login so the admin Members panel can show real activity, not just signup date
-  if(CU){
-    const users=getUsers();
-    if(users[CU]){ users[CU].lastLoginAt=Date.now(); saveUsers(users); profile=users[CU]; }
-  }
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
@@ -1094,7 +1089,6 @@ function startApp(profile){
   const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
-  updateInstallCardVisibility();
   setTimeout(checkAndSendMonthlyStatement,1500);
 }
 
@@ -1649,15 +1643,9 @@ function renderMembers(){
   if(!summaryEl||!listEl)return;
   const users=getUsers();
   const entries=Object.entries(users);
-  const now=Date.now();
-  const DAY=86400000;
   const nonAdminCount=entries.filter(([u,p])=>!p.isAdmin).length;
-  const activeCount=entries.filter(([u,p])=>!p.isAdmin&&p.lastLoginAt&&(now-p.lastLoginAt)<=30*DAY).length;
-  const newCount=entries.filter(([u,p])=>!p.isAdmin&&p.createdAt&&(now-p.createdAt)<=7*DAY).length;
-  summaryEl.innerHTML=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)<br>`+
-    `<span style="color:var(--green)">● ${activeCount} active</span> in last 30 days &nbsp;·&nbsp; <span style="color:var(--amber)">✦ ${newCount} new</span> in last 7 days`;
+  summaryEl.textContent=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)`;
   if(!entries.length){listEl.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No members yet.</div>';return;}
-  // Most recently created accounts first, so new signups are easy to spot
   const sorted=entries.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   listEl.innerHTML=sorted.map(([u,p])=>{
     // Read each user's own expense/debt count directly (not just the currently logged-in user)
@@ -1665,17 +1653,11 @@ function renderMembers(){
     try{entryCount=JSON.parse(localStorage.getItem('exp_'+u+'_data')||'[]').length;}catch(e){}
     try{debtCount=JSON.parse(localStorage.getItem('exp_'+u+'_debts')||'[]').length;}catch(e){}
     const joined=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'—';
-    const isNew=p.createdAt&&(now-p.createdAt)<=7*DAY;
-    const isActive=p.lastLoginAt&&(now-p.lastLoginAt)<=30*DAY;
-    const lastSeen=p.lastLoginAt?new Date(p.lastLoginAt).toLocaleDateString('en-IN'):'never logged in';
-    const badges=(p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':'')+
-      (isNew?' <span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(255,179,0,.18);color:var(--amber);font-weight:700">✦ New</span>':'')+
-      (isActive?' <span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(0,208,132,.15);color:var(--green);font-weight:700">● Active</span>':' <span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(122,125,153,.15);color:var(--muted);font-weight:700">Inactive</span>');
     return `<div class="entry-row">
       <div class="entry-icon" style="background:${p.isAdmin?'rgba(108,99,255,.2)':'rgba(0,208,132,.15)'}">${p.isAdmin?'👑':(p.name||u).charAt(0).toUpperCase()}</div>
       <div class="entry-info">
-        <div class="entry-cat">${p.name||u} ${badges}</div>
-        <div class="entry-meta">@${u} · ${entryCount} entries · ${debtCount} debt records · joined ${joined} · last seen ${lastSeen}</div>
+        <div class="entry-cat">${p.name||u} ${p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':''}</div>
+        <div class="entry-meta">@${u} · ${entryCount} entries · ${debtCount} debt records · joined ${joined}</div>
       </div>
     </div>`;
   }).join('');
@@ -2179,25 +2161,21 @@ function showToast(msg,c){
 }
 
 // ── PWA: INSTALLABLE APP ──
-// Whether the app is currently running as an installed app (not in a regular browser tab).
-// This check works the same for every account, unlike the one-off beforeinstallprompt event below.
-function isRunningStandalone(){
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
-}
-function updateInstallCardVisibility(){
-  const card=document.getElementById('install-card');
-  if(!card)return;
-  card.style.display=isRunningStandalone()?'none':'block';
-}
+// The install card is visible by default for everyone (see its HTML — display:block).
+// beforeinstallprompt doesn't fire for every user (Chrome uses engagement heuristics, and it
+// never fires on iOS/some browsers at all) — so we no longer wait for it to reveal the card.
+// Instead we just capture the event IF it fires, so the button can trigger the real native
+// install prompt when available; otherwise the button falls back to manual instructions.
 let _deferredInstallPrompt=null;
+const isStandalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
 window.addEventListener('beforeinstallprompt',(e)=>{
   e.preventDefault();
-  _deferredInstallPrompt=e; // saved so doInstallPWA() can trigger the native prompt directly when available
-  updateInstallCardVisibility();
+  _deferredInstallPrompt=e;
 });
 window.addEventListener('appinstalled',()=>{
   _deferredInstallPrompt=null;
-  updateInstallCardVisibility();
+  const card=document.getElementById('install-card');
+  if(card)card.style.display='none';
   showToast('📲 App installed!');
 });
 function doInstallPWA(){
@@ -2210,13 +2188,16 @@ function doInstallPWA(){
   if(isIOS){
     showToast('On iPhone/iPad: tap Share ⬆️ then "Add to Home Screen"','#6c63ff');
   } else {
-    showToast('Open your browser menu and choose "Install App" or "Add to Home Screen"','#6c63ff');
+    showToast('Open your browser menu (⋮ or ≡) and choose "Install App" or "Add to Home Screen"','#6c63ff');
   }
 }
-// Show the card for every user on every login, unless already running installed — instead of
-// waiting on the one-off beforeinstallprompt event, which only ever fires for whichever account
-// happens to be logged in at that moment.
-window.addEventListener('DOMContentLoaded',updateInstallCardVisibility);
+// If the app is already running installed (standalone), hide the install card — nothing to install.
+if(isStandalone){
+  window.addEventListener('DOMContentLoaded',()=>{
+    const card=document.getElementById('install-card');
+    if(card)card.style.display='none';
+  });
+}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
