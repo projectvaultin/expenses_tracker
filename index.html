@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ProjectVault">
+<meta name="theme-color" content="#0f1117">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ProjectVault — All-in-One Expense Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--card-r:20px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM Sans',sans-serif;}
+/* AUTH */
+#auth-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.auth-logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:6px;}
+.auth-logo-icon{width:56px;height:56px;border-radius:16px;margin-bottom:10px;box-shadow:0 6px 20px rgba(108,99,255,.35);}
+.auth-logo{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin-bottom:0;letter-spacing:-1px;}
+.auth-logo span{color:var(--accent);}
+.auth-sub{color:var(--muted);font-size:14px;margin-bottom:32px;}
+.auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:26px 22px;}
+.auth-tabs{display:flex;gap:0;margin-bottom:22px;background:var(--surface2);border-radius:12px;padding:4px;}
+.auth-tab{flex:1;text-align:center;padding:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);border-radius:10px;cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:var(--accent);color:#fff;}
+.fl{margin-bottom:13px;}
+.fl-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.ai{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+.ai:focus{border-color:var(--accent);}
+.ai::placeholder{color:rgba(122,125,153,.45);}
+.auth-btn{width:100%;padding:14px;margin-top:6px;background:var(--accent);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .2s,transform .15s;}
+.auth-btn:active{opacity:.85;transform:scale(.98);}
+.auth-err{font-size:12px;color:var(--red);margin-top:9px;text-align:center;min-height:16px;}
+.av-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px;}
+.av-box{width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;overflow:hidden;transition:border-color .2s;}
+.av-box:hover{border-color:var(--accent);}
+.av-box img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.av-hint{font-size:11px;color:var(--muted);margin-top:5px;}
+/* Biometric btn */
+.bio-btn{width:100%;padding:13px;margin-top:8px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+.bio-btn:active{background:var(--accent);color:#fff;}
+/* APP */
+#app-screen{display:none;}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,.92);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-av{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0;border:2px solid rgba(108,99,255,.4);}
+.tb-av img{width:100%;height:100%;object-fit:cover;}
+.tb-name{font-size:15px;font-weight:700;}
+.tb-name span{color:var(--accent);}
+.tb-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.tb-right{display:flex;gap:7px;}
+.pill-btn{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;position:relative;}
+.pill-btn:active{background:var(--accent);color:#fff;}
+.notif-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:var(--red);border-radius:50%;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+/* TABS */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(26,29,39,.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 14px;cursor:pointer;transition:color .2s;color:var(--muted);}
+.tab.active{color:var(--accent);}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.tab-label{font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+/* PAGES */
+.page{display:none;padding:14px 14px 90px;}
+.page.active{display:block;}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:15px;margin-bottom:11px;}
+.card-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px;}
+/* HOME HERO */
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:22px 18px;margin-bottom:11px;text-align:center;}
+.hero-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.hero-amt{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--text);letter-spacing:-2px;margin:6px 0 3px;}
+.hero-period{font-size:13px;color:var(--muted);}
+/* DEBT/PROFIT SUMMARY */
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;}
+.dp-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 12px;}
+.dp-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.dp-amt{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-1px;}
+.dp-count{font-size:11px;color:var(--muted);margin-top:3px;}
+/* CAT BARS */
+.cat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.bar-wrap{height:4px;background:var(--surface2);border-radius:4px;margin-top:4px;}
+.bar-fill{height:4px;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+/* ADD FORM */
+.form-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.sgrid.m3{grid-template-columns:repeat(3,1fr);}
+.sgrid.m4{grid-template-columns:repeat(4,1fr);}
+.sel-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 5px;font-size:13px;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.sel-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500;}
+.sel-btn:active{transform:scale(.96);}
+.amt-wrap{position:relative;margin-bottom:15px;}
+.rs-pre{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--muted);}
+.amt-inp{width:100%;padding:15px 15px 15px 38px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;color:var(--text);font-family:'Syne',sans-serif;font-size:26px;font-weight:700;outline:none;transition:border-color .2s;}
+.amt-inp:focus{border-color:var(--accent);}
+.amt-inp::placeholder{color:rgba(122,125,153,.35);}
+/* Date input fix */
+.date-inp{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;margin-bottom:13px;-webkit-appearance:none;appearance:none;color-scheme:dark;}
+.date-inp:focus{border-color:var(--accent);}
+/* Payment mode */
+.pay-mode-wrap{margin-bottom:13px;}
+.pay-mode-row{display:flex;gap:8px;margin-bottom:8px;}
+.pay-chip{flex:1;padding:11px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.pay-chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.upi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1);}
+.upi-grid.open{max-height:200px;}
+.upi-btn{padding:9px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;font-size:12px;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.upi-btn.sel{background:rgba(108,99,255,.2);border-color:var(--accent);color:var(--accent);}
+.save-btn{width:100%;padding:15px;background:var(--accent);border:none;border-radius:16px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .2s,transform .15s;}
+.save-btn:active{opacity:.85;transform:scale(.98);}
+/* ENTRIES */
+.entry-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
+.entry-row:last-child{border-bottom:none;}
+.entry-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.entry-info{flex:1;min-width:0;}
+.entry-cat{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.entry-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.entry-amt{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;white-space:nowrap;}
+.del-btn{background:none;border:none;padding:6px;cursor:pointer;color:var(--muted);font-size:17px;line-height:1;}
+.del-btn:active{color:var(--red);}
+/* DEBT PAGE */
+.type-toggle{display:flex;gap:8px;margin-bottom:14px;}
+.type-btn{flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.type-btn.profit.sel{background:rgba(0,208,132,.15);border-color:var(--green);color:var(--green);}
+.type-btn.debt.sel{background:rgba(255,101,132,.15);border-color:var(--red);color:var(--red);}
+.debt-entry-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:.4px;}
+.badge-profit{background:rgba(0,208,132,.15);color:var(--green);}
+.badge-debt{background:rgba(255,101,132,.15);color:var(--red);}
+.badge-cleared{background:rgba(122,125,153,.15);color:var(--muted);}
+/* Debt name autocomplete */
+.autocomplete-wrap{position:relative;margin-bottom:13px;}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;z-index:50;max-height:160px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.autocomplete-list.open{display:block;}
+.ac-item{padding:11px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;}
+.ac-item:hover{background:var(--surface2);}
+.ac-badge{font-size:10px;padding:2px 6px;border-radius:8px;}
+/* Due date section */
+.due-date-wrap{margin-bottom:13px;}
+/* Cleared toggle */
+.clear-btn{padding:6px 12px;border:none;border-radius:100px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.clear-btn.active{background:rgba(0,208,132,.15);color:var(--green);border:1px solid var(--green);}
+.clear-btn.inactive{background:rgba(255,101,132,.1);color:var(--red);border:1px solid rgba(255,101,132,.3);}
+/* HISTORY */
+.mscroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:11px;scrollbar-width:none;}
+.mscroll::-webkit-scrollbar{display:none;}
+.mchip{flex-shrink:0;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.mchip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+/* MANAGE */
+.manage-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
+.manage-row:last-child{border-bottom:none;}
+.add-row{display:flex;gap:8px;margin-top:11px;}
+.ti{flex:1;padding:11px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.ti:focus{border-color:var(--accent);}
+.add-btn{padding:11px 16px;background:var(--accent);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;}
+.add-btn:active{opacity:.8;}
+.exp-btn{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;margin-bottom:7px;transition:background .15s;}
+.exp-btn:active{background:var(--surface2);}
+/* Update banner */
+.update-banner{background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(0,208,132,.15));border:1px solid rgba(108,99,255,.4);border-radius:16px;padding:14px 16px;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;animation:glow 2s infinite alternate;}
+@keyframes glow{from{box-shadow:0 0 8px rgba(108,99,255,.1)}to{box-shadow:0 0 18px rgba(108,99,255,.35)}}
+.update-banner:active{transform:scale(.98);}
+.update-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 1.5s infinite;}
+/* INVEST PAGE */
+
+@keyframes spin{to{transform:rotate(360deg)}}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:flex-end;}
+.modal-overlay.open{display:flex;}
+.modal{width:100%;background:var(--surface);border-radius:24px 24px 0 0;border:1px solid var(--border);padding:20px 20px 36px;animation:slideUp .3s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--surface2);border-radius:4px;margin:0 auto 18px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:15px;}
+/* DUE DATE ALERT MODAL */
+#due-alert-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;}
+#due-alert-modal.open{display:flex;}
+.due-alert-box{background:var(--surface);border:1px solid rgba(255,179,0,.35);border-radius:24px;padding:24px 20px;width:100%;max-width:360px;animation:popIn .3s cubic-bezier(.4,0,.2,1);}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.due-alert-title{font-size:18px;font-weight:800;margin-bottom:5px;color:var(--amber);}
+.due-alert-list{margin:12px 0;max-height:220px;overflow-y:auto;}
+.due-alert-item{padding:10px;background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.15);border-radius:12px;margin-bottom:8px;}
+.due-alert-name{font-size:14px;font-weight:700;}
+.due-alert-info{font-size:12px;color:var(--muted);margin-top:3px;}
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#052e1c;font-size:14px;font-weight:700;padding:10px 22px;border-radius:100px;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:44px;margin-bottom:10px;}
+.empty p{font-size:13px;line-height:1.6;}
+/* IMAGE CROP MODAL */
+#crop-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;}
+#crop-modal.open{display:flex;}
+.crop-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:14px;}
+.crop-stage{position:relative;width:260px;height:260px;border-radius:50%;overflow:hidden;border:3px solid var(--accent);cursor:move;touch-action:none;background:#111;}
+#crop-img{position:absolute;transform-origin:0 0;user-select:none;pointer-events:none;max-width:none;}
+.crop-controls{margin-top:18px;width:260px;}
+.crop-slider-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;}
+#crop-zoom{width:100%;accent-color:var(--accent);}
+.crop-btns{display:flex;gap:10px;margin-top:18px;width:260px;}
+.crop-btn{flex:1;padding:13px;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;}
+.crop-btn.cancel{background:var(--surface2);color:var(--muted);}
+.crop-btn.apply{background:var(--accent);color:#fff;}
+/* Debt filter */
+.debt-filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.dfilter-chip{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.dfilter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+/* Debt partial repayment */
+.repay-row{display:flex;gap:6px;margin-top:8px;align-items:center;}
+.repay-inp{flex:1;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+.repay-inp:focus{border-color:var(--green);}
+.repay-btn{padding:8px 14px;background:var(--green);border:none;border-radius:10px;color:#052e1c;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;}
+.remaining-badge{font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,179,0,.2);color:var(--amber);font-weight:700;}
+/* Telegram section */
+.tg-card{border:1px solid rgba(0,136,204,.3);}
+.tg-title{color:#2ca5e0;font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:7px;}
+/* Reminder rows */
+.rem-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.rem-row:last-child{border-bottom:none;}
+.rem-badge{font-size:10px;padding:2px 7px;border-radius:100px;background:rgba(108,99,255,.15);color:var(--accent);font-weight:700;}
+/* Notif permission banner */
+.notif-banner{background:linear-gradient(135deg,rgba(255,179,0,.12),rgba(108,99,255,.1));border:1px solid rgba(255,179,0,.3);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+</style>
+<!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
+<!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
+<!-- 2) Add an Email Service (e.g. connect your Gmail) → copy the Service ID  -->
+<!-- 3) Create two Email Templates (see EMAILJS_SETUP.md) → copy each Template ID  -->
+<!-- 4) Account → General → copy your Public Key  -->
+<!-- 5) Paste all four values into the EMAILJS_CONFIG block near the top of the <script> below. -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
+<div id="lock-screen" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
+  <div class="auth-logo" style="margin-bottom:6px">₹ <span>Expenses</span></div>
+  <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
+    <div class="fl">
+      <div class="fl-label">Password</div>
+      <input class="ai" id="lock-pw" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+    </div>
+    <button class="auth-btn" onclick="doUnlock()">Unlock →</button>
+    <div class="auth-err" id="lock-err"></div>
+    <button class="bio-btn" id="bio-btn" onclick="doBiometric()" style="margin-top:10px">
+      <span style="font-size:20px">🔐</span> Use Fingerprint / Face ID
+    </button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ AUTH ═══════════ -->
+<div id="auth-screen">
+  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="ProjectVault"/><div class="auth-logo">Project<span>Vault</span></div></div>
+  <div class="auth-sub">Track every rupee, effortlessly.</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="atab-login" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="fl"><div class="fl-label">Username</div><input class="ai" id="lu" type="text" placeholder="Enter username" autocomplete="username"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input class="ai" id="lp" type="password" placeholder="Enter password" autocomplete="current-password"/></div>
+      <button class="auth-btn" onclick="doLogin()">Login →</button>
+      <div class="auth-err" id="lerr"></div>
+      <div style="text-align:center;margin-top:12px"><span style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600" onclick="showForgotPw()">Forgot Password?</span></div>
+    </div>
+    <!-- SIGNUP -->
+    <div id="form-signup" style="display:none">
+      <div class="av-wrap">
+        <div class="av-box" id="av-box" onclick="document.getElementById('av-file').click()"><span id="av-ph">📷</span></div>
+        <div class="av-hint">Tap to add profile photo</div>
+        <input type="file" id="av-file" accept="image/*" style="display:none" onchange="handleAvatar(event)"/>
+      </div>
+      <div class="fl"><div class="fl-label">Full Name</div><input class="ai" id="sn" type="text" placeholder="Your full name"/></div>
+      <div class="fl"><div class="fl-label">Username</div><input class="ai" id="su" type="text" placeholder="Choose username" autocomplete="username"/></div>
+      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input class="ai" id="se" type="email" placeholder="you@gmail.com" autocomplete="email"/></div>
+      <div class="fl"><div class="fl-label">Mobile Number (for your records)</div><input class="ai" id="sm" type="tel" placeholder="10-digit mobile number" maxlength="10"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input class="ai" id="sp" type="password" placeholder="Min 4 characters" autocomplete="new-password"/></div>
+      <button class="auth-btn" onclick="doSignup()">Create Account →</button>
+      <div class="auth-err" id="serr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-av" id="tb-av"></div>
+      <div>
+        <div class="tb-name">Project<span>Vault</span></div>
+        <div class="tb-sub" id="tb-hi"></div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
+      <div class="pill-btn" onclick="doLogout()">Logout</div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="page-home" class="page active">
+    <div class="hero">
+      <div class="hero-label">Net Balance</div>
+      <div class="hero-amt" id="grand-total">₹0</div>
+      <div class="hero-period" id="total-period">All time</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="dp-label" style="justify-content:center">🔗 Combined Total (Income + Expenses)</div>
+      <div class="dp-amt" id="home-combined-total" style="font-size:26px">₹0</div>
+      <div class="dp-count" id="home-combined-count">0 entries</div>
+    </div>
+    <div class="card" id="budget-card" style="display:none">
+      <div class="card-title">🎯 Monthly Budget</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--muted)" id="budget-spent-label">₹0 spent</span>
+        <span style="font-size:13px;color:var(--muted)" id="budget-limit-label">of ₹0</span>
+      </div>
+      <div class="bar-wrap" style="height:8px;border-radius:8px">
+        <div class="bar-fill" id="budget-bar-fill" style="height:8px;border-radius:8px;width:0%;background:var(--accent)"></div>
+      </div>
+      <div style="font-size:12px;margin-top:8px" id="budget-status-msg"></div>
+    </div>
+    <div class="dp-grid">
+      <div class="dp-card">
+        <div class="dp-label">💰 Income</div>
+        <div class="dp-amt" id="home-income" style="color:var(--green)">₹0</div>
+        <div class="dp-count" id="home-income-c">0 entries</div>
+      </div>
+      <div class="dp-card">
+        <div class="dp-label">💸 Expenses</div>
+        <div class="dp-amt" id="home-expense" style="color:var(--red)">₹0</div>
+        <div class="dp-count" id="home-expense-c">0 entries</div>
+      </div>
+    </div>
+    <div class="dp-grid">
+      <div class="dp-card">
+        <div class="dp-label">🧾 I Borrowed</div>
+        <div class="dp-amt" id="dp-debt" style="color:var(--red)">₹0</div>
+        <div class="dp-count" id="dp-debt-c">0 active</div>
+      </div>
+      <div class="dp-card">
+        <div class="dp-label">🤝 I Gave</div>
+        <div class="dp-amt" id="dp-profit" style="color:var(--green)">₹0</div>
+        <div class="dp-count" id="dp-profit-c">0 active</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">By Category</div>
+      <div id="cat-summary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Expenses</div>
+      <div id="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- ADD EXPENSE -->
+  <div id="page-add" class="page">
+    <div class="card">
+      <div class="form-label">Month</div>
+      <div class="sgrid m3" id="month-grid"></div>
+    </div>
+    <div class="card">
+      <div class="form-label">Category</div>
+      <div class="sgrid" id="cat-grid"></div>
+    </div>
+    <div class="card">
+      <div class="form-label">Type</div>
+      <div class="type-toggle">
+        <div class="type-btn debt sel" id="etype-expense" onclick="selectEntryType('expense')">💸 Expense</div>
+        <div class="type-btn profit" id="etype-income" onclick="selectEntryType('income')">💰 Income</div>
+      </div>
+      <div class="form-label" style="margin-top:4px">Amount</div>
+      <div class="amt-wrap">
+        <span class="rs-pre" id="amt-pre-sign" style="color:var(--red)">₹</span>
+        <input type="number" inputmode="decimal" class="amt-inp" id="amount-input" placeholder="0"/>
+      </div>
+      <div class="form-label">Date</div>
+      <input type="date" id="expense-date" class="date-inp" style="padding-left:14px;font-size:15px;"/>
+      <div class="form-label">Payment Mode</div>
+      <div class="pay-mode-wrap">
+        <div class="pay-mode-row">
+          <div class="pay-chip sel" id="pay-cash" onclick="selectPayMode('cash')">💵 Cash</div>
+          <div class="pay-chip" id="pay-upi" onclick="selectPayMode('upi')">📱 UPI</div>
+          <div class="pay-chip" id="pay-card" onclick="selectPayMode('card')">💳 Card</div>
+          <div class="pay-chip" id="pay-bank" onclick="selectPayMode('bank')">🏦 Bank</div>
+        </div>
+        <div class="upi-grid" id="upi-sub-grid">
+          <div class="upi-btn" onclick="selectUPI('PhonePe')">📲 PhonePe</div>
+          <div class="upi-btn" onclick="selectUPI('Google Pay')">🎯 GPay</div>
+          <div class="upi-btn" onclick="selectUPI('Paytm')">💙 Paytm</div>
+          <div class="upi-btn" onclick="selectUPI('BHIM')">🇮🇳 BHIM</div>
+          <div class="upi-btn" onclick="selectUPI('Amazon Pay')">🛒 AmazonPay</div>
+          <div class="upi-btn" onclick="selectUPI('WhatsApp Pay')">💬 WA Pay</div>
+        </div>
+      </div>
+      <div id="pay-mode-display" style="font-size:12px;color:var(--accent);margin-bottom:12px;min-height:16px;"></div>
+      <button class="save-btn" id="save-exp-btn" onclick="saveExpense()" style="background:var(--red)">Save Expense</button>
+    </div>
+    <!-- MONTHLY REMINDERS -->
+    <div class="card">
+      <div class="card-title">🔁 Recurring Expenses</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Add recurring payments (rent, EMI, subscriptions). You'll get reminded on the due day — tap <b style="color:var(--text)">Mark Paid</b> each month to confirm it's been paid (this logs it as an expense automatically).</div>
+      <div id="reminders-list"></div>
+      <div style="margin-top:12px">
+        <input type="text" class="ti" id="rem-name" placeholder="e.g. PG Rent, EMI, Netflix…" style="width:100%;margin-bottom:8px"/>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div style="flex:1;position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:700">₹</span><input type="number" class="ti" id="rem-amount" placeholder="Amount" style="padding-left:28px;width:100%"/></div>
+          <select class="ti" id="rem-day" style="flex:1"></select>
+        </div>
+        <button class="add-btn" style="width:100%;padding:12px" onclick="addReminder()">+ Add Reminder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div style="position:relative;margin-bottom:11px">
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px">🔍</span>
+      <input type="text" class="ti" id="hist-search" placeholder="Search category, amount, payment mode, date…" style="width:100%;padding-left:36px" oninput="onHistSearch(this.value)"/>
+    </div>
+    <div class="mscroll" id="hist-months"></div>
+    <div class="card"><div id="history-list"></div></div>
+  </div>
+
+  <!-- DEBT / PROFIT -->
+  <div id="page-debt" class="page">
+    <div class="card">
+      <div class="form-label">Person's Name</div>
+      <div class="autocomplete-wrap">
+        <input class="ai" id="debt-name" type="text" placeholder="e.g. Ravi, Priya…" autocomplete="off"
+          oninput="showNameSuggestions(this.value)" onblur="setTimeout(()=>closeAC(),200)"/>
+        <div class="autocomplete-list" id="name-ac-list"></div>
+      </div>
+      <div class="form-label">Amount</div>
+      <div class="amt-wrap" style="margin-bottom:13px">
+        <span class="rs-pre">₹</span>
+        <input type="number" inputmode="decimal" class="amt-inp" id="debt-amount" placeholder="0"/>
+      </div>
+      <div class="form-label">Type</div>
+      <div class="type-toggle">
+        <div class="type-btn debt" id="dtype-debt" onclick="selectDebtType('debt')">💸 I Borrowed</div>
+        <div class="type-btn profit" id="dtype-profit" onclick="selectDebtType('profit')">💰 I Gave</div>
+      </div>
+      <div class="form-label">Due Date (optional — get reminder 2 days before)</div>
+      <input type="date" id="debt-due-date" class="date-inp" style="padding-left:14px;font-size:15px;"/>
+      <button class="save-btn" onclick="saveDebt()">Save Entry</button>
+    </div>
+    <div class="card">
+      <div class="card-title">All Entries</div>
+      <div class="debt-filter-row">
+        <div class="dfilter-chip active" id="df-all" onclick="setDebtFilter('all')">All</div>
+        <div class="dfilter-chip" id="df-active" onclick="setDebtFilter('active')">Active</div>
+        <div class="dfilter-chip" id="df-cleared" onclick="setDebtFilter('cleared')">Cleared</div>
+        <div class="dfilter-chip" id="df-debt" onclick="setDebtFilter('debt')">Borrowed</div>
+        <div class="dfilter-chip" id="df-profit" onclick="setDebtFilter('profit')">Gave</div>
+      </div>
+      <div id="debt-list"></div>
+    </div>
+  </div>
+
+  <!-- MANAGE -->
+  <div id="page-manage" class="page">
+    <!-- Update banner (shown when update available) -->
+    <div class="update-banner" id="update-banner" style="display:none" onclick="showUpdateModal()">
+      <span class="update-dot"></span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--green)">🆕 New Update Available!</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="update-version-text">Version 2.1 — Tap to see what's new</div>
+      </div>
+      <span style="color:var(--muted);font-size:16px">›</span>
+    </div>
+    <!-- PROFILE EDIT -->
+    <div class="card">
+      <div class="card-title">👤 Edit Profile</div>
+      <div class="av-wrap" style="margin-bottom:14px">
+        <div class="av-box" id="profile-av-box" onclick="document.getElementById('profile-av-file').click()"><span id="profile-av-ph">📷</span></div>
+        <div class="av-hint">Tap to change profile photo</div>
+        <input type="file" id="profile-av-file" accept="image/*" style="display:none" onchange="handleProfileAvatar(event)"/>
+      </div>
+      <div class="fl"><div class="fl-label">Full Name</div><input class="ai" id="edit-name" type="text" placeholder="Your full name"/></div>
+      <div class="fl"><div class="fl-label">Username (cannot change)</div><input class="ai" id="edit-username" type="text" disabled style="opacity:.5;cursor:not-allowed"/></div>
+      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input class="ai" id="edit-email" type="email" placeholder="you@gmail.com"/></div>
+      <div class="fl"><div class="fl-label">Mobile Number</div><input class="ai" id="edit-mobile" type="tel" placeholder="10-digit mobile" maxlength="10"/></div>
+      <button class="save-btn" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+    <!-- MONTHLY STATEMENT -->
+    <div class="card">
+      <div class="card-title">📧 Monthly Email Statement</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        A summary of last month's income, expenses, and your average spend for the month &amp; year is emailed to your registered address automatically the next time you open the app after month-end.
+        <span id="emailjs-status-note"></span>
+      </div>
+      <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="sendTestStatementNow()">📤 Send Last Month's Statement Now</button>
+    </div>
+    <div class="card" id="install-card" style="display:none">
+      <div class="card-title">📲 Install App</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Install this app on your device for quick access and offline use, just like a native app.</div>
+      <button class="exp-btn" id="install-btn" onclick="doInstallPWA()">
+        <span style="font-size:20px">⬇️</span>
+        <div><div>Install to Home Screen</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Adds an app icon, opens full-screen</div></div>
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Monthly Budget Limit</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Set an overall spending limit for each month. You'll see a progress bar on Home and a warning if you go over.</div>
+      <div style="position:relative;margin-bottom:10px">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;font-weight:700">₹</span>
+        <input type="number" class="ti" id="budget-limit-input" placeholder="e.g. 20000" style="padding-left:30px;width:100%"/>
+      </div>
+      <button class="add-btn" style="width:100%;padding:12px" onclick="saveBudgetLimit()">💾 Save Budget</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Your Categories</div>
+      <div id="manage-cat-list"></div>
+      <div class="add-row">
+        <input type="text" class="ti" id="new-cat-input" placeholder="e.g. Gym 💪" maxlength="30"/>
+        <button class="add-btn" onclick="addCategory()">+ Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Export & Data</div>
+      <button class="exp-btn" onclick="exportCSV()">
+        <span style="font-size:20px">📄</span>
+        <div><div>Download as CSV</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Open in Excel / Sheets</div></div>
+      </button>
+      <button class="exp-btn" onclick="confirmClear()">
+        <span style="font-size:20px">🗑️</span>
+        <div><div style="color:var(--red)">Clear All Expenses</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Cannot be undone</div></div>
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 Cross-Device Sync</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Export your account to a file and import it on another device.</div>
+      <button class="exp-btn" onclick="exportAccount()">
+        <span style="font-size:20px">☁️</span>
+        <div><div>Export Account Backup</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Save .json → transfer to other device</div></div>
+      </button>
+      <button class="exp-btn" onclick="document.getElementById('import-file').click()">
+        <span style="font-size:20px">📲</span>
+        <div><div>Import Account Backup</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Load .json from another device</div></div>
+      </button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importAccount(event)"/>
+    </div>
+    <div class="card">
+      <div class="card-title">🔐 Security</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">You are asked to verify your identity every time you open the app.</div>
+      <button class="exp-btn" onclick="showChangePwModal()">
+        <span style="font-size:20px">🔑</span>
+        <div><div>Change Password</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Update your login password</div></div>
+      </button>
+      <button class="exp-btn" id="bio-toggle-btn" onclick="toggleBiometricSetting()">
+        <span style="font-size:20px" id="bio-toggle-icon">👆</span>
+        <div><div id="bio-toggle-title">Enable Biometric Login</div><div style="font-size:11px;color:var(--muted);margin-top:2px" id="bio-toggle-sub">Use fingerprint / Face unlock instead of password</div></div>
+      </button>
+    </div>
+    <!-- Telegram Bot Integration -->
+    <div class="card tg-card" id="admin-tg-section" style="display:none">
+      <div class="tg-title">✈️ Telegram Bot — Connected</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.65">Your <b style="color:var(--text)">expense_bot.py</b> Telegram bot is fully integrated. Commands available in Telegram:</div>
+      <div style="font-size:13px;line-height:2;color:var(--text)">
+        <span style="color:#2ca5e0;font-weight:700">/start</span> — Begin tracking, pick month<br>
+        <span style="color:#2ca5e0;font-weight:700">/addcat GymFee</span> — Add a new category<br>
+        <span style="color:#2ca5e0;font-weight:700">/delcat GymFee</span> — Remove a category<br>
+        <span style="color:#2ca5e0;font-weight:700">/listcats</span> — See all your categories<br>
+        <span style="color:#2ca5e0;font-weight:700">Type amount</span> — After picking month + cat, just type the number
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(0,136,204,.07);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6">
+        💡 <b style="color:var(--text)">Setup:</b> Run <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">pip install python-telegram-bot openpyxl</code> then <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">python expense_bot.py</code>. Expenses from the bot go to <b style="color:var(--text)">expenses.xlsx</b> on your server. This web app stores data locally in your browser.
+      </div>
+    </div>
+    <!-- Contact Admin / Customer Service (all users) -->
+    <div class="card">
+      <div class="card-title">💬 Contact Admin</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Facing an issue or have feedback? Send a message to the admin.</div>
+      <textarea class="ti" id="admin-msg-inp" placeholder="Type your message..." style="width:100%;min-height:70px;resize:none;line-height:1.6;margin-bottom:8px"></textarea>
+      <button class="add-btn" style="width:100%;padding:12px" onclick="sendAdminMessage()">📨 Send Message</button>
+    </div>
+    <!-- Members list (Admin Only) -->
+    <div class="card" id="admin-members-section" style="display:none">
+      <div class="card-title">👥 Members <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Shows accounts created on this device/browser only — this app has no shared server yet.</div>
+      <div id="admin-members-summary" style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px"></div>
+      <div id="admin-members-list"></div>
+    </div>
+    <!-- Customer messages (Admin Only) -->
+    <div class="card" id="admin-messages-section" style="display:none">
+      <div class="card-title">📨 Customer Messages <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div id="admin-messages-list"></div>
+    </div>
+    <!-- App Update Management (Admin Only) -->
+    <div class="card" id="admin-update-section" style="display:none">
+      <div class="card-title">📢 Push App Update Notice <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Notify all users of a new version. They'll see a banner next time they open the app.</div>
+      <input type="text" class="ti" id="update-version-inp" placeholder="Version e.g. 2.1" style="width:100%;margin-bottom:8px"/>
+      <textarea class="ti" id="update-notes-inp" placeholder="What's new in this update..." style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
+      <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pushUpdateNotice()">📢 Publish Update Notice</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <div class="tab active" onclick="switchTab('home',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-label">Home</span>
+    </div>
+    <div class="tab" onclick="switchTab('add',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span class="tab-label">Add</span>
+    </div>
+    <div class="tab" onclick="switchTab('history',this)">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="tab-label">History</span>
+    </div>
+    <div class="tab" onclick="switchTab('debt',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="tab-label">Debts</span>
+    </div>
+    <div class="tab" onclick="switchTab('manage',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="tab-label">Manage</span>
+    </div>
+  </nav>
+</div>
+
+<!-- MONTH MODAL -->
+<div class="modal-overlay" id="month-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Filter by Month</div>
+    <div class="sgrid m3" id="modal-month-grid"></div>
+    <button class="save-btn" style="margin-top:4px;background:var(--surface2);color:var(--text)" onclick="setFilter('All')">Show All Months</button>
+  </div>
+</div>
+
+<!-- EDIT ENTRY MODAL -->
+<div class="modal-overlay" id="edit-entry-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Edit Entry</div>
+    <div class="form-label">Month</div>
+    <div class="sgrid m3" id="edit-month-grid"></div>
+    <div class="form-label">Category</div>
+    <div class="sgrid" id="edit-cat-grid"></div>
+    <div class="form-label">Amount</div>
+    <div class="amt-wrap">
+      <span class="rs-pre" id="edit-amt-sign">₹</span>
+      <input type="number" inputmode="decimal" class="amt-inp" id="edit-amount-input" placeholder="0"/>
+    </div>
+    <div class="form-label">Date</div>
+    <input type="date" id="edit-date-input" class="date-inp" style="padding-left:14px;font-size:15px;"/>
+    <button class="save-btn" onclick="saveEditEntry()">💾 Save Changes</button>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeEditEntry()">Cancel</button>
+  </div>
+</div>
+
+<!-- DUE DATE ALERT MODAL -->
+<div id="due-alert-modal">
+  <div class="due-alert-box">
+    <div style="font-size:28px;text-align:center;margin-bottom:8px">⏰</div>
+    <div class="due-alert-title" style="text-align:center">Upcoming Due Dates!</div>
+    <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:4px">These payments are due soon:</div>
+    <div class="due-alert-list" id="due-alert-list"></div>
+    <button class="save-btn" style="background:var(--amber);color:#000;font-weight:800" onclick="closeDueAlert()">Got it! 👍</button>
+  </div>
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="modal-overlay" id="update-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🆕 What's New</div>
+    <div id="update-modal-content" style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-line;margin-bottom:16px"></div>
+    <button class="save-btn" onclick="dismissUpdate()">Got it! Mark as Read ✓</button>
+  </div>
+</div>
+
+<!-- CHANGE PW MODAL -->
+<div class="modal-overlay" id="changepw-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 Change Password</div>
+    <div class="fl"><div class="fl-label">Current Password</div><input class="ai" id="cp-old" type="password" placeholder="Current password"/></div>
+    <div class="fl"><div class="fl-label">New Password</div><input class="ai" id="cp-new" type="password" placeholder="Min 4 characters"/></div>
+    <div class="fl"><div class="fl-label">Confirm New Password</div><input class="ai" id="cp-conf" type="password" placeholder="Repeat new password"/></div>
+    <button class="auth-btn" onclick="doChangePw()">Update Password</button>
+    <div class="auth-err" id="cp-err"></div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('changepw-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+<!-- IMAGE CROP MODAL -->
+<div id="crop-modal">
+  <div class="crop-title">Adjust Profile Photo</div>
+  <div class="crop-stage" id="crop-stage"><img id="crop-img" src="" alt=""/></div>
+  <div class="crop-controls">
+    <div class="crop-slider-label">Zoom</div>
+    <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="applyCropTransform()"/>
+  </div>
+  <div class="crop-btns">
+    <button class="crop-btn cancel" onclick="closeCropModal()">Cancel</button>
+    <button class="crop-btn apply" onclick="applyCrop()">Apply ✓</button>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotpw-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="fp-title">🔑 Forgot Password</div>
+    <div id="fp-step1">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Forgot your username or password? Enter your registered mobile number or email — we'll email you an OTP to verify.</div>
+      <div class="fl"><div class="fl-label">Mobile Number or Email</div><input class="ai" id="fp-identifier" type="text" placeholder="10-digit mobile or you@gmail.com"/></div>
+      <button class="auth-btn" onclick="sendForgotOTP()">Send OTP →</button>
+      <div class="auth-err" id="fp-err"></div>
+    </div>
+    <div id="fp-step2" style="display:none">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">An OTP has been emailed to your registered address. Enter it below.</div>
+      <div style="background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.3);border-radius:12px;padding:12px;margin-bottom:14px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">OTP sent to</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent)" id="fp-mobile-display"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px" id="fp-username-hint"></div>
+      </div>
+      <div class="fl"><div class="fl-label">Enter OTP</div><input class="ai" id="fp-otp" type="number" placeholder="6-digit OTP" maxlength="6" inputmode="numeric"/></div>
+      <div class="fl"><div class="fl-label">New Password</div><input class="ai" id="fp-newpw" type="password" placeholder="Min 4 characters"/></div>
+      <div class="fl"><div class="fl-label">Confirm New Password</div><input class="ai" id="fp-confpw" type="password" placeholder="Repeat new password"/></div>
+      <button class="auth-btn" onclick="verifyForgotOTP()">Reset Password →</button>
+      <div class="auth-err" id="fp-err2"></div>
+      <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--muted);cursor:pointer" onclick="resendOTP()">Resend OTP</span></div>
+    </div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('forgotpw-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+<!-- DEBT CLEARED CELEBRATION MODAL -->
+<div id="celebrate-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:linear-gradient(135deg,rgba(0,208,132,.2),rgba(108,99,255,.2));border:2px solid var(--green);border-radius:28px;padding:32px 24px;width:100%;max-width:340px;text-align:center;animation:popIn .35s cubic-bezier(.4,0,.2,1)">
+    <div style="font-size:56px;margin-bottom:12px" id="cel-emoji">🎉</div>
+    <div style="font-size:22px;font-weight:800;color:var(--green);margin-bottom:8px">DEBT CLEARED! 🎊</div>
+    <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:6px" id="cel-name"></div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px" id="cel-msg"></div>
+    <div style="font-size:28px;margin-bottom:16px" id="cel-confetti">✨💫⭐🌟💎✨</div>
+    <button class="save-btn" style="background:var(--green);color:#052e1c;font-weight:800;font-size:16px" onclick="closeCelebration()">Woohoo! 🙌</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── EMAILJS CONFIG ── Fill these in from your EmailJS dashboard (see EMAILJS_SETUP.md). ──
+// Until filled in, statement/OTP emails fall back to visible on-screen codes / toasts so the app still works.
+const EMAILJS_CONFIG={
+  publicKey:'YOUR_PUBLIC_KEY',        // Account → General → Public Key
+  serviceId:'YOUR_SERVICE_ID',        // Email Services → your connected service
+  otpTemplateId:'YOUR_OTP_TEMPLATE_ID',            // Template for password-reset OTP
+  statementTemplateId:'YOUR_STATEMENT_TEMPLATE_ID' // Template for monthly statement
+};
+const EMAILJS_READY=typeof emailjs!=='undefined' && EMAILJS_CONFIG.publicKey!=='YOUR_PUBLIC_KEY';
+if(EMAILJS_READY){ try{ emailjs.init({publicKey:EMAILJS_CONFIG.publicKey}); }catch(e){ console.warn('EmailJS init failed',e); } }
+async function sendEmailViaEmailJS(templateId, params){
+  if(!EMAILJS_READY) return {ok:false, reason:'not_configured'};
+  if(!templateId || templateId.indexOf('YOUR_')===0){
+    console.error('EmailJS: template ID looks like an unfilled placeholder:', templateId);
+    return {ok:false, reason:'not_configured'};
+  }
+  try{
+    await emailjs.send(EMAILJS_CONFIG.serviceId, templateId, params);
+    return {ok:true};
+  }catch(e){
+    // EmailJS errors usually arrive as {status, text} — surface the real reason (bad service/template
+    // ID, template variable mismatch, disabled service, monthly quota hit, etc.) instead of hiding it.
+    const detail=(e&&(e.text||e.message))?String(e.text||e.message):(typeof e==='string'?e:'Unknown error');
+    console.error('EmailJS send failed:', e);
+    return {ok:false, reason:'send_failed', detail};
+  }
+}
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff9800','#4caf50','#9c27b0','#f44336','#2196f3','#ff5722'];
+const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Other:'📦'};
+const DEFAULT_CATS=['Rent','Travel','Food','Medical','Debt','Savings','Other'];
+const APP_VERSION='3.0';
+
+let CU=null,selMonth=null,selCat=null,filterMonth='All',selDebtType=null,pendingAv=null,selEntryType='expense',histSearch='';
+let editIndex=null,editMonth=null,editCat=null;
+let selPayMode='cash',selUPIApp='',selRisk='low',selGoal='growth',selTH='intraday',debtFilter='all';
+let cropOffX=0,cropOffY=0,cropZoom=1,cropDragging=false,cropDragSX=0,cropDragSY=0,cropStartOX=0,cropStartOY=0;
+
+// ── STORAGE ──
+function uKey(k){return'exp_'+CU+'_'+k;}
+function getUsers(){return JSON.parse(localStorage.getItem('exp_users')||'{}');}
+function saveUsers(u){localStorage.setItem('exp_users',JSON.stringify(u));}
+// ── Admin messages (customer service) — global, not scoped to a single user ──
+function getAdminMessages(){return JSON.parse(localStorage.getItem('exp_admin_messages')||'[]');}
+function saveAdminMessages(m){localStorage.setItem('exp_admin_messages',JSON.stringify(m));}
+function getData(){return JSON.parse(localStorage.getItem(uKey('data'))||'[]');}
+function saveData(d){localStorage.setItem(uKey('data'),JSON.stringify(d));}
+function getCats(){return JSON.parse(localStorage.getItem(uKey('cats'))||JSON.stringify(DEFAULT_CATS));}
+function saveCats(c){localStorage.setItem(uKey('cats'),JSON.stringify(c));}
+function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]');}
+function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
+function getBudgetLimit(){return parseFloat(localStorage.getItem(uKey('budget'))||'0')||0;}
+function saveBudgetLimit(){
+  const v=parseFloat(document.getElementById('budget-limit-input').value);
+  if(!v||v<=0){localStorage.removeItem(uKey('budget'));showToast('Budget limit cleared','#ffb300');}
+  else{localStorage.setItem(uKey('budget'),String(v));showToast('🎯 Budget saved!');}
+  renderHome();
+}
+// Global update store (shared across all users)
+function getUpdateNotice(){return JSON.parse(localStorage.getItem('exp_update_notice')||'null');}
+function saveUpdateNotice(n){localStorage.setItem('exp_update_notice',JSON.stringify(n));}
+function getDismissedUpdate(){return localStorage.getItem('exp_dismissed_update_'+CU)||'';}
+function setDismissedUpdate(v){localStorage.setItem('exp_dismissed_update_'+CU,v);}
+
+// ── AUTH ──
+function switchAuthTab(t){
+  document.getElementById('form-login').style.display=t==='login'?'block':'none';
+  document.getElementById('form-signup').style.display=t==='signup'?'block':'none';
+  document.getElementById('atab-login').classList.toggle('active',t==='login');
+  document.getElementById('atab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('lerr').textContent='';
+  document.getElementById('serr').textContent='';
+}
+function handleAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>openCropModal(ev.target.result);
+  r.readAsDataURL(f);
+}
+// CROP MODAL
+function openCropModal(src){
+  cropOffX=0;cropOffY=0;cropZoom=1;cropDragging=false;
+  const img=document.getElementById('crop-img');
+  img.onload=()=>{
+    const stage=document.getElementById('crop-stage');
+    const sw=stage.offsetWidth,sh=stage.offsetHeight;
+    const iw=img.naturalWidth,ih=img.naturalHeight;
+    const scale=Math.max(sw/iw,sh/ih);
+    img._baseScale=scale;cropZoom=1;
+    document.getElementById('crop-zoom').value=1;
+    cropOffX=(sw-iw*scale)/2;cropOffY=(sh-ih*scale)/2;
+    applyCropTransform();
+    document.getElementById('crop-modal').classList.add('open');
+  };
+  img.src=src;
+}
+function applyCropTransform(){
+  const img=document.getElementById('crop-img');
+  const scale=img._baseScale*(parseFloat(document.getElementById('crop-zoom').value)||1);
+  img.style.transform=`translate(${cropOffX}px,${cropOffY}px) scale(${scale})`;
+  img.style.transformOrigin='0 0';
+}
+function closeCropModal(){document.getElementById('crop-modal').classList.remove('open');}
+function applyCrop(){
+  const stage=document.getElementById('crop-stage');
+  const img=document.getElementById('crop-img');
+  const sw=stage.offsetWidth,sh=stage.offsetHeight;
+  const canvas=document.createElement('canvas');
+  canvas.width=sw;canvas.height=sh;
+  const ctx=canvas.getContext('2d');
+  ctx.beginPath();ctx.arc(sw/2,sh/2,sw/2,0,Math.PI*2);ctx.clip();
+  const scale=img._baseScale*(parseFloat(document.getElementById('crop-zoom').value)||1);
+  ctx.drawImage(img,cropOffX,cropOffY,img.naturalWidth*scale,img.naturalHeight*scale);
+  pendingAv=canvas.toDataURL('image/jpeg',.85);
+  document.getElementById('av-box').innerHTML=`<img src="${pendingAv}"/>`;
+  closeCropModal();
+  if(CU){
+    const av=document.getElementById('tb-av');
+    av.innerHTML=`<img src="${pendingAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    const users=getUsers();if(users[CU]){users[CU].avatar=pendingAv;saveUsers(users);}
+  }
+}
+(function(){
+  const stage=document.getElementById('crop-stage');
+  function getXY(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
+  stage.addEventListener('mousedown',ev=>{cropDragging=true;const p=getXY(ev);cropDragSX=p.x;cropDragSY=p.y;cropStartOX=cropOffX;cropStartOY=cropOffY;});
+  stage.addEventListener('touchstart',ev=>{cropDragging=true;const p=getXY(ev);cropDragSX=p.x;cropDragSY=p.y;cropStartOX=cropOffX;cropStartOY=cropOffY;},{passive:true});
+  function onMove(ev){
+    if(!cropDragging)return;
+    const p=getXY(ev);
+    cropOffX=cropStartOX+(p.x-cropDragSX);
+    cropOffY=cropStartOY+(p.y-cropDragSY);
+    applyCropTransform();
+  }
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('touchmove',onMove,{passive:true});
+  window.addEventListener('mouseup',()=>cropDragging=false);
+  window.addEventListener('touchend',()=>cropDragging=false);
+})();
+
+function doLogin(){
+  const u=document.getElementById('lu').value.trim().toLowerCase();
+  const p=document.getElementById('lp').value;
+  // Auto-create admin account if first time
+  ensureAdminAccount();
+  const users=getUsers();
+  if(!users[u]){document.getElementById('lerr').textContent='Username not found.';return;}
+  if(users[u].password!==btoa(p)){document.getElementById('lerr').textContent='Wrong password.';return;}
+  CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+}
+function ensureAdminAccount(){
+  const users=getUsers();
+  if(!users[ADMIN_USERNAME]){
+    users[ADMIN_USERNAME]={name:'Admin',password:ADMIN_PASSWORD,avatar:null,email:null,mobile:null,isAdmin:true,createdAt:Date.now()};
+    saveUsers(users);
+  }
+}
+const ADMIN_USERNAME='admin';
+const ADMIN_PASSWORD=btoa('admin@2025');
+
+function doSignup(){
+  const name=document.getElementById('sn').value.trim();
+  const u=document.getElementById('su').value.trim().toLowerCase();
+  const p=document.getElementById('sp').value;
+  const email=document.getElementById('se').value.trim().toLowerCase();
+  const mobile=document.getElementById('sm').value.trim();
+  const err=document.getElementById('serr');
+  if(!name){err.textContent='Enter your name.';return;}
+  if(!u){err.textContent='Choose a username.';return;}
+  if(p.length<4){err.textContent='Password min 4 characters.';return;}
+  if(!email){err.textContent='Enter your Gmail/email address — needed for statements & password recovery.';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='Enter a valid email address.';return;}
+  if(mobile&&!/^\d{10}$/.test(mobile)){err.textContent='Enter a valid 10-digit mobile.';return;}
+  const users=getUsers();
+  if(users[u]){err.textContent='Username already taken.';return;}
+  if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
+  users[u]={name,password:btoa(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null};
+  saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+}
+function doLogout(){
+  localStorage.removeItem('exp_session');
+  CU=null;selMonth=null;selCat=null;filterMonth='All';selDebtType=null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('lu').value='';document.getElementById('lp').value='';
+  document.getElementById('lerr').textContent='';switchAuthTab('login');
+}
+
+// ── LOCK SCREEN (always shown on session resume) ──
+function showLockScreen(username){
+  const users=getUsers();
+  const profile=users[username];
+  document.getElementById('lock-screen').style.display='flex';
+  document.getElementById('lock-user-display').textContent='Logged in as: '+username;
+  document.getElementById('lock-pw').value='';
+  document.getElementById('lock-err').textContent='';
+  // Show biometric button only if this device supports WebAuthn AND this user has
+  // actually registered a biometric credential (registration happens in Manage > Security)
+  const bioBtn=document.getElementById('bio-btn');
+  bioBtn.style.display=(window.PublicKeyCredential&&profile&&profile.bioCredId)?'flex':'none';
+}
+// ── WebAuthn helpers (ArrayBuffer <-> base64) ──
+function bufToB64(buf){
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function b64ToBuf(b64){
+  const bin=atob(b64);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return bytes.buffer;
+}
+// ── Register a biometric credential for the current user (call from Manage > Security) ──
+async function registerBiometric(){
+  if(!window.PublicKeyCredential){showToast('Biometric login is not supported on this browser/device','#ffb300');return;}
+  if(!CU){showToast('Please log in first','#ffb300');return;}
+  try{
+    const challenge=new Uint8Array(32);window.crypto.getRandomValues(challenge);
+    const users=getUsers();
+    const profile=users[CU];
+    const userId=new TextEncoder().encode(CU);
+    const cred=await navigator.credentials.create({
+      publicKey:{
+        challenge,
+        rp:{name:'ProjectVault',id:window.location.hostname||'localhost'},
+        user:{id:userId,name:CU,displayName:profile.name||CU},
+        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},
+        timeout:60000,
+        attestation:'none'
+      }
+    });
+    if(cred){
+      users[CU].bioCredId=bufToB64(cred.rawId);
+      saveUsers(users);
+      showToast('✅ Biometric login enabled!','#00d084');
+      renderManage();
+    }
+  }catch(e){
+    showToast('Could not enable biometric — '+(e.message||'try again'),'#ff6584');
+  }
+}
+function disableBiometric(){
+  if(!CU)return;
+  const users=getUsers();
+  if(users[CU]){
+    delete users[CU].bioCredId;
+    saveUsers(users);
+    showToast('Biometric login disabled','#ffb300');
+    renderManage();
+  }
+}
+function toggleBiometricSetting(){
+  const users=getUsers();
+  const profile=CU&&users[CU];
+  if(profile&&profile.bioCredId)disableBiometric();
+  else registerBiometric();
+}
+function doUnlock(){
+  const p=document.getElementById('lock-pw').value;
+  const users=getUsers();
+  const session=localStorage.getItem('exp_session');
+  if(!session||!users[session]){document.getElementById('lock-err').textContent='Session expired.';return;}
+  if(users[session].password!==btoa(p)){
+    document.getElementById('lock-err').textContent='Wrong password. Try again.';
+    document.getElementById('lock-pw').value='';
+    return;
+  }
+  CU=session;
+  document.getElementById('lock-screen').style.display='none';
+  startApp(users[CU]);
+}
+async function doBiometric(){
+  const session=localStorage.getItem('exp_session');
+  const users=getUsers();
+  const profile=session&&users[session];
+  if(!profile||!profile.bioCredId){
+    showToast('Biometric not set up yet — enable it from Manage > Security','#ffb300');
+    return;
+  }
+  try{
+    const challenge=new Uint8Array(32);
+    window.crypto.getRandomValues(challenge);
+    const credential=await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        timeout:60000,
+        rpId:window.location.hostname||'localhost',
+        allowCredentials:[{id:b64ToBuf(profile.bioCredId),type:'public-key'}],
+        userVerification:'required'
+      }
+    });
+    if(credential){
+      CU=session;
+      document.getElementById('lock-screen').style.display='none';
+      startApp(users[CU]);
+    }
+  }catch(e){
+    // User cancelled, wrong finger/face, or device changed — fall back to password
+    showToast('Biometric failed — use password instead','#ffb300');
+  }
+}
+
+function startApp(profile){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  const av=document.getElementById('tb-av');
+  if(profile.avatar){av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  else{av.textContent=profile.name.charAt(0).toUpperCase();}
+  document.getElementById('tb-hi').textContent='Hi, '+profile.name.split(' ')[0]+'!';
+  selMonth=MONTHS[new Date().getMonth()];
+  document.getElementById('expense-date').value=new Date().toISOString().split('T')[0];
+  // Populate reminder day select
+  const ds=document.getElementById('rem-day');
+  ds.innerHTML='<option value="">Day of month</option>';
+  for(let i=1;i<=31;i++)ds.innerHTML+=`<option value="${i}">${i}</option>`;
+  switchTab('home',document.querySelector('.tab'));
+  setTimeout(checkDueAlerts,600);
+  setTimeout(checkReminders,800);
+  setInterval(checkDueAlerts,3600000);
+  setInterval(checkReminders,3600000);
+  setTimeout(checkUpdateNotice,1000);
+  // Request notification permission
+  if('Notification' in window && Notification.permission==='default'){
+    setTimeout(()=>Notification.requestPermission(),3000);
+  }
+  // Show/hide admin sections
+  const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
+  document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
+  setTimeout(checkAndSendMonthlyStatement,1500);
+}
+
+// ── TABS ──
+function switchTab(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='home')renderHome();
+  if(name==='add')renderAddForm();
+  if(name==='history')renderHistory();
+  if(name==='debt')renderDebtPage();
+  if(name==='manage')renderManage();
+}
+
+// ── HELPERS ──
+function emoji(c){return EMOJIS[c]||'💰';}
+function color(c){const cats=getCats();let i=cats.indexOf(c);return COLORS[(i<0?0:i)%COLORS.length];}
+function fmt(n){return'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function daysDiff(dateStr){
+  if(!dateStr)return null;
+  const due=new Date(dateStr);const now=new Date();
+  now.setHours(0,0,0,0);due.setHours(0,0,0,0);
+  return Math.round((due-now)/(1000*60*60*24));
+}
+
+// ── HOME ──
+function renderHome(){
+  const data=getData();
+  const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
+  const income=filtered.filter(e=>e.type==='income');
+  const expense=filtered.filter(e=>e.type!=='income');
+  const incomeAmt=income.reduce((s,e)=>s+e.amount,0);
+  const expenseAmt=expense.reduce((s,e)=>s+e.amount,0);
+  const net=incomeAmt-expenseAmt;
+  const netEl=document.getElementById('grand-total');
+  netEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
+  netEl.style.color=net<0?'var(--red)':net>0?'var(--green)':'var(--text)';
+  document.getElementById('total-period').textContent=filterMonth==='All'?'All time':filterMonth+' net balance';
+  document.getElementById('home-income').textContent=fmt(incomeAmt);
+  document.getElementById('home-income-c').textContent=income.length+' entr'+(income.length===1?'y':'ies');
+  document.getElementById('home-expense').textContent=fmt(expenseAmt);
+  document.getElementById('home-expense-c').textContent=expense.length+' entr'+(expense.length===1?'y':'ies');
+  // Combined total — sum of both individual cards, so you can see the overall figure at a glance
+  const combinedTotal=incomeAmt+expenseAmt;
+  document.getElementById('home-combined-total').textContent=fmt(combinedTotal);
+  document.getElementById('home-combined-count').textContent=filtered.length+' entr'+(filtered.length===1?'y':'ies')+' combined';
+  // Only active (not cleared) debts in summary
+  const debts=getDebts().filter(d=>!d.cleared);
+  const owe=debts.filter(d=>d.type==='debt');
+  const recv=debts.filter(d=>d.type==='profit');
+  const oweAmt=owe.reduce((s,d)=>s+(d.amount-(d.repaid||0)),0);
+  const recvAmt=recv.reduce((s,d)=>s+(d.amount-(d.repaid||0)),0);
+  document.getElementById('dp-debt').textContent=fmt(oweAmt);
+  document.getElementById('dp-debt-c').textContent=owe.length+' active';
+  document.getElementById('dp-profit').textContent=fmt(recvAmt);
+  document.getElementById('dp-profit-c').textContent=recv.length+' active';
+  // Category bars
+  const bycat={};
+  expense.forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
+  const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?sorted[0][1]:1;
+  let html='';
+  if(!sorted.length)html='<div style="color:var(--muted);font-size:13px;padding:6px 0">No expenses yet.</div>';
+  sorted.forEach(([cat,amt])=>{
+    const pct=Math.round((amt/max)*100),c=color(cat);
+    html+=`<div class="cat-row"><div class="cat-dot" style="background:${c}"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:14px">${emoji(cat)} ${cat}</span><span style="font-size:14px;font-weight:700;color:${c}">${fmt(amt)}</span></div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div></div></div>`;
+  });
+  document.getElementById('cat-summary').innerHTML=html;
+  const recent=[...filtered].sort((a,b)=>b.ts-a.ts).slice(0,8);
+  let rhtml='';
+  if(!recent.length)rhtml='<div class="empty"><div class="empty-icon">🧾</div><p>No entries yet.<br>Tap + Add to get started.</p></div>';
+  recent.forEach(e=>{
+    const isInc=e.type==='income';
+    const c=isInc?'var(--green)':color(e.category);
+    const bg=isInc?'rgba(0,208,132,.15)':color(e.category)+'22';
+    const payLabel=e.payMode?`<span style="font-size:10px;margin-left:4px;color:var(--muted)">${e.payMode}</span>`:'';
+    const debtTag=e.debtLinked?`<span style="font-size:10px;margin-left:4px;color:var(--muted)">🔁 ${e.debtName||'Debt'}</span>`:'';
+    rhtml+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span>${payLabel}${debtTag}</div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}</div></div><span class="entry-amt" style="color:${c}">${isInc?'+':'−'}${fmt(e.amount)}</span></div>`;
+  });
+  document.getElementById('recent-list').innerHTML=rhtml;
+  // Budget progress (based on current-month expenses regardless of filter)
+  const budgetLimit=getBudgetLimit();
+  const budgetCard=document.getElementById('budget-card');
+  if(budgetLimit>0){
+    budgetCard.style.display='block';
+    const curMonth=MONTHS[new Date().getMonth()];
+    const monthExpense=data.filter(e=>e.type!=='income'&&e.month===curMonth&&(e.year||new Date().getFullYear())===new Date().getFullYear()).reduce((s,e)=>s+e.amount,0);
+    const pct=Math.min(100,Math.round((monthExpense/budgetLimit)*100));
+    document.getElementById('budget-spent-label').textContent=fmt(monthExpense)+' spent';
+    document.getElementById('budget-limit-label').textContent='of '+fmt(budgetLimit)+' ('+curMonth+')';
+    const fillEl=document.getElementById('budget-bar-fill');
+    fillEl.style.width=pct+'%';
+    const over=monthExpense>budgetLimit;
+    fillEl.style.background=over?'var(--red)':pct>80?'var(--amber)':'var(--green)';
+    const msgEl=document.getElementById('budget-status-msg');
+    if(over){msgEl.innerHTML=`<span style="color:var(--red);font-weight:700">⚠️ ${fmt(monthExpense-budgetLimit)} over budget!</span>`;}
+    else if(pct>80){msgEl.innerHTML=`<span style="color:var(--amber);font-weight:700">⚠️ Almost there — ${fmt(budgetLimit-monthExpense)} left</span>`;}
+    else{msgEl.innerHTML=`<span style="color:var(--muted)">${fmt(budgetLimit-monthExpense)} remaining this month</span>`;}
+  } else {
+    budgetCard.style.display='none';
+  }
+}
+
+// ── ADD EXPENSE ──
+function renderAddForm(){
+  selEntryType=selEntryType||'expense';
+  selectEntryType(selEntryType);
+  let mh='';
+  MONTHS.forEach(m=>{mh+=`<div class="sel-btn${selMonth===m?' sel':''}" onclick="selM('${m}')">${m.slice(0,3)}</div>`;});
+  document.getElementById('month-grid').innerHTML=mh;
+  renderCatGrid();
+  renderReminders();
+}
+function renderCatGrid(){
+  const cats=getCats();let ch='';
+  cats.forEach(c=>{ch+=`<div class="sel-btn${selCat===c?' sel':''}" onclick="selC('${c}')">${emoji(c)} ${c}</div>`;});
+  document.getElementById('cat-grid').innerHTML=ch;
+}
+function selM(m){selMonth=m;renderAddForm();}
+function selC(c){selCat=c;renderCatGrid();}
+function selectEntryType(t){
+  selEntryType=t;
+  const isExp=t==='expense';
+  document.getElementById('etype-expense').classList.toggle('sel',isExp);
+  document.getElementById('etype-income').classList.toggle('sel',!isExp);
+  document.getElementById('amt-pre-sign').style.color=isExp?'var(--red)':'var(--green)';
+  const btn=document.getElementById('save-exp-btn');
+  btn.style.background=isExp?'var(--red)':'var(--green)';
+  btn.textContent=isExp?'Save Expense':'Save Income';
+}
+// ── PAYMENT MODE ──
+function selectPayMode(m){
+  selPayMode=m;selUPIApp='';
+  ['cash','upi','card','bank'].forEach(k=>{
+    document.getElementById('pay-'+k).classList.toggle('sel',k===m);
+  });
+  const upiGrid=document.getElementById('upi-sub-grid');
+  if(m==='upi'){upiGrid.classList.add('open');}
+  else{upiGrid.classList.remove('open');updatePayDisplay();}
+  document.querySelectorAll('.upi-btn').forEach(b=>b.classList.remove('sel'));
+}
+function selectUPI(app){
+  selUPIApp=app;
+  document.querySelectorAll('.upi-btn').forEach(b=>{
+    b.classList.toggle('sel',b.textContent.includes(app.split(' ')[0])||b.textContent.toLowerCase().includes(app.toLowerCase().split(' ')[0]));
+  });
+  updatePayDisplay();
+}
+function updatePayDisplay(){
+  let label='';
+  if(selPayMode==='cash')label='💵 Cash';
+  else if(selPayMode==='upi')label=selUPIApp?`📱 UPI · ${selUPIApp}`:'📱 UPI';
+  else if(selPayMode==='card')label='💳 Card';
+  else if(selPayMode==='bank')label='🏦 Bank Transfer';
+  document.getElementById('pay-mode-display').textContent=label?`Selected: ${label}`:'';
+}
+function getPayModeLabel(){
+  if(selPayMode==='cash')return'Cash';
+  if(selPayMode==='upi')return selUPIApp||'UPI';
+  if(selPayMode==='card')return'Card';
+  if(selPayMode==='bank')return'Bank Transfer';
+  return'';
+}
+function saveExpense(){
+  const amt=parseFloat(document.getElementById('amount-input').value);
+  if(!selMonth){showToast('Pick a month first','#ffb300');return;}
+  if(!selCat){showToast('Pick a category','#ffb300');return;}
+  if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
+  const dateVal=document.getElementById('expense-date').value;
+  const payMode=getPayModeLabel();
+  const data=getData();
+  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode});
+  saveData(data);document.getElementById('amount-input').value='';selCat=null;
+  renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
+}
+
+// ── HISTORY ──
+function renderHistory(){
+  const data=getData();
+  const used=MONTHS.filter(m=>data.some(e=>e.month===m));
+  let chips=`<div class="mchip${filterMonth==='All'?' active':''}" onclick="setFilter('All')">All</div>`;
+  used.forEach(m=>{chips+=`<div class="mchip${filterMonth===m?' active':''}" onclick="setFilter('${m}')">${m}</div>`;});
+  document.getElementById('hist-months').innerHTML=chips;
+  let filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
+  if(histSearch.trim()){
+    const q=histSearch.trim().toLowerCase();
+    filtered=filtered.filter(e=>{
+      const hay=[e.category,e.type,e.payMode,e.month,e.date,e.year,e.amount,e.debtName].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
+  let html='';
+  if(!sorted.length)html=`<div class="empty"><div class="empty-icon">📭</div><p>No entries found${histSearch.trim()?' for "'+histSearch.trim()+'"':''}.</p></div>`;
+  sorted.forEach(e=>{
+    const c=color(e.category),oi=data.indexOf(e);
+    const isInc=e.type==='income';
+    const amtColor=isInc?'var(--green)':c;
+    const bg=isInc?'rgba(0,208,132,.15)':c+'22';
+    const payLabel=e.payMode?` · ${e.payMode}`:'';
+    const debtTag=e.debtLinked?` · 🔁 ${e.debtName||'Debt'} repayment`:'';
+    html+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div></div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div>`;
+  });
+  document.getElementById('history-list').innerHTML=html;
+}
+function setFilter(m){filterMonth=m;document.getElementById('month-modal').classList.remove('open');renderHome();renderHistory();}
+function onHistSearch(v){histSearch=v;renderHistory();}
+function delEntry(i){
+  if(confirm('Delete this entry?')){
+    const d=getData();d.splice(i,1);saveData(d);renderHistory();renderHome();showToast('Deleted','#ff6584');
+  }
+}
+// ── EDIT ENTRY ──
+function openEditEntry(i){
+  const d=getData();const e=d[i];
+  if(!e)return;
+  editIndex=i;editMonth=e.month;editCat=e.category;
+  document.getElementById('edit-amount-input').value=e.amount;
+  document.getElementById('edit-date-input').value=e.date||'';
+  document.getElementById('edit-amt-sign').style.color=e.type==='income'?'var(--green)':'var(--red)';
+  renderEditGrids();
+  document.getElementById('edit-entry-modal').classList.add('open');
+}
+function renderEditGrids(){
+  let mh='';
+  MONTHS.forEach(m=>{mh+=`<div class="sel-btn${editMonth===m?' sel':''}" onclick="selEditMonth('${m}')">${m.slice(0,3)}</div>`;});
+  document.getElementById('edit-month-grid').innerHTML=mh;
+  const cats=getCats();let ch='';
+  cats.forEach(c=>{ch+=`<div class="sel-btn${editCat===c?' sel':''}" onclick="selEditCat('${c}')">${emoji(c)} ${c}</div>`;});
+  document.getElementById('edit-cat-grid').innerHTML=ch;
+}
+function selEditMonth(m){editMonth=m;renderEditGrids();}
+function selEditCat(c){editCat=c;renderEditGrids();}
+function closeEditEntry(){
+  document.getElementById('edit-entry-modal').classList.remove('open');
+  editIndex=null;
+}
+function saveEditEntry(){
+  if(editIndex===null)return;
+  const amt=parseFloat(document.getElementById('edit-amount-input').value);
+  const dateVal=document.getElementById('edit-date-input').value;
+  if(!editMonth){showToast('Pick a month','#ffb300');return;}
+  if(!editCat){showToast('Pick a category','#ffb300');return;}
+  if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
+  const d=getData();
+  const e=d[editIndex];
+  if(!e)return;
+  e.month=editMonth;e.category=editCat;e.amount=amt;e.date=dateVal;
+  if(dateVal)e.year=new Date(dateVal).getFullYear();
+  saveData(d);
+  closeEditEntry();
+  renderHistory();renderHome();
+  showToast('✏️ Entry updated!');
+}
+
+// ── DEBT / PROFIT ──
+function setDebtFilter(f){
+  debtFilter=f;
+  ['all','active','cleared','debt','profit'].forEach(k=>{
+    document.getElementById('df-'+k).classList.toggle('active',k===f);
+  });
+  renderDebtPage();
+}
+function getAllDebtNames(){
+  const debts=getDebts();
+  return [...new Set(debts.map(d=>d.name))];
+}
+function showNameSuggestions(val){
+  const list=document.getElementById('name-ac-list');
+  if(!val||val.length<1){list.classList.remove('open');return;}
+  const all=getAllDebtNames();
+  const matches=all.filter(n=>n.toLowerCase().startsWith(val.toLowerCase()));
+  if(!matches.length){list.classList.remove('open');return;}
+  const debts=getDebts();
+  list.innerHTML=matches.map(n=>{
+    const last=debts.filter(d=>d.name.toLowerCase()===n.toLowerCase()).sort((a,b)=>b.ts-a.ts)[0];
+    const badgeClass=last?(last.cleared?'badge-cleared':last.type==='debt'?'badge-debt':'badge-profit'):'';
+    const badgeText=last?(last.cleared?'Cleared':last.type==='debt'?'Borrowed':'Gave'):'';
+    return `<div class="ac-item" onclick="pickAcName('${n}')"><span>${n}</span><span class="ac-badge debt-entry-badge ${badgeClass}">${badgeText}</span></div>`;
+  }).join('');
+  list.classList.add('open');
+}
+function pickAcName(n){
+  document.getElementById('debt-name').value=n;
+  document.getElementById('name-ac-list').classList.remove('open');
+}
+function closeAC(){document.getElementById('name-ac-list').classList.remove('open');}
+function selectDebtType(t){
+  selDebtType=t;
+  document.getElementById('dtype-debt').classList.toggle('sel',t==='debt');
+  document.getElementById('dtype-profit').classList.toggle('sel',t==='profit');
+}
+function saveDebt(){
+  const name=document.getElementById('debt-name').value.trim();
+  const amt=parseFloat(document.getElementById('debt-amount').value);
+  const dueDate=document.getElementById('debt-due-date').value;
+  if(!name){showToast('Enter a name','#ffb300');return;}
+  if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
+  if(!selDebtType){showToast('Select type','#ffb300');return;}
+  const debts=getDebts();
+  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null});
+  saveDebts(debts);
+  document.getElementById('debt-name').value='';
+  document.getElementById('debt-amount').value='';
+  document.getElementById('debt-due-date').value='';
+  selDebtType=null;
+  document.getElementById('dtype-debt').classList.remove('sel');
+  document.getElementById('dtype-profit').classList.remove('sel');
+  renderDebtPage();renderHome();
+  showToast('Entry saved!');
+}
+function toggleClear(i){
+  const debts=getDebts();
+  const d=debts[i];
+  const wasCleared=d.cleared;
+  d.cleared=!wasCleared;
+  if(d.cleared&&!wasCleared){
+    // Marking as cleared directly (not via the partial-payment box): log whatever
+    // balance was still outstanding so it's captured in the combined totals too.
+    const remaining=d.amount-(d.repaid||0);
+    if(remaining>0.01){
+      logDebtCashflow(d,remaining);
+      d.repaid=d.amount;
+    }
+  }
+  saveDebts(debts);renderDebtPage();renderHome();
+  showToast(d.cleared?'✅ Marked as cleared':'↩️ Marked as active');
+}
+function renderDebtPage(){
+  const debts=getDebts();
+  let filtered=[...debts];
+  if(debtFilter==='active')filtered=filtered.filter(d=>!d.cleared);
+  else if(debtFilter==='cleared')filtered=filtered.filter(d=>d.cleared);
+  else if(debtFilter==='debt')filtered=filtered.filter(d=>d.type==='debt');
+  else if(debtFilter==='profit')filtered=filtered.filter(d=>d.type==='profit');
+  const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
+  let html='';
+  if(!sorted.length)html='<div class="empty"><div class="empty-icon">💸</div><p>No entries.</p></div>';
+  sorted.forEach(d=>{
+    const oi=debts.indexOf(d);
+    const isDebt=d.type==='debt';
+    const cleared=d.cleared;
+    const repaid=d.repaid||0;
+    const remaining=d.amount-repaid;
+    const fullyCleared=cleared||(remaining<=0);
+    const c=fullyCleared?'var(--muted)':isDebt?'var(--red)':'var(--green)';
+    const bg=fullyCleared?'rgba(122,125,153,.1)':isDebt?'rgba(255,101,132,.1)':'rgba(0,208,132,.1)';
+    const label=fullyCleared?'✅ Cleared':isDebt?'💸 I Owe':'💰 They Owe Me';
+    const badgeClass=fullyCleared?'badge-cleared':isDebt?'badge-debt':'badge-profit';
+    const dueDays=d.dueDate?daysDiff(d.dueDate):null;
+    let dueLabel='';
+    if(d.dueDate&&!fullyCleared){
+      if(dueDays<0)dueLabel=`<span style="font-size:10px;color:var(--red)">⚠️ Overdue by ${Math.abs(dueDays)}d</span>`;
+      else if(dueDays===0)dueLabel=`<span style="font-size:10px;color:var(--red)">🔴 Due TODAY</span>`;
+      else if(dueDays<=2)dueLabel=`<span style="font-size:10px;color:var(--red)">⏰ Due in ${dueDays}d — arrange money!</span>`;
+      else if(dueDays<=7)dueLabel=`<span style="font-size:10px;color:var(--amber)">⏰ Due in ${dueDays}d</span>`;
+      else dueLabel=`<span style="font-size:10px;color:var(--muted)">📅 ${d.dueDate}</span>`;
+    }
+    // Repayment history
+    const repayLog=(d.repayLog||[]).map(r=>`<div style="font-size:11px;color:var(--muted);margin-top:2px">↩ Returned ${fmt(r.amount)} on ${r.date}</div>`).join('');
+    const repaidBadge=repaid>0&&!fullyCleared?`<span class="remaining-badge">Remaining: ${fmt(remaining)}</span>`:'';
+    const partialControl=!fullyCleared?`<div class="repay-row">
+      <input class="repay-inp" type="number" inputmode="decimal" placeholder="Amount returned" id="repay-inp-${oi}"/>
+      <button class="repay-btn" onclick="addRepayment(${oi})">↩ Return</button>
+    </div>`:'';
+    html+=`<div class="entry-row" style="${fullyCleared?'opacity:.55':''}">
+      <div class="entry-icon" style="background:${bg};font-size:20px">${fullyCleared?'✅':isDebt?'💸':'💰'}</div>
+      <div class="entry-info" style="flex:1">
+        <div class="entry-cat">${d.name} ${repaidBadge}</div>
+        <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
+        ${repayLog}
+        ${partialControl}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:8px">
+        <span class="entry-amt" style="color:${c}">${fmt(fullyCleared?d.amount:remaining)}</span>
+        <button class="clear-btn ${fullyCleared?'active':'inactive'}" onclick="toggleClear(${oi})" style="white-space:nowrap;font-size:10px">${fullyCleared?'Cleared':'Clear'}</button>
+        <button class="del-btn" onclick="delDebt(${oi})">✕</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('debt-list').innerHTML=html;
+}
+function delDebt(i){
+  if(confirm('Delete this entry?')){
+    const d=getDebts();d.splice(i,1);saveDebts(d);renderDebtPage();renderHome();showToast('Deleted','#ff6584');
+  }
+}
+
+// ── DUE DATE ALERTS ──
+function checkDueAlerts(){
+  const debts=getDebts().filter(d=>!d.cleared&&d.dueDate);
+  const upcoming=debts.filter(d=>{
+    const dd=daysDiff(d.dueDate);
+    return dd!==null&&dd<=2&&dd>=-1; // only 2 days before + same day + 1 day overdue
+  });
+  if(!upcoming.length)return;
+  let html='';
+  upcoming.forEach(d=>{
+    const dd=daysDiff(d.dueDate);
+    const urgency=dd<0?`⚠️ Overdue by ${Math.abs(dd)} day(s)`:dd===0?'🔴 Due TODAY':`⏰ Due in ${dd} day(s) — arrange money now!`;
+    const isDebt=d.type==='debt';
+    html+=`<div class="due-alert-item">
+      <div class="due-alert-name">${d.name} — ${fmt(d.amount)}</div>
+      <div class="due-alert-info">${isDebt?'You need to pay':'They need to pay you'} · ${urgency}</div>
+    </div>`;
+  });
+  document.getElementById('due-alert-list').innerHTML=html;
+  document.getElementById('due-alert-modal').classList.add('open');
+  if('Notification' in window){
+    Notification.requestPermission().then(perm=>{
+      if(perm==='granted'){
+        upcoming.forEach(d=>{
+          const dd=daysDiff(d.dueDate);
+          const msg=dd<0?`OVERDUE: ${d.name} — ${fmt(d.amount)} — arrange money!`:
+            dd===0?`DUE TODAY: ${d.name} — ${fmt(d.amount)}`:
+            `Due in ${dd}d: ${d.name} — ${fmt(d.amount)} — arrange money now!`;
+          new Notification('ProjectVault — Payment Reminder',{
+            body:msg,
+            icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💰</text></svg>',
+            tag:'due-'+d.name,
+            requireInteraction:true
+          });
+        });
+      }
+    });
+  }
+}
+function closeDueAlert(){document.getElementById('due-alert-modal').classList.remove('open');}
+
+// ── MONTH MODAL ──
+function showMonthPicker(){
+  let h=`<div class="sel-btn${filterMonth==='All'?' sel':''}" onclick="setFilter('All')">All</div>`;
+  MONTHS.forEach(m=>{h+=`<div class="sel-btn${filterMonth===m?' sel':''}" onclick="setFilter('${m}')">${m.slice(0,3)}</div>`;});
+  document.getElementById('modal-month-grid').innerHTML=h;
+  document.getElementById('month-modal').classList.add('open');
+}
+document.getElementById('month-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+// ── MANAGE ──
+function renderManage(){
+  const cats=getCats();let html='';
+  if(!cats.length)html='<div style="color:var(--muted);font-size:13px;padding:6px 0">No categories.</div>';
+  cats.forEach((c,i)=>{
+    const cl=color(c);
+    html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${c}</span><div style="width:10px;height:10px;border-radius:50%;background:${cl};margin-right:8px"></div><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
+  });
+  document.getElementById('manage-cat-list').innerHTML=html;
+  document.getElementById('budget-limit-input').value=getBudgetLimit()||'';
+  const statusNote=document.getElementById('emailjs-status-note');
+  if(statusNote)statusNote.innerHTML=EMAILJS_READY?' <span style="color:var(--green)">✓ Email delivery is configured.</span>':' <span style="color:var(--amber)">⚠ Email delivery not set up yet — see EMAILJS_SETUP.md.</span>';
+  // Load profile fields
+  const users=getUsers();
+  const profile=users[CU];
+  if(profile){
+    document.getElementById('edit-name').value=profile.name||'';
+    document.getElementById('edit-username').value=CU;
+    document.getElementById('edit-email').value=profile.email||'';
+    document.getElementById('edit-mobile').value=profile.mobile||'';
+    const pavBox=document.getElementById('profile-av-box');
+    if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}"/>`;}
+    else{pavBox.innerHTML=`<span id="profile-av-ph">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
+  }
+  // Biometric login toggle state
+  const bioBtn=document.getElementById('bio-toggle-btn');
+  const bioIcon=document.getElementById('bio-toggle-icon');
+  const bioTitle=document.getElementById('bio-toggle-title');
+  const bioSub=document.getElementById('bio-toggle-sub');
+  if(!window.PublicKeyCredential){
+    bioBtn.style.opacity='.5';bioBtn.onclick=null;
+    bioIcon.textContent='🚫';bioTitle.textContent='Biometric Login Unavailable';
+    bioSub.textContent='Not supported on this browser/device';
+  } else if(profile&&profile.bioCredId){
+    bioIcon.textContent='✅';bioTitle.textContent='Disable Biometric Login';
+    bioSub.textContent='Currently enabled on this device';
+  } else {
+    bioIcon.textContent='👆';bioTitle.textContent='Enable Biometric Login';
+    bioSub.textContent='Use fingerprint / Face unlock instead of password';
+  }
+  // Show admin sections
+  const isAdmin=profile&&(profile.isAdmin||CU===ADMIN_USERNAME);
+  document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-members-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-messages-section').style.display=isAdmin?'block':'none';
+  if(isAdmin){renderMembers();renderAdminMessages();}
+  document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
+  checkUpdateNotice();
+}
+function addCategory(){
+  const inp=document.getElementById('new-cat-input'),val=inp.value.trim();
+  if(!val)return;
+  const cats=getCats();
+  if(cats.includes(val)){showToast('Already exists!','#ffb300');return;}
+  cats.push(val);saveCats(cats);inp.value='';renderManage();renderCatGrid();showToast('Category added!');
+}
+function deleteCat(i){
+  const cats=getCats(),cat=cats[i];
+  if(getData().some(e=>e.category===cat)){if(!confirm(`"${cat}" has expenses. Delete anyway?`))return;}
+  cats.splice(i,1);saveCats(cats);renderManage();showToast('Removed','#ff6584');
+}
+
+// ── CONTACT ADMIN / CUSTOMER SERVICE ──
+function sendAdminMessage(){
+  const inp=document.getElementById('admin-msg-inp');
+  const text=inp.value.trim();
+  if(!text){showToast('Type a message first','#ffb300');return;}
+  if(!CU){showToast('Please log in first','#ffb300');return;}
+  const msgs=getAdminMessages();
+  const users=getUsers();
+  msgs.push({from:CU,fromName:(users[CU]&&users[CU].name)||CU,text,ts:Date.now(),read:false});
+  saveAdminMessages(msgs);
+  inp.value='';
+  showToast('📨 Message sent to admin!','#00d084');
+}
+function deleteAdminMessage(i){
+  const msgs=getAdminMessages();
+  msgs.splice(i,1);
+  saveAdminMessages(msgs);
+  renderAdminMessages();
+}
+function markMessageRead(i){
+  const msgs=getAdminMessages();
+  if(msgs[i]){msgs[i].read=true;saveAdminMessages(msgs);renderAdminMessages();}
+}
+function renderAdminMessages(){
+  const el=document.getElementById('admin-messages-list');
+  if(!el)return;
+  const msgs=getAdminMessages();
+  const withIdx=msgs.map((m,i)=>({...m,_i:i})).sort((a,b)=>b.ts-a.ts);
+  if(!withIdx.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No messages yet.</div>';return;}
+  el.innerHTML=withIdx.map(m=>{
+    const dt=new Date(m.ts).toLocaleString('en-IN');
+    return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;${m.read?'opacity:.6':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:700">${m.fromName} <span style="font-size:11px;color:var(--muted);font-weight:400">@${m.from}</span></span>
+        <span style="font-size:10px;color:var(--muted)">${dt}</span>
+      </div>
+      <div style="font-size:13px;line-height:1.6;margin-bottom:8px">${m.text.replace(/</g,'&lt;')}</div>
+      <div style="display:flex;gap:8px">
+        ${!m.read?`<button class="pill-btn" style="font-size:11px" onclick="markMessageRead(${m._i})">✓ Mark read</button>`:''}
+        <button class="pill-btn" style="font-size:11px" onclick="deleteAdminMessage(${m._i})">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ADMIN: MEMBERS LIST ──
+function renderMembers(){
+  const summaryEl=document.getElementById('admin-members-summary');
+  const listEl=document.getElementById('admin-members-list');
+  if(!summaryEl||!listEl)return;
+  const users=getUsers();
+  const entries=Object.entries(users);
+  const nonAdminCount=entries.filter(([u,p])=>!p.isAdmin).length;
+  summaryEl.textContent=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)`;
+  if(!entries.length){listEl.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No members yet.</div>';return;}
+  const sorted=entries.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  listEl.innerHTML=sorted.map(([u,p])=>{
+    // Read each user's own expense/debt count directly (not just the currently logged-in user)
+    let entryCount=0,debtCount=0;
+    try{entryCount=JSON.parse(localStorage.getItem('exp_'+u+'_data')||'[]').length;}catch(e){}
+    try{debtCount=JSON.parse(localStorage.getItem('exp_'+u+'_debts')||'[]').length;}catch(e){}
+    const joined=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'—';
+    return `<div class="entry-row">
+      <div class="entry-icon" style="background:${p.isAdmin?'rgba(108,99,255,.2)':'rgba(0,208,132,.15)'}">${p.isAdmin?'👑':(p.name||u).charAt(0).toUpperCase()}</div>
+      <div class="entry-info">
+        <div class="entry-cat">${p.name||u} ${p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':''}</div>
+        <div class="entry-meta">@${u} · ${entryCount} entries · ${debtCount} debt records · joined ${joined}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── UPDATE NOTIFICATION ──
+function pushUpdateNotice(){
+  const ver=document.getElementById('update-version-inp').value.trim();
+  const notes=document.getElementById('update-notes-inp').value.trim();
+  if(!ver||!notes){showToast('Fill version and notes','#ffb300');return;}
+  saveUpdateNotice({version:ver,notes,publishedAt:Date.now()});
+  document.getElementById('update-version-inp').value='';
+  document.getElementById('update-notes-inp').value='';
+  showToast('📢 Update notice published!');
+  checkUpdateNotice();
+}
+function checkUpdateNotice(){
+  const notice=getUpdateNotice();
+  const banner=document.getElementById('update-banner');
+  if(!notice){banner.style.display='none';return;}
+  const dismissed=getDismissedUpdate();
+  if(dismissed===notice.version){banner.style.display='none';return;}
+  banner.style.display='flex';
+  document.getElementById('update-version-text').textContent=`Version ${notice.version} — Tap to see what's new`;
+}
+function showUpdateModal(){
+  const notice=getUpdateNotice();if(!notice)return;
+  document.getElementById('update-modal-content').textContent=`Version ${notice.version}\n\n${notice.notes}`;
+  document.getElementById('update-modal').classList.add('open');
+}
+function dismissUpdate(){
+  const notice=getUpdateNotice();
+  if(notice)setDismissedUpdate(notice.version);
+  document.getElementById('update-modal').classList.remove('open');
+  document.getElementById('update-banner').style.display='none';
+  showToast('✅ Marked as read');
+}
+document.getElementById('update-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('forgotpw-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+// ── CHANGE PASSWORD ──
+function showChangePwModal(){document.getElementById('changepw-modal').classList.add('open');}
+function doChangePw(){
+  const old=document.getElementById('cp-old').value;
+  const nw=document.getElementById('cp-new').value;
+  const conf=document.getElementById('cp-conf').value;
+  const err=document.getElementById('cp-err');
+  const users=getUsers();
+  if(!users[CU]){err.textContent='User not found.';return;}
+  if(users[CU].password!==btoa(old)){err.textContent='Current password is wrong.';return;}
+  if(nw.length<4){err.textContent='New password must be at least 4 characters.';return;}
+  if(nw!==conf){err.textContent='Passwords do not match.';return;}
+  users[CU].password=btoa(nw);saveUsers(users);
+  document.getElementById('changepw-modal').classList.remove('open');
+  ['cp-old','cp-new','cp-conf'].forEach(id=>document.getElementById(id).value='');
+  err.textContent='';
+  showToast('🔑 Password updated!');
+}
+document.getElementById('changepw-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+// ── EXPORT ──
+function exportCSV(){
+  let csv='Month,Category,Amount,Type,Date,PayMode,Year\n';
+  getData().forEach(e=>{csv+=`${e.month},${e.category},${e.amount},${e.type||''},${e.date||''},${e.payMode||''},${e.year||''}\n`;});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='expenses_'+CU+'.csv';a.click();showToast('CSV Downloaded!');
+}
+function confirmClear(){
+  if(confirm('Delete ALL expenses? Cannot be undone.')){saveData([]);renderHome();showToast('Cleared','#ff6584');}
+}
+function exportAccount(){
+  if(!CU){showToast('Not logged in','#ffb300');return;}
+  const users=getUsers();
+  const payload={version:1,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='expenses_backup_'+CU+'.json';a.click();showToast('✅ Backup downloaded!');
+}
+function importAccount(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const p=JSON.parse(ev.target.result);
+      if(!p.username||!p.profile||!p.data){showToast('Invalid backup file','#ff6584');return;}
+      const users=getUsers();users[p.username]=p.profile;saveUsers(users);
+      localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data));
+      localStorage.setItem('exp_'+p.username+'_cats',JSON.stringify(p.cats||[]));
+      localStorage.setItem('exp_'+p.username+'_debts',JSON.stringify(p.debts||[]));
+      showToast('✅ Account imported! Login with: '+p.username);
+    }catch(err){showToast('Error reading file','#ff6584');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+// ── PROFILE EDIT ──
+function handleProfileAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>openCropModal(ev.target.result);
+  r.readAsDataURL(f);
+}
+function saveProfile(){
+  const name=document.getElementById('edit-name').value.trim();
+  const email=document.getElementById('edit-email').value.trim().toLowerCase();
+  const mobile=document.getElementById('edit-mobile').value.trim();
+  if(!name){showToast('Name cannot be empty','#ffb300');return;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showToast('Enter a valid email address','#ffb300');return;}
+  if(mobile&&!/^\d{10}$/.test(mobile)){showToast('Enter a valid 10-digit mobile','#ffb300');return;}
+  const users=getUsers();
+  if(!users[CU])return;
+  if(Object.entries(users).some(([uname,x])=>uname!==CU&&x.email&&x.email===email)){showToast('Another account already uses this email','#ffb300');return;}
+  users[CU].name=name;
+  users[CU].email=email;
+  users[CU].mobile=mobile||null;
+  // If a new avatar was cropped after opening manage tab
+  if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
+  saveUsers(users);
+  // Update topbar
+  const av=document.getElementById('tb-av');
+  if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  else{av.textContent=name.charAt(0).toUpperCase();}
+  document.getElementById('tb-hi').textContent='Hi, '+name.split(' ')[0]+'!';
+  showToast('✅ Profile updated!');
+}
+
+// ── FORGOT PASSWORD (identify by mobile or email, OTP sent by real email via EmailJS) ──
+let _fpOTP='', _fpTargetUser='';
+function showForgotPw(){
+  document.getElementById('fp-step1').style.display='block';
+  document.getElementById('fp-step2').style.display='none';
+  document.getElementById('fp-identifier').value='';
+  document.getElementById('fp-err').textContent='';
+  document.getElementById('fp-title').textContent='🔑 Forgot Password';
+  document.getElementById('forgotpw-modal').classList.add('open');
+}
+// Look up a user by either their registered mobile number or email address
+function findUserByIdentifier(idRaw){
+  const id=idRaw.trim().toLowerCase();
+  const users=getUsers();
+  for(const uname in users){
+    const acc=users[uname];
+    if(acc.email&&acc.email.toLowerCase()===id) return uname;
+    if(acc.mobile&&acc.mobile===idRaw.trim()) return uname;
+  }
+  return null;
+}
+async function sendForgotOTP(){
+  const idVal=document.getElementById('fp-identifier').value.trim();
+  const err=document.getElementById('fp-err');
+  err.textContent='';
+  if(!idVal){err.textContent='Enter your registered mobile number or email.';return;}
+  const uname=findUserByIdentifier(idVal);
+  if(!uname){err.textContent='No account found with that mobile number or email.';return;}
+  const acc=getUsers()[uname];
+  if(!acc.email){err.textContent='This account has no email on file — please contact support.';return;}
+  // Generate 6-digit OTP
+  _fpOTP=String(Math.floor(100000+Math.random()*900000));
+  _fpTargetUser=uname;
+  const maskedEmail=acc.email.replace(/^(.{2}).+(@.+)$/,'$1***$2');
+  document.getElementById('fp-mobile-display').textContent=maskedEmail;
+  document.getElementById('fp-username-hint').textContent='Username: '+uname;
+  document.getElementById('fp-step1').style.display='none';
+  document.getElementById('fp-step2').style.display='block';
+  document.getElementById('fp-err2').textContent='';
+  document.getElementById('fp-otp').value='';
+  document.getElementById('fp-newpw').value='';
+  document.getElementById('fp-confpw').value='';
+  await deliverOTPEmail(acc, uname);
+}
+async function deliverOTPEmail(acc, uname){
+  const result=await sendEmailViaEmailJS(EMAILJS_CONFIG.otpTemplateId,{
+    to_email:acc.email,
+    to_name:acc.name||uname,
+    username:uname,
+    otp_code:_fpOTP,
+    app_name:'ProjectVault'
+  });
+  if(result.ok){
+    showToast('📧 OTP emailed to '+acc.email,'#00d084');
+  } else if(result.reason==='send_failed'){
+    // EmailJS IS configured but the actual send call failed — most likely a wrong Service/Template
+    // ID, a template variable mismatch, a disabled email service, or the free-tier monthly quota.
+    showToast('⚠️ Email send failed: '+result.detail,'#ff6584');
+    setTimeout(()=>showToast('OTP: '+_fpOTP+' (shown here so you can still log in)','#6c63ff'),1800);
+  } else {
+    // EmailJS not configured yet — fall back to showing it on-screen so the app remains usable.
+    showToast('⚠️ Email not configured — showing OTP here instead','#ffb300');
+    setTimeout(()=>showToast('OTP: '+_fpOTP+' (set up EmailJS to send this by email)','#6c63ff'),1600);
+  }
+}
+async function resendOTP(){
+  if(!_fpTargetUser){return;}
+  _fpOTP=String(Math.floor(100000+Math.random()*900000));
+  const acc=getUsers()[_fpTargetUser];
+  await deliverOTPEmail(acc, _fpTargetUser);
+}
+function verifyForgotOTP(){
+  const otp=document.getElementById('fp-otp').value.trim();
+  const nw=document.getElementById('fp-newpw').value;
+  const conf=document.getElementById('fp-confpw').value;
+  const err=document.getElementById('fp-err2');
+  if(otp!==_fpOTP){err.textContent='Incorrect OTP. Try again.';return;}
+  if(nw.length<4){err.textContent='Password must be at least 4 characters.';return;}
+  if(nw!==conf){err.textContent='Passwords do not match.';return;}
+  const users=getUsers();
+  users[_fpTargetUser].password=btoa(nw);
+  saveUsers(users);
+  document.getElementById('forgotpw-modal').classList.remove('open');
+  _fpOTP='';_fpTargetUser='';
+  showToast('✅ Password reset! Please login.');
+}
+
+// ── MONTHLY STATEMENT EMAIL ──
+// NOTE ON LIMITATIONS: this is a client-only (serverless) PWA. There is no server running at midnight
+// to fire this automatically the instant a month ends. Instead, the statement for a month is generated
+// and emailed the next time the app is opened after that month has ended (checked once per login/startApp).
+// For a statement that fires exactly at month-end with zero app interaction, a small backend/cron job
+// (or a scheduled Cloud Function) would be required — this client-side version covers the vast majority
+// of real usage, since most people open a finance app at least once every few days.
+function monthKey(monthName,year){return year+'-'+String(MONTHS.indexOf(monthName)).padStart(2,'0');}
+function getPreviousMonthInfo(ref){
+  const d=ref?new Date(ref):new Date();
+  d.setDate(1); d.setMonth(d.getMonth()-1);
+  return {monthName:MONTHS[d.getMonth()], year:d.getFullYear()};
+}
+function computeStatsForMonth(data,monthName,year){
+  const rows=data.filter(e=>e.month===monthName&&e.year===year);
+  const totalIncome=rows.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const totalExpense=rows.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  const mIdx=MONTHS.indexOf(monthName);
+  const daysInMonth=new Date(year,mIdx+1,0).getDate();
+  const avgDaily=totalExpense/daysInMonth;
+  return {totalIncome,totalExpense,avgDaily,count:rows.length,daysInMonth};
+}
+function computeYearStats(data,year){
+  const rows=data.filter(e=>e.year===year&&e.type!=='income');
+  const totalExpense=rows.reduce((s,e)=>s+e.amount,0);
+  const monthsWithData=new Set(rows.map(e=>e.month)).size||1;
+  return {totalExpense,avgMonthly:totalExpense/monthsWithData,monthsWithData};
+}
+let _statementCheckInFlight=false;
+async function checkAndSendMonthlyStatement(){
+  if(!CU)return;
+  if(_statementCheckInFlight)return; // prevent a second concurrent check (e.g. quick lock/unlock) from double-sending
+  const users=getUsers();
+  const acc=users[CU];
+  if(!acc||!acc.email||acc.isAdmin)return;
+  const {monthName,year}=getPreviousMonthInfo();
+  const key=monthKey(monthName,year);
+  if(acc.lastStatementSent===key)return; // already sent for that month
+  const data=getData();
+  const mStats=computeStatsForMonth(data,monthName,year);
+  if(mStats.count===0)return; // nothing to report — don't send an empty statement
+  const yStats=computeYearStats(data,year);
+  _statementCheckInFlight=true;
+  try{
+    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats);
+    if(result.ok){
+      acc.lastStatementSent=key;
+      saveUsers(users);
+    } else if(result.reason==='send_failed'){
+      console.warn('Monthly statement auto-send failed, will retry next app open:', result.detail);
+    }
+  } finally {
+    _statementCheckInFlight=false;
+  }
+}
+async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
+  return await sendEmailViaEmailJS(EMAILJS_CONFIG.statementTemplateId,{
+    to_email:acc.email,
+    to_name:acc.name||uname,
+    username:uname,
+    mobile:acc.mobile||'Not provided',
+    month:monthName,
+    year:String(year),
+    total_income:fmt(mStats.totalIncome),
+    total_expense:fmt(mStats.totalExpense),
+    avg_daily_spend:fmt(mStats.avgDaily),
+    year_total_expense:fmt(yStats.totalExpense),
+    year_avg_monthly_spend:fmt(yStats.avgMonthly),
+    app_name:'ProjectVault'
+  });
+}
+// Manual "send now" for testing — uses the most recently completed month regardless of the send-once guard.
+async function sendTestStatementNow(){
+  if(!CU)return;
+  const users=getUsers();
+  const acc=users[CU];
+  if(!acc.email){showToast('Add an email in your profile first','#ffb300');return;}
+  const {monthName,year}=getPreviousMonthInfo();
+  const data=getData();
+  const mStats=computeStatsForMonth(data,monthName,year);
+  const yStats=computeYearStats(data,year);
+  if(mStats.count===0){showToast('No data for '+monthName+' '+year+' to report','#ffb300');return;}
+  showToast('Sending test statement…','#6c63ff');
+  const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats);
+  if(result.ok){
+    showToast('📧 Statement emailed to '+acc.email,'#00d084');
+  } else if(result.reason==='send_failed'){
+    showToast('⚠️ Email send failed: '+result.detail,'#ff6584');
+  } else {
+    showToast('⚠️ EmailJS not configured yet — see EMAILJS_SETUP.md','#ff6584');
+  }
+}
+
+// ── MONTHLY REMINDERS ──
+function getReminders(){return JSON.parse(localStorage.getItem(uKey('reminders'))||'[]');}
+function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(r));}
+function monthKeyNow(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1);}
+function addReminder(){
+  const name=document.getElementById('rem-name').value.trim();
+  const amount=parseFloat(document.getElementById('rem-amount').value);
+  const day=parseInt(document.getElementById('rem-day').value);
+  if(!name){showToast('Enter reminder name','#ffb300');return;}
+  if(!amount||amount<=0){showToast('Enter a valid amount','#ffb300');return;}
+  if(!day){showToast('Select day of month','#ffb300');return;}
+  const rems=getReminders();
+  rems.push({id:Date.now(),name,amount,day,active:true,paid:{}});
+  saveReminders(rems);
+  document.getElementById('rem-name').value='';
+  document.getElementById('rem-amount').value='';
+  document.getElementById('rem-day').value='';
+  renderReminders();
+  showToast('🔁 Recurring expense added!');
+}
+function deleteReminder(id){
+  const rems=getReminders().filter(r=>r.id!==id);
+  saveReminders(rems);renderReminders();showToast('Recurring expense removed','#ff6584');
+}
+// Mark this month's cycle of a recurring expense as paid — logs a real expense entry
+function markReminderPaid(id){
+  const rems=getReminders();
+  const r=rems.find(x=>x.id===id);
+  if(!r)return;
+  if(!r.paid)r.paid={};
+  const mk=monthKeyNow();
+  if(r.paid[mk])return;
+  const now=new Date();
+  const data=getData();
+  const cats=getCats();
+  const matchCat=cats.find(c=>c.toLowerCase()===r.name.toLowerCase())||'Rent';
+  const entry={month:MONTHS[now.getMonth()],category:cats.includes(matchCat)?matchCat:(cats[0]||'Other'),amount:r.amount,type:'expense',year:now.getFullYear(),ts:Date.now(),date:now.toISOString().split('T')[0],payMode:null,recurring:true,reminderId:r.id,reminderName:r.name};
+  data.push(entry);
+  saveData(data);
+  r.paid[mk]=entry.ts;
+  saveReminders(rems);
+  renderReminders();renderHome();renderHistory();
+  showToast('✅ '+r.name+' marked paid for this month!');
+}
+// Undo an accidental "mark as paid" for the current month
+function unmarkReminderPaid(id){
+  const rems=getReminders();
+  const r=rems.find(x=>x.id===id);
+  if(!r||!r.paid)return;
+  const mk=monthKeyNow();
+  const entryTs=r.paid[mk];
+  if(entryTs){
+    const data=getData();
+    const idx=data.findIndex(e=>e.ts===entryTs&&e.reminderId===id);
+    if(idx>=0){data.splice(idx,1);saveData(data);}
+  }
+  delete r.paid[mk];
+  saveReminders(rems);
+  renderReminders();renderHome();renderHistory();
+  showToast('↩️ Marked as unpaid','#ffb300');
+}
+function renderReminders(){
+  const rems=getReminders();
+  const el=document.getElementById('reminders-list');
+  if(!el)return;
+  if(!rems.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No recurring expenses yet.</div>';return;}
+  const mk=monthKeyNow();
+  el.innerHTML=rems.map(r=>{
+    const isPaid=r.paid&&r.paid[mk];
+    return `
+    <div class="rem-row">
+      <span style="font-size:20px">${isPaid?'✅':'🔔'}</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">${r.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(r.amount)} · Every month on <b>day ${r.day}</b></div>
+      </div>
+      ${isPaid
+        ?`<button class="clear-btn active" style="margin-right:4px" onclick="unmarkReminderPaid(${r.id})">Paid ✓</button>`
+        :`<button class="clear-btn inactive" style="margin-right:4px" onclick="markReminderPaid(${r.id})">Mark Paid</button>`}
+      <button class="del-btn" onclick="deleteReminder(${r.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+function checkReminders(){
+  const today=new Date().getDate();
+  const mk=monthKeyNow();
+  const rems=getReminders().filter(r=>r.active&&r.day===today&&!(r.paid&&r.paid[mk]));
+  if(!rems.length)return;
+  // Check if already notified today
+  const todayKey='rem_notified_'+CU+'_'+new Date().toDateString();
+  if(localStorage.getItem(todayKey))return;
+  localStorage.setItem(todayKey,'1');
+  rems.forEach(r=>{
+    showToast('🔔 Due today: '+r.name+' '+fmt(r.amount)+' — mark it paid on the Add tab','#6c63ff');
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification('ProjectVault — Recurring Payment Due',{
+        body:`📅 ${r.name} — ${fmt(r.amount)} is due today! Has it been paid?`,
+        icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+        tag:'rem-'+r.id,requireInteraction:true
+      });
+    }
+  });
+}
+
+// ── DEBT CELEBRATION POPUP ──
+const CEL_MSGS=[
+  "You crushed it! Debt-free feels amazing! 💪",
+  "Financial freedom, one step at a time! 🚀",
+  "That's money back in YOUR pocket! 💰",
+  "Zero balance = Zero stress! Keep going! ⭐",
+  "You're on fire! Another one bites the dust! 🔥",
+  "Debt slayer! Your wallet thanks you! 🏆",
+  "Cleared it like a BOSS! 😎",
+  "One less thing to worry about. Legend! 🌟"
+];
+const CEL_EMOJIS=['🎉','🎊','🏆','🌟','🚀','💎','⭐','🎯'];
+function showCelebration(name, amount){
+  const idx=Math.floor(Math.random()*CEL_MSGS.length);
+  document.getElementById('cel-emoji').textContent=CEL_EMOJIS[idx];
+  document.getElementById('cel-name').textContent=`"${name}" — ${fmt(amount)} fully cleared!`;
+  document.getElementById('cel-msg').textContent=CEL_MSGS[idx];
+  const cel=document.getElementById('celebrate-modal');
+  cel.style.display='flex';
+  // Confetti animation
+  let frames=0;
+  const confettiEl=document.getElementById('cel-confetti');
+  const confettiSets=['✨💫⭐🌟💎✨','🎊🎉🎈🎁🎊🎉','💰💵💸🤑💰💵','🏆🥇🌟⭐🏆🥇'];
+  const confettiAnim=setInterval(()=>{
+    confettiEl.textContent=confettiSets[frames%confettiSets.length];
+    frames++;if(frames>20)clearInterval(confettiAnim);
+  },200);
+}
+function closeCelebration(){
+  document.getElementById('celebrate-modal').style.display='none';
+}
+
+// ── Log a debt repayment/receipt as a real cashflow entry so Home/History totals ──
+// ── automatically include it (this is what makes the "combined total" accurate) ──
+function logDebtCashflow(d,amt){
+  const data=getData();
+  const now=new Date();
+  data.push({
+    month:MONTHS[now.getMonth()],
+    category:'Debt',
+    amount:amt,
+    // Paying off money I owe = expense (cash leaving me). Receiving money owed to me = income.
+    type:d.type==='debt'?'expense':'income',
+    year:now.getFullYear(),
+    ts:Date.now(),
+    date:now.toISOString().split('T')[0],
+    payMode:null,
+    debtLinked:true,
+    debtName:d.name
+  });
+  saveData(data);
+}
+// ── PATCH addRepayment to validate partial payments, show celebration, and log cashflow ──
+function addRepayment(i){
+  const inp=document.getElementById('repay-inp-'+i);
+  if(!inp)return;
+  const amt=parseFloat(inp.value);
+  if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
+  const debts=getDebts();
+  const d=debts[i];
+  const remainingBefore=d.amount-(d.repaid||0);
+  if(amt>remainingBefore+0.01){
+    showToast(`Amount exceeds remaining balance of ${fmt(remainingBefore)}`,'#ffb300');
+    return;
+  }
+  const repaid=(d.repaid||0)+amt;
+  d.repaid=repaid;
+  if(!d.repayLog)d.repayLog=[];
+  d.repayLog.push({amount:amt,date:new Date().toLocaleDateString('en-IN')});
+  // Record this partial payment as a normal expense/income entry too
+  logDebtCashflow(d,amt);
+  inp.value='';
+  if(repaid>=d.amount-0.01){
+    d.cleared=true;
+    saveDebts(debts);renderDebtPage();renderHome();
+    showCelebration(d.name, d.amount);
+  } else {
+    showToast(`↩ Returned ${fmt(amt)} · Remaining ${fmt(d.amount-repaid)}`,'#6c63ff');
+    saveDebts(debts);renderDebtPage();renderHome();
+  }
+}
+
+// ── INIT ENSURE ADMIN handled in INIT block below ──
+
+
+function showToast(msg,c){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=c||'var(--green)';t.style.color=c?'#fff':'#052e1c';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── PWA: INSTALLABLE APP ──
+let _deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  _deferredInstallPrompt=e;
+  const card=document.getElementById('install-card');
+  if(card)card.style.display='block';
+});
+window.addEventListener('appinstalled',()=>{
+  _deferredInstallPrompt=null;
+  const card=document.getElementById('install-card');
+  if(card)card.style.display='none';
+  showToast('📲 App installed!');
+});
+function doInstallPWA(){
+  if(_deferredInstallPrompt){
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(()=>{_deferredInstallPrompt=null;});
+    return;
+  }
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS){
+    showToast('On iPhone/iPad: tap Share ⬆️ then "Add to Home Screen"','#6c63ff');
+  } else {
+    showToast('Open your browser menu and choose "Install App" or "Add to Home Screen"','#6c63ff');
+  }
+}
+// Show the install card on iOS Safari too (no beforeinstallprompt event there)
+if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone){
+  window.addEventListener('DOMContentLoaded',()=>{
+    const card=document.getElementById('install-card');
+    if(card)card.style.display='block';
+  });
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
+  });
+}
+
+// ── INIT ──
+(function(){
+  ensureAdminAccount();
+  const s=localStorage.getItem('exp_session');
+  if(s){
+    const u=getUsers();
+    if(u[s]){showLockScreen(s);return;}
+  }
+  document.getElementById('auth-screen').style.display='flex';
+})();
+</script>
+</body>
+</html>
