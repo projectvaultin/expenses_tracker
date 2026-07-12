@@ -775,10 +775,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 // ── EMAILJS CONFIG ── Fill these in from your EmailJS dashboard (see EMAILJS_SETUP.md). ──
 // Until filled in, statement/OTP emails fall back to visible on-screen codes / toasts so the app still works.
 const EMAILJS_CONFIG={
-  publicKey:'YOUR_PUBLIC_KEY',        // Account → General → Public Key
-  serviceId:'YOUR_SERVICE_ID',        // Email Services → your connected service
-  otpTemplateId:'YOUR_OTP_TEMPLATE_ID',            // Template for password-reset OTP
-  statementTemplateId:'YOUR_STATEMENT_TEMPLATE_ID' // Template for monthly statement
+  publicKey:'nGOV3qP4huOkNDbj6',        // Account → General → Public Key
+  serviceId:'service_xbgne6r',        // Email Services → your connected service
+  otpTemplateId:'template_r50hnpr',            // Template for password-reset OTP
+  statementTemplateId:'template_7lntb5j',// Template for monthly statement
+  welcomeTemplateId:'template_c4kvano'     // Template for new-account welcome email
 };
 const EMAILJS_READY=typeof emailjs!=='undefined' && EMAILJS_CONFIG.publicKey!=='YOUR_PUBLIC_KEY';
 if(EMAILJS_READY){ try{ emailjs.init({publicKey:EMAILJS_CONFIG.publicKey}); }catch(e){ console.warn('EmailJS init failed',e); } }
@@ -798,6 +799,18 @@ async function sendEmailViaEmailJS(templateId, params){
     console.error('EmailJS send failed:', e);
     return {ok:false, reason:'send_failed', detail};
   }
+}
+// ── Welcome email — fired once, right after a new account is created. Fails silently ──
+// ── (just a console warning) if EmailJS isn't configured yet, so signup is never blocked. ──
+async function sendWelcomeEmail(acc, uname){
+  const result=await sendEmailViaEmailJS(EMAILJS_CONFIG.welcomeTemplateId,{
+    to_email:acc.email,
+    to_name:acc.name||uname,
+    username:uname,
+    app_name:'ProjectVault'
+  });
+  if(!result.ok)console.warn('Welcome email not sent:', result.reason, result.detail||'');
+  return result;
 }
 
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -951,6 +964,7 @@ function doSignup(){
   if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
   users[u]={name,password:btoa(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null};
   saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+  sendWelcomeEmail(users[u],u); // fire-and-forget — never blocks or fails signup if email isn't configured yet
 }
 function doLogout(){
   localStorage.removeItem('exp_session');
