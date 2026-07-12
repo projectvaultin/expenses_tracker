@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projectvault-cache-v2';
+const CACHE_NAME = 'projectvault-cache-v3';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   const isNavigation = event.request.mode === 'navigate' || event.request.url.endsWith('index.html');
   if (isNavigation) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then((fresh) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, fresh.clone()));
           return fresh;
