@@ -116,6 +116,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 /* ENTRIES */
 .entry-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
 .entry-row:last-child{border-bottom:none;}
+/* Swipe-to-delete (History tab) */
+.swipe-wrap{position:relative;overflow:hidden;}
+.swipe-wrap:last-child .entry-row{border-bottom:none;}
+.swipe-delete-bg{position:absolute;top:0;right:0;bottom:0;width:90px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:12px;}
+.swipe-fg{position:relative;background:var(--surface);touch-action:pan-y;will-change:transform;}
 .entry-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .entry-info{flex:1;min-width:0;}
 .entry-cat{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -313,6 +318,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="hero-label">Net Balance</div>
       <div class="hero-amt" id="grand-total">₹0</div>
       <div class="hero-period" id="total-period">All time</div>
+    </div>
+    <div class="card" id="streak-card" style="display:none;text-align:center;background:linear-gradient(135deg,rgba(255,179,0,.1),rgba(108,99,255,.08));">
+      <div style="font-size:22px;line-height:1" id="streak-flame">🔥</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-top:4px" id="streak-count">0 day streak</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Log something every day to keep it going</div>
     </div>
     <div class="card" style="text-align:center">
       <div class="dp-label" style="justify-content:center">🔗 Combined Total (Income + Expenses)</div>
@@ -1114,6 +1124,40 @@ function switchTab(name,el){
 function emoji(c){return EMOJIS[c]||'💰';}
 function color(c){const cats=getCats();let i=cats.indexOf(c);return COLORS[(i<0?0:i)%COLORS.length];}
 function fmt(n){return'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
+// ── Animated count-up for currency figures — makes switching months/filters feel ──
+// ── alive instead of numbers just snapping to their new value. ──
+function animateAmount(el,target){
+  if(!el)return;
+  const start=parseFloat(el.dataset.rawVal||'0')||0;
+  target=Number(target)||0;
+  if(Math.abs(target-start)<0.5){el.textContent=fmt(target);el.dataset.rawVal=target;return;}
+  const duration=450,startTime=performance.now();
+  function step(now){
+    const p=Math.min(1,(now-startTime)/duration);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=fmt(start+(target-start)*eased);
+    if(p<1)requestAnimationFrame(step);
+    else{el.textContent=fmt(target);el.dataset.rawVal=target;}
+  }
+  requestAnimationFrame(step);
+}
+// Same idea, but for the signed Net Balance figure (can go negative, shows -/+ prefix)
+function animateNet(el,target){
+  if(!el)return;
+  const start=parseFloat(el.dataset.rawVal||'0')||0;
+  target=Number(target)||0;
+  const render=(v)=>(v<0?'-':'')+fmt(Math.abs(v));
+  if(Math.abs(target-start)<0.5){el.textContent=render(target);el.dataset.rawVal=target;return;}
+  const duration=450,startTime=performance.now();
+  function step(now){
+    const p=Math.min(1,(now-startTime)/duration);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=render(start+(target-start)*eased);
+    if(p<1)requestAnimationFrame(step);
+    else{el.textContent=render(target);el.dataset.rawVal=target;}
+  }
+  requestAnimationFrame(step);
+}
 function daysDiff(dateStr){
   if(!dateStr)return null;
   const due=new Date(dateStr);const now=new Date();
@@ -1122,6 +1166,22 @@ function daysDiff(dateStr){
 }
 
 // ── HOME ──
+// ── Streak tracker — counts consecutive calendar days with at least one entry logged. ──
+// ── Still counts as alive if today has nothing yet but yesterday does, so it doesn't ──
+// ── vanish the moment you wake up before you've logged anything. ──
+function updateStreak(data){
+  const card=document.getElementById('streak-card');
+  const days=new Set(data.map(e=>e.date).filter(Boolean));
+  if(!days.size){card.style.display='none';return;}
+  let streak=0;
+  const cursor=new Date();cursor.setHours(0,0,0,0);
+  if(!days.has(cursor.toISOString().split('T')[0]))cursor.setDate(cursor.getDate()-1);
+  while(days.has(cursor.toISOString().split('T')[0])){streak++;cursor.setDate(cursor.getDate()-1);}
+  if(streak<1){card.style.display='none';return;}
+  card.style.display='block';
+  document.getElementById('streak-count').textContent=streak+' day'+(streak===1?'':'s')+' streak';
+  document.getElementById('streak-flame').textContent=streak>=30?'🔥🔥🔥':streak>=7?'🔥🔥':'🔥';
+}
 function renderHome(){
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
@@ -1131,16 +1191,16 @@ function renderHome(){
   const expenseAmt=expense.reduce((s,e)=>s+e.amount,0);
   const net=incomeAmt-expenseAmt;
   const netEl=document.getElementById('grand-total');
-  netEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
+  animateNet(netEl,net);
   netEl.style.color=net<0?'var(--red)':net>0?'var(--green)':'var(--text)';
   document.getElementById('total-period').textContent=filterMonth==='All'?'All time':filterMonth+' net balance';
-  document.getElementById('home-income').textContent=fmt(incomeAmt);
+  animateAmount(document.getElementById('home-income'),incomeAmt);
   document.getElementById('home-income-c').textContent=income.length+' entr'+(income.length===1?'y':'ies');
-  document.getElementById('home-expense').textContent=fmt(expenseAmt);
+  animateAmount(document.getElementById('home-expense'),expenseAmt);
   document.getElementById('home-expense-c').textContent=expense.length+' entr'+(expense.length===1?'y':'ies');
   // Combined total — sum of both individual cards, so you can see the overall figure at a glance
   const combinedTotal=incomeAmt+expenseAmt;
-  document.getElementById('home-combined-total').textContent=fmt(combinedTotal);
+  animateAmount(document.getElementById('home-combined-total'),combinedTotal);
   document.getElementById('home-combined-count').textContent=filtered.length+' entr'+(filtered.length===1?'y':'ies')+' combined';
   // Only active (not cleared) debts in summary
   const debts=getDebts().filter(d=>!d.cleared);
@@ -1148,9 +1208,9 @@ function renderHome(){
   const recv=debts.filter(d=>d.type==='profit');
   const oweAmt=owe.reduce((s,d)=>s+(d.amount-(d.repaid||0)),0);
   const recvAmt=recv.reduce((s,d)=>s+(d.amount-(d.repaid||0)),0);
-  document.getElementById('dp-debt').textContent=fmt(oweAmt);
+  animateAmount(document.getElementById('dp-debt'),oweAmt);
   document.getElementById('dp-debt-c').textContent=owe.length+' active';
-  document.getElementById('dp-profit').textContent=fmt(recvAmt);
+  animateAmount(document.getElementById('dp-profit'),recvAmt);
   document.getElementById('dp-profit-c').textContent=recv.length+' active';
   // Category bars
   const bycat={};
@@ -1158,7 +1218,7 @@ function renderHome(){
   const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
   const max=sorted[0]?sorted[0][1]:1;
   let html='';
-  if(!sorted.length)html='<div style="color:var(--muted);font-size:13px;padding:6px 0">No expenses yet.</div>';
+  if(!sorted.length)html='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">📊</div><p>No expenses yet — add one to see your category breakdown.</p></div>';
   sorted.forEach(([cat,amt])=>{
     const pct=Math.round((amt/max)*100),c=color(cat);
     html+=`<div class="cat-row"><div class="cat-dot" style="background:${c}"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:14px">${emoji(cat)} ${cat}</span><span style="font-size:14px;font-weight:700;color:${c}">${fmt(amt)}</span></div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div></div></div>`;
@@ -1176,6 +1236,7 @@ function renderHome(){
     rhtml+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span>${payLabel}${debtTag}</div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}</div></div><span class="entry-amt" style="color:${c}">${isInc?'+':'−'}${fmt(e.amount)}</span></div>`;
   });
   document.getElementById('recent-list').innerHTML=rhtml;
+  updateStreak(data);
   // Budget progress (based on current-month expenses regardless of filter)
   const budgetLimit=getBudgetLimit();
   const budgetCard=document.getElementById('budget-card');
@@ -1270,6 +1331,7 @@ function saveExpense(){
   data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode});
   saveData(data);document.getElementById('amount-input').value='';selCat=null;
   renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
+  haptic('success');
 }
 
 // ── HISTORY ──
@@ -1297,15 +1359,57 @@ function renderHistory(){
     const bg=isInc?'rgba(0,208,132,.15)':c+'22';
     const payLabel=e.payMode?` · ${e.payMode}`:'';
     const debtTag=e.debtLinked?` · 🔁 ${e.debtName||'Debt'} repayment`:'';
-    html+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div></div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div>`;
+    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div></div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
   });
   document.getElementById('history-list').innerHTML=html;
+  initSwipeToDelete('history-list');
+}
+// ── Swipe-to-delete: left-swipe reveals a 🗑️ action behind each History row. ──
+// ── Uses event delegation so it keeps working after every re-render, without ──
+// ── re-attaching listeners to individual rows each time. ──
+function initSwipeToDelete(containerId){
+  const container=document.getElementById(containerId);
+  if(!container||container._swipeInit)return;
+  container._swipeInit=true;
+  let startX=0,curX=0,activeEl=null,dragging=false;
+  container.addEventListener('pointerdown',(e)=>{
+    if(e.target.closest('button'))return; // let edit/delete buttons work normally
+    const fg=e.target.closest('.swipe-fg');
+    if(!fg)return;
+    activeEl=fg;startX=e.clientX;curX=startX;dragging=true;
+    activeEl.style.transition='none';
+  });
+  container.addEventListener('pointermove',(e)=>{
+    if(!dragging||!activeEl)return;
+    curX=e.clientX;
+    const dx=Math.min(0,Math.max(curX-startX,-90));
+    activeEl.style.transform=`translateX(${dx}px)`;
+  });
+  function endDrag(){
+    if(!dragging||!activeEl)return;
+    dragging=false;
+    const dx=curX-startX;
+    activeEl.style.transition='transform .2s ease';
+    activeEl.style.transform=dx<-55?'translateX(-90px)':'translateX(0)';
+    activeEl=null;
+  }
+  container.addEventListener('pointerup',endDrag);
+  container.addEventListener('pointercancel',endDrag);
+  container.addEventListener('pointerleave',endDrag);
+  // Tapping the revealed red background deletes that entry
+  container.addEventListener('click',(e)=>{
+    const bg=e.target.closest('.swipe-delete-bg');
+    if(!bg)return;
+    const wrap=bg.closest('.swipe-wrap');
+    if(wrap)delEntry(parseInt(wrap.dataset.idx));
+  });
 }
 function setFilter(m){filterMonth=m;document.getElementById('month-modal').classList.remove('open');renderHome();renderHistory();}
 function onHistSearch(v){histSearch=v;renderHistory();}
 function delEntry(i){
   if(confirm('Delete this entry?')){
     const d=getData();d.splice(i,1);saveData(d);renderHistory();renderHome();showToast('Deleted','#ff6584');
+    haptic('delete');
   }
 }
 // ── EDIT ENTRY ──
@@ -2035,7 +2139,7 @@ function renderReminders(){
   const rems=getReminders();
   const el=document.getElementById('reminders-list');
   if(!el)return;
-  if(!rems.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No recurring expenses yet.</div>';return;}
+  if(!rems.length){el.innerHTML='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">🔁</div><p>No recurring bills yet.<br>Add rent, EMIs, or subscriptions to get reminders.</p></div>';return;}
   const mk=monthKeyNow();
   el.innerHTML=rems.map(r=>{
     const isPaid=r.paid&&r.paid[mk];
@@ -2093,6 +2197,7 @@ function showCelebration(name, amount){
   document.getElementById('cel-msg').textContent=CEL_MSGS[idx];
   const cel=document.getElementById('celebrate-modal');
   cel.style.display='flex';
+  haptic('celebrate');
   // Confetti animation
   let frames=0;
   const confettiEl=document.getElementById('cel-confetti');
@@ -2163,6 +2268,17 @@ function showToast(msg,c){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=c||'var(--green)';t.style.color=c?'#fff':'#052e1c';
   t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+// ── Haptic feedback — subtle vibration on supported devices (mostly Android). ──
+// ── Silently does nothing on iOS/desktop, which don't support the Vibration API. ──
+function haptic(kind){
+  if(!navigator.vibrate)return;
+  try{
+    if(kind==='success')navigator.vibrate([15,40,15]);
+    else if(kind==='delete')navigator.vibrate(20);
+    else if(kind==='celebrate')navigator.vibrate([20,60,20,60,40]);
+    else navigator.vibrate(12);
+  }catch(e){/* ignore */}
 }
 
 // ── PWA: INSTALLABLE APP ──
