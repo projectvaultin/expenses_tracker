@@ -5,20 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ProjectVault">
+<meta name="apple-mobile-web-app-title" content="Expenses Tracker">
 <meta name="theme-color" content="#0f1117">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>ProjectVault — All-in-One Expense Tracker</title>
+<title>Expenses Tracker — by ProjectVault</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--card-r:20px;}
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--card-r:20px;--topbar-bg:rgba(15,17,23,.92);--tabs-bg:rgba(26,29,39,.97);--scheme:dark;}
+html[data-theme="light"]{--bg:#f4f5fa;--surface:#ffffff;--surface2:#eef0f7;--border:rgba(15,17,23,0.08);--accent:#6c63ff;--red:#e0355a;--green:#00a86b;--amber:#c98200;--text:#14151d;--muted:#6b6e85;--card-r:20px;--topbar-bg:rgba(255,255,255,.92);--tabs-bg:rgba(255,255,255,.97);--scheme:light;}
+html{transition:background-color .25s ease;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;transition:background-color .25s ease,color .25s ease;}
 h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM Sans',sans-serif;}
+/* THEME TOGGLE */
+.theme-toggle{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.theme-toggle:active{transform:scale(.9);}
 /* AUTH */
-#auth-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#auth-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;}
 .auth-logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:6px;}
 .auth-logo-icon{width:56px;height:56px;border-radius:16px;margin-bottom:10px;box-shadow:0 6px 20px rgba(108,99,255,.35);}
 .auth-logo{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin-bottom:0;letter-spacing:-1px;}
@@ -46,7 +51,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .bio-btn:active{background:var(--accent);color:#fff;}
 /* APP */
 #app-screen{display:none;}
-.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,.92);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .tb-left{display:flex;align-items:center;gap:10px;}
 .tb-av{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0;border:2px solid rgba(108,99,255,.4);}
 .tb-av img{width:100%;height:100%;object-fit:cover;}
@@ -59,7 +64,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .notif-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:var(--red);border-radius:50%;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 /* TABS */
-.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(26,29,39,.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;}
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--tabs-bg);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 14px;cursor:pointer;transition:color .2s;color:var(--muted);}
 .tab.active{color:var(--accent);}
 .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
@@ -100,7 +105,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .amt-inp:focus{border-color:var(--accent);}
 .amt-inp::placeholder{color:rgba(122,125,153,.35);}
 /* Date input fix */
-.date-inp{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;margin-bottom:13px;-webkit-appearance:none;appearance:none;color-scheme:dark;}
+.date-inp{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;margin-bottom:13px;-webkit-appearance:none;appearance:none;color-scheme:var(--scheme);}
 .date-inp:focus{border-color:var(--accent);}
 /* Payment mode */
 .pay-mode-wrap{margin-bottom:13px;}
@@ -185,6 +190,9 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 #due-alert-modal.open{display:flex;}
 .due-alert-box{background:var(--surface);border:1px solid rgba(255,179,0,.35);border-radius:24px;padding:24px 20px;width:100%;max-width:360px;animation:popIn .3s cubic-bezier(.4,0,.2,1);}
 @keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes celBounce{0%{transform:scale(.4) rotate(-8deg);opacity:0}55%{transform:scale(1.08) rotate(3deg);opacity:1}75%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes confettiFall{0%{transform:translateY(-40px) translateX(var(--cx,0)) rotate(0deg);opacity:1}100%{transform:translateY(340px) translateX(var(--cx,0)) rotate(var(--cr,360deg));opacity:0}}
+.confetti-piece{position:absolute;top:0;left:50%;font-size:20px;pointer-events:none;animation:confettiFall 1.6s cubic-bezier(.25,.46,.45,.94) forwards;}
 .due-alert-title{font-size:18px;font-weight:800;margin-bottom:5px;color:var(--amber);}
 .due-alert-list{margin:12px 0;max-height:220px;overflow-y:auto;}
 .due-alert-item{padding:10px;background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.15);border-radius:12px;margin-bottom:8px;}
@@ -242,7 +250,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
-  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="ProjectVault"/><div class="auth-logo">Project<span>Vault</span></div></div>
+  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
@@ -263,7 +271,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ AUTH ═══════════ -->
 <div id="auth-screen">
-  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="ProjectVault"/><div class="auth-logo">Project<span>Vault</span></div></div>
+  <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px">🌙</div>
+  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
   <div class="auth-card">
     <div class="auth-tabs">
@@ -294,6 +303,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
+  <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--muted);letter-spacing:.3px;">Powered by <span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ APP ═══════════ -->
@@ -302,11 +312,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="tb-left">
       <div class="tb-av" id="tb-av"></div>
       <div>
-        <div class="tb-name">Project<span>Vault</span></div>
+        <div class="tb-name">Expenses<span> Tracker</span></div>
         <div class="tb-sub" id="tb-hi"></div>
       </div>
     </div>
     <div class="tb-right">
+      <div class="theme-toggle" id="theme-toggle-app" onclick="toggleTheme()">🌙</div>
       <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
       <div class="pill-btn" onclick="doLogout()">Logout</div>
     </div>
@@ -761,15 +772,15 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   </div>
 </div>
 
-<!-- DEBT CLEARED CELEBRATION MODAL -->
-<div id="celebrate-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
-  <div style="background:linear-gradient(135deg,rgba(0,208,132,.2),rgba(108,99,255,.2));border:2px solid var(--green);border-radius:28px;padding:32px 24px;width:100%;max-width:340px;text-align:center;animation:popIn .35s cubic-bezier(.4,0,.2,1)">
+<!-- ACHIEVEMENT / MILESTONE CELEBRATION MODAL (debt cleared, budget goal met, savings milestone) -->
+<div id="celebrate-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;overflow:hidden">
+  <div id="celebrate-confetti-layer" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"></div>
+  <div id="celebrate-card" style="position:relative;background:linear-gradient(135deg,rgba(0,208,132,.2),rgba(108,99,255,.2));border:2px solid var(--green);border-radius:28px;padding:32px 24px;width:100%;max-width:340px;text-align:center;animation:celBounce .5s cubic-bezier(.34,1.56,.64,1)">
     <div style="font-size:56px;margin-bottom:12px" id="cel-emoji">🎉</div>
-    <div style="font-size:22px;font-weight:800;color:var(--green);margin-bottom:8px">DEBT CLEARED! 🎊</div>
+    <div style="font-size:22px;font-weight:800;color:var(--green);margin-bottom:8px" id="celebrate-title">DEBT CLEARED! 🎊</div>
     <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:6px" id="cel-name"></div>
     <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px" id="cel-msg"></div>
-    <div style="font-size:28px;margin-bottom:16px" id="cel-confetti">✨💫⭐🌟💎✨</div>
-    <button class="save-btn" style="background:var(--green);color:#052e1c;font-weight:800;font-size:16px" onclick="closeCelebration()">Woohoo! 🙌</button>
+    <button class="save-btn" id="celebrate-btn" style="background:var(--green);color:#052e1c;font-weight:800;font-size:16px" onclick="closeCelebration()">Woohoo! 🙌</button>
   </div>
 </div>
 
@@ -786,6 +797,19 @@ const EMAILJS_CONFIG={
 };
 const EMAILJS_READY=typeof emailjs!=='undefined' && EMAILJS_CONFIG.publicKey!=='YOUR_PUBLIC_KEY';
 if(EMAILJS_READY){ try{ emailjs.init({publicKey:EMAILJS_CONFIG.publicKey}); }catch(e){ console.warn('EmailJS init failed',e); } }
+// Absolute URL to the app icon, so email templates (which live on EmailJS's servers, not in this
+// page) can show a real logo image. Resolves correctly once this app is deployed to a real URL
+// (e.g. GitHub Pages); will be a file:// path (and won't render in email) if opened locally.
+// Wrapped in try/catch: some sandboxed/preview environments give a location.href that isn't a
+// valid base URL (e.g. "about:srcdoc"), which makes `new URL()` throw — and since this used to
+// run unguarded at the top of the script, that crashed the ENTIRE app, not just this one feature.
+let APP_LOGO_URL='';
+try{
+  APP_LOGO_URL=new URL('icon-512.png',location.href).href;
+}catch(e){
+  console.warn('Could not resolve absolute logo URL (non-fatal):',e);
+  APP_LOGO_URL='';
+}
 async function sendEmailViaEmailJS(templateId, params){
   if(!EMAILJS_READY) return {ok:false, reason:'not_configured'};
   if(!templateId || templateId.indexOf('YOUR_')===0){
@@ -809,6 +833,25 @@ const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff98
 const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Salary:'💰',Other:'📦'};
 const DEFAULT_CATS=['Salary','Rent','Travel','Food','Medical','Debt','Savings','Other'];
 const APP_VERSION='3.0';
+
+// ── THEME (Light/Dark) ── Saved globally on this device, independent of which account is logged in ──
+function getTheme(){return localStorage.getItem('exp_theme')||'dark';}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const icon=t==='light'?'☀️':'🌙';
+  const appBtn=document.getElementById('theme-toggle-app');
+  const authBtn=document.getElementById('theme-toggle-auth');
+  if(appBtn)appBtn.textContent=icon;
+  if(authBtn)authBtn.textContent=icon;
+  const metaTheme=document.querySelector('meta[name="theme-color"]');
+  if(metaTheme)metaTheme.setAttribute('content',t==='light'?'#f4f5fa':'#0f1117');
+}
+function toggleTheme(){
+  const next=getTheme()==='light'?'dark':'light';
+  localStorage.setItem('exp_theme',next);
+  applyTheme(next);
+}
+applyTheme(getTheme()); // apply immediately on script load, before login, so it's consistent from the first paint
 
 let CU=null,selMonth=null,selCat=null,filterMonth='All',selDebtType=null,pendingAv=null,selEntryType='expense',histSearch='';
 let editIndex=null,editMonth=null,editCat=null;
@@ -1010,7 +1053,7 @@ async function registerBiometric(){
     const cred=await navigator.credentials.create({
       publicKey:{
         challenge,
-        rp:{name:'ProjectVault',id:window.location.hostname||'localhost'},
+        rp:{name:'Expenses Tracker',id:window.location.hostname||'localhost'},
         user:{id:userId,name:CU,displayName:profile.name||CU},
         pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
         authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},
@@ -1118,6 +1161,8 @@ function startApp(profile){
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   setTimeout(checkAndSendMonthlyStatement,1500);
+  setTimeout(maybeCelebrateBudgetWin,2000);
+  setTimeout(maybeCelebrateSavingsMilestone,2200);
 }
 
 // ── TABS ──
@@ -1345,6 +1390,7 @@ function saveExpense(){
   saveData(data);document.getElementById('amount-input').value='';selCat=null;
   renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
   haptic('success');
+  maybeCelebrateSavingsMilestone();
 }
 
 // ── HISTORY ──
@@ -1629,7 +1675,7 @@ function checkDueAlerts(){
           const msg=dd<0?`OVERDUE: ${d.name} — ${fmt(d.amount)} — arrange money!`:
             dd===0?`DUE TODAY: ${d.name} — ${fmt(d.amount)}`:
             `Due in ${dd}d: ${d.name} — ${fmt(d.amount)} — arrange money now!`;
-          new Notification('ProjectVault — Payment Reminder',{
+          new Notification('Expenses Tracker — Payment Reminder',{
             body:msg,
             icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💰</text></svg>',
             tag:'due-'+d.name,
@@ -1957,7 +2003,9 @@ async function deliverOTPEmail(acc, uname){
     to_name:acc.name||uname,
     username:uname,
     otp_code:_fpOTP,
-    app_name:'ProjectVault'
+    app_name:'Expenses Tracker',
+    brand_name:'ProjectVault',
+    logo_url:APP_LOGO_URL
   });
   if(result.ok){
     showToast('📧 OTP emailed to '+acc.email,'#00d084');
@@ -2062,7 +2110,9 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
-    app_name:'ProjectVault'
+    app_name:'Expenses Tracker',
+    brand_name:'ProjectVault',
+    logo_url:APP_LOGO_URL
   });
 }
 // Manual "send now" for testing — uses the most recently completed month regardless of the send-once guard.
@@ -2204,7 +2254,7 @@ function checkReminders(){
     const isIncome=r.type==='income';
     showToast('🔔 Due today: '+r.name+' '+fmt(r.amount)+' — mark it '+(isIncome?'received':'paid')+' on the Add tab','#6c63ff');
     if('Notification' in window && Notification.permission==='granted'){
-      new Notification('ProjectVault — Recurring '+(isIncome?'Income':'Payment')+' Due',{
+      new Notification('Expenses Tracker — Recurring '+(isIncome?'Income':'Payment')+' Due',{
         body:isIncome?`💰 ${r.name} — ${fmt(r.amount)} is due today! Has it been credited?`:`📅 ${r.name} — ${fmt(r.amount)} is due today! Has it been paid?`,
         icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
         tag:'rem-'+r.id,requireInteraction:true
@@ -2213,7 +2263,7 @@ function checkReminders(){
   });
 }
 
-// ── DEBT CELEBRATION POPUP ──
+// ── ACHIEVEMENT / MILESTONE CELEBRATIONS (debt cleared, budget goal met, savings milestone) ──
 const CEL_MSGS=[
   "You crushed it! Debt-free feels amazing! 💪",
   "Financial freedom, one step at a time! 🚀",
@@ -2225,22 +2275,110 @@ const CEL_MSGS=[
   "One less thing to worry about. Legend! 🌟"
 ];
 const CEL_EMOJIS=['🎉','🎊','🏆','🌟','🚀','💎','⭐','🎯'];
-function showCelebration(name, amount){
-  const idx=Math.floor(Math.random()*CEL_MSGS.length);
-  document.getElementById('cel-emoji').textContent=CEL_EMOJIS[idx];
-  document.getElementById('cel-name').textContent=`"${name}" — ${fmt(amount)} fully cleared!`;
-  document.getElementById('cel-msg').textContent=CEL_MSGS[idx];
+const BUDGET_CEL_MSGS=[
+  "You stayed under budget all month! Discipline pays off! 💪",
+  "Budget goal smashed! Your future self says thanks! 🙌",
+  "Spending, tamed. That's real self-control! 🎯",
+  "Under budget again — you've got this down to a science! ⭐"
+];
+const SAVINGS_CEL_MSGS=[
+  "A new savings milestone, locked in! 🔒",
+  "Look at that number grow. Keep stacking! 📈",
+  "That's real progress toward your goals! 💎",
+  "Future you is going to be very grateful! 🌟"
+];
+// Renders the shared celebration modal with a color theme + real falling confetti pieces.
+function renderCelebration({emoji,title,color,name,msg,btnLabel}){
+  document.getElementById('cel-emoji').textContent=emoji;
+  const titleEl=document.getElementById('celebrate-title');
+  titleEl.textContent=title;titleEl.style.color=color;
+  document.getElementById('cel-name').textContent=name;
+  document.getElementById('cel-msg').textContent=msg;
+  const card=document.getElementById('celebrate-card');
+  card.style.borderColor=color;
+  card.style.background=`linear-gradient(135deg,${color}33,rgba(108,99,255,.2))`;
+  card.style.animation='none';card.offsetHeight;card.style.animation='celBounce .5s cubic-bezier(.34,1.56,.64,1)'; // restart animation on repeat triggers
+  const btn=document.getElementById('celebrate-btn');
+  btn.style.background=color;btn.textContent=btnLabel||'Woohoo! 🙌';
   const cel=document.getElementById('celebrate-modal');
   cel.style.display='flex';
   haptic('celebrate');
-  // Confetti animation
-  let frames=0;
-  const confettiEl=document.getElementById('cel-confetti');
-  const confettiSets=['✨💫⭐🌟💎✨','🎊🎉🎈🎁🎊🎉','💰💵💸🤑💰💵','🏆🥇🌟⭐🏆🥇'];
-  const confettiAnim=setInterval(()=>{
-    confettiEl.textContent=confettiSets[frames%confettiSets.length];
-    frames++;if(frames>20)clearInterval(confettiAnim);
-  },200);
+  launchConfetti();
+}
+// Spawns ~24 real animated confetti pieces (fall + spin) instead of just cycling emoji text —
+// reads closer to a proper "3D-ish" celebration burst.
+function launchConfetti(){
+  const layer=document.getElementById('celebrate-confetti-layer');
+  layer.innerHTML='';
+  const pieces=['🎉','🎊','✨','⭐','💫','🌟','💎','🎈'];
+  for(let i=0;i<24;i++){
+    const span=document.createElement('span');
+    span.className='confetti-piece';
+    span.textContent=pieces[Math.floor(Math.random()*pieces.length)];
+    const cx=(Math.random()*280-140).toFixed(0)+'px';
+    const cr=(Math.random()>.5?1:-1)*(360+Math.random()*360)+'deg';
+    span.style.setProperty('--cx',cx);
+    span.style.setProperty('--cr',cr);
+    span.style.left=(10+Math.random()*80)+'%';
+    span.style.fontSize=(14+Math.random()*14)+'px';
+    span.style.animationDelay=(Math.random()*.4)+'s';
+    span.style.animationDuration=(1.2+Math.random()*.8)+'s';
+    layer.appendChild(span);
+  }
+  setTimeout(()=>{layer.innerHTML='';},2200);
+}
+function showCelebration(name, amount){
+  const idx=Math.floor(Math.random()*CEL_MSGS.length);
+  renderCelebration({
+    emoji:CEL_EMOJIS[idx],
+    title:'DEBT CLEARED! 🎊',
+    color:'var(--green)',
+    name:`"${name}" — ${fmt(amount)} fully cleared!`,
+    msg:CEL_MSGS[idx]
+  });
+}
+// Once per user per month: celebrate finishing a month at/under the budget limit.
+function maybeCelebrateBudgetWin(){
+  if(!CU)return;
+  const budgetLimit=getBudgetLimit();
+  if(!budgetLimit)return;
+  const now=new Date();
+  if(now.getDate()<25)return; // only worth celebrating once the month is nearly over
+  const curMonth=MONTHS[now.getMonth()],curYear=now.getFullYear();
+  const key='budgetCel_'+CU+'_'+curYear+'-'+curMonth;
+  if(localStorage.getItem(key))return;
+  const monthExpense=getData().filter(e=>e.month===curMonth&&e.year===curYear&&e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  if(monthExpense>budgetLimit)return;
+  localStorage.setItem(key,'1');
+  const idx=Math.floor(Math.random()*BUDGET_CEL_MSGS.length);
+  renderCelebration({
+    emoji:'🎯',
+    title:'BUDGET GOAL MET! 🎯',
+    color:'var(--accent)',
+    name:`${curMonth}: ${fmt(monthExpense)} of ${fmt(budgetLimit)} budget`,
+    msg:BUDGET_CEL_MSGS[idx],
+    btnLabel:'Amazing! 🙌'
+  });
+}
+// Savings milestones — celebrated the first time your total logged "Savings" crosses each threshold.
+const SAVINGS_MILESTONES=[10000,25000,50000,100000,200000,500000,1000000];
+function maybeCelebrateSavingsMilestone(){
+  if(!CU)return;
+  const total=getData().filter(e=>e.category==='Savings'&&e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  const key='savingsCelMax_'+CU;
+  const prevMax=parseFloat(localStorage.getItem(key)||'0');
+  const hit=SAVINGS_MILESTONES.filter(m=>total>=m&&m>prevMax).pop();
+  if(hit===undefined)return;
+  localStorage.setItem(key,String(hit));
+  const idx=Math.floor(Math.random()*SAVINGS_CEL_MSGS.length);
+  renderCelebration({
+    emoji:'💰',
+    title:'SAVINGS MILESTONE! 💰',
+    color:'var(--amber)',
+    name:`You've saved ${fmt(hit)}+ total!`,
+    msg:SAVINGS_CEL_MSGS[idx],
+    btnLabel:'Let\'s go! 🚀'
+  });
 }
 function closeCelebration(){
   document.getElementById('celebrate-modal').style.display='none';
@@ -2376,13 +2514,18 @@ if('serviceWorker' in navigator){
 
 // ── INIT ──
 (function(){
-  ensureAdminAccount();
-  const s=localStorage.getItem('exp_session');
-  if(s){
-    const u=getUsers();
-    if(u[s]){showLockScreen(s);return;}
+  try{
+    ensureAdminAccount();
+    const s=localStorage.getItem('exp_session');
+    if(s){
+      const u=getUsers();
+      if(u[s]){showLockScreen(s);return;}
+    }
+    document.getElementById('auth-screen').style.display='flex';
+  }catch(e){
+    console.error('App failed to initialize:',e);
+    document.getElementById('auth-screen').style.display='flex';
   }
-  document.getElementById('auth-screen').style.display='flex';
 })();
 </script>
 </body>
