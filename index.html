@@ -419,10 +419,14 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <!-- MONTHLY REMINDERS -->
     <div class="card">
-      <div class="card-title">🔁 Recurring Expenses</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Add recurring payments (rent, EMI, subscriptions). You'll get reminded on the due day — tap <b style="color:var(--text)">Mark Paid</b> each month to confirm it's been paid (this logs it as an expense automatically).</div>
+      <div class="card-title">🔁 Recurring Bills &amp; Income</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Add recurring payments (rent, EMI, subscriptions) <b style="color:var(--text)">or</b> recurring income (salary, freelance retainer). You'll get reminded on the day — tap <b style="color:var(--text)">Mark Paid / Received</b> each month and it's logged automatically to the right place.</div>
       <div id="reminders-list"></div>
       <div style="margin-top:12px">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div class="pay-chip sel" id="remtype-expense" onclick="selectRemType('expense')">💸 Expense</div>
+          <div class="pay-chip" id="remtype-income" onclick="selectRemType('income')">💰 Income (e.g. Salary)</div>
+        </div>
         <input type="text" class="ti" id="rem-name" placeholder="e.g. PG Rent, EMI, Netflix…" style="width:100%;margin-bottom:8px"/>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <div style="flex:1;position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:700">₹</span><input type="number" class="ti" id="rem-amount" placeholder="Amount" style="padding-left:28px;width:100%"/></div>
@@ -802,13 +806,14 @@ async function sendEmailViaEmailJS(templateId, params){
 
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff9800','#4caf50','#9c27b0','#f44336','#2196f3','#ff5722'];
-const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Other:'📦'};
-const DEFAULT_CATS=['Rent','Travel','Food','Medical','Debt','Savings','Other'];
+const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Salary:'💰',Other:'📦'};
+const DEFAULT_CATS=['Salary','Rent','Travel','Food','Medical','Debt','Savings','Other'];
 const APP_VERSION='3.0';
 
 let CU=null,selMonth=null,selCat=null,filterMonth='All',selDebtType=null,pendingAv=null,selEntryType='expense',histSearch='';
 let editIndex=null,editMonth=null,editCat=null;
 let selPayMode='cash',selUPIApp='',selRisk='low',selGoal='growth',selTH='intraday',debtFilter='all';
+let selRemType='expense';
 let cropOffX=0,cropOffY=0,cropZoom=1,cropDragging=false,cropDragSX=0,cropDragSY=0,cropStartOX=0,cropStartOY=0;
 
 // ── STORAGE ──
@@ -820,7 +825,11 @@ function getAdminMessages(){return JSON.parse(localStorage.getItem('exp_admin_me
 function saveAdminMessages(m){localStorage.setItem('exp_admin_messages',JSON.stringify(m));}
 function getData(){return JSON.parse(localStorage.getItem(uKey('data'))||'[]');}
 function saveData(d){localStorage.setItem(uKey('data'),JSON.stringify(d));}
-function getCats(){return JSON.parse(localStorage.getItem(uKey('cats'))||JSON.stringify(DEFAULT_CATS));}
+function getCats(){
+  const c=JSON.parse(localStorage.getItem(uKey('cats'))||JSON.stringify(DEFAULT_CATS));
+  if(CU&&!c.includes('Salary')){c.unshift('Salary');saveCats(c);}
+  return c;
+}
 function saveCats(c){localStorage.setItem(uKey('cats'),JSON.stringify(c));}
 function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]');}
 function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
@@ -855,6 +864,10 @@ function handleAvatar(e){
 // CROP MODAL
 function openCropModal(src){
   cropOffX=0;cropOffY=0;cropZoom=1;cropDragging=false;
+  // Show the modal FIRST so #crop-stage is display:flex (not display:none) before we measure it below.
+  // Measuring a hidden element's offsetWidth/offsetHeight returns 0, which previously made the
+  // base scale 0 and produced a blank (black, once exported as JPEG) profile picture.
+  document.getElementById('crop-modal').classList.add('open');
   const img=document.getElementById('crop-img');
   img.onload=()=>{
     const stage=document.getElementById('crop-stage');
@@ -865,7 +878,6 @@ function openCropModal(src){
     document.getElementById('crop-zoom').value=1;
     cropOffX=(sw-iw*scale)/2;cropOffY=(sh-ih*scale)/2;
     applyCropTransform();
-    document.getElementById('crop-modal').classList.add('open');
   };
   img.src=src;
 }
@@ -879,6 +891,7 @@ function closeCropModal(){document.getElementById('crop-modal').classList.remove
 function applyCrop(){
   const stage=document.getElementById('crop-stage');
   const img=document.getElementById('crop-img');
+  if(!img._baseScale||!img.naturalWidth){showToast('Photo is still loading, try again in a moment','#ffb300');return;}
   const sw=stage.offsetWidth,sh=stage.offsetHeight;
   const canvas=document.createElement('canvas');
   canvas.width=sw;canvas.height=sh;
@@ -1083,7 +1096,7 @@ function startApp(profile){
   const av=document.getElementById('tb-av');
   if(profile.avatar){av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
-  document.getElementById('tb-hi').textContent='Hi, '+profile.name.split(' ')[0]+'!';
+  document.getElementById('tb-hi').textContent='@'+CU;
   selMonth=MONTHS[new Date().getMonth()];
   document.getElementById('expense-date').value=new Date().toISOString().split('T')[0];
   // Populate reminder day select
@@ -1890,7 +1903,7 @@ function saveProfile(){
   const av=document.getElementById('tb-av');
   if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=name.charAt(0).toUpperCase();}
-  document.getElementById('tb-hi').textContent='Hi, '+name.split(' ')[0]+'!';
+  document.getElementById('tb-hi').textContent='@'+CU;
   showToast('✅ Profile updated!');
 }
 
@@ -2078,27 +2091,37 @@ async function sendTestStatementNow(){
 function getReminders(){return JSON.parse(localStorage.getItem(uKey('reminders'))||'[]');}
 function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(r));}
 function monthKeyNow(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1);}
+function selectRemType(t){
+  selRemType=t;
+  document.getElementById('remtype-expense').classList.toggle('sel',t==='expense');
+  document.getElementById('remtype-income').classList.toggle('sel',t==='income');
+  // Salary/income reminders don't need a per-employer name — the category "Salary" is what shows
+  // up in reports, so the name field becomes an optional note (e.g. "Acme Corp") instead.
+  document.getElementById('rem-name').placeholder=t==='income'?'e.g. Acme Corp (optional note)':'e.g. PG Rent, EMI, Netflix…';
+}
 function addReminder(){
   const name=document.getElementById('rem-name').value.trim();
   const amount=parseFloat(document.getElementById('rem-amount').value);
   const day=parseInt(document.getElementById('rem-day').value);
-  if(!name){showToast('Enter reminder name','#ffb300');return;}
+  const type=selRemType||'expense';
+  if(type==='expense'&&!name){showToast('Enter reminder name','#ffb300');return;}
   if(!amount||amount<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!day){showToast('Select day of month','#ffb300');return;}
   const rems=getReminders();
-  rems.push({id:Date.now(),name,amount,day,active:true,paid:{}});
+  rems.push({id:Date.now(),name:name||(type==='income'?'Salary':name),amount,day,active:true,paid:{},type});
   saveReminders(rems);
   document.getElementById('rem-name').value='';
   document.getElementById('rem-amount').value='';
   document.getElementById('rem-day').value='';
+  selectRemType('expense');
   renderReminders();
-  showToast('🔁 Recurring expense added!');
+  showToast(type==='income'?'🔁 Recurring income added!':'🔁 Recurring expense added!');
 }
 function deleteReminder(id){
   const rems=getReminders().filter(r=>r.id!==id);
   saveReminders(rems);renderReminders();showToast('Recurring expense removed','#ff6584');
 }
-// Mark this month's cycle of a recurring expense as paid — logs a real expense entry
+// Mark this month's cycle of a recurring expense/income as paid/received — logs a real entry
 function markReminderPaid(id){
   const rems=getReminders();
   const r=rems.find(x=>x.id===id);
@@ -2109,14 +2132,24 @@ function markReminderPaid(id){
   const now=new Date();
   const data=getData();
   const cats=getCats();
-  const matchCat=cats.find(c=>c.toLowerCase()===r.name.toLowerCase())||'Rent';
-  const entry={month:MONTHS[now.getMonth()],category:cats.includes(matchCat)?matchCat:(cats[0]||'Other'),amount:r.amount,type:'expense',year:now.getFullYear(),ts:Date.now(),date:now.toISOString().split('T')[0],payMode:null,recurring:true,reminderId:r.id,reminderName:r.name};
+  const isIncome=r.type==='income';
+  // Income reminders (salary etc.) always file under the "Salary" category, never under the
+  // reminder's name (which may be a company/employer name) — that's what previously made
+  // reports show a company name instead of "Salary".
+  let matchCat;
+  if(isIncome){
+    matchCat=cats.find(c=>c.toLowerCase()==='salary')||cats[0]||'Salary';
+  } else {
+    matchCat=cats.find(c=>c.toLowerCase()===r.name.toLowerCase())||'Rent';
+    matchCat=cats.includes(matchCat)?matchCat:(cats[0]||'Other');
+  }
+  const entry={month:MONTHS[now.getMonth()],category:matchCat,amount:r.amount,type:isIncome?'income':'expense',year:now.getFullYear(),ts:Date.now(),date:now.toISOString().split('T')[0],payMode:null,recurring:true,reminderId:r.id,reminderName:r.name};
   data.push(entry);
   saveData(data);
   r.paid[mk]=entry.ts;
   saveReminders(rems);
   renderReminders();renderHome();renderHistory();
-  showToast('✅ '+r.name+' marked paid for this month!');
+  showToast(isIncome?'✅ '+r.name+' credited for this month!':'✅ '+r.name+' marked paid for this month!');
 }
 // Undo an accidental "mark as paid" for the current month
 function unmarkReminderPaid(id){
@@ -2143,16 +2176,17 @@ function renderReminders(){
   const mk=monthKeyNow();
   el.innerHTML=rems.map(r=>{
     const isPaid=r.paid&&r.paid[mk];
+    const isIncome=r.type==='income';
     return `
     <div class="rem-row">
-      <span style="font-size:20px">${isPaid?'✅':'🔔'}</span>
+      <span style="font-size:20px">${isPaid?'✅':(isIncome?'💰':'🔔')}</span>
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:600">${r.name}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(r.amount)} · Every month on <b>day ${r.day}</b></div>
+        <div style="font-size:14px;font-weight:600">${r.name}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px"><span style="color:${isIncome?'var(--green)':'var(--text)'}">${fmt(r.amount)}</span> · Every month on <b>day ${r.day}</b></div>
       </div>
       ${isPaid
-        ?`<button class="clear-btn active" style="margin-right:4px" onclick="unmarkReminderPaid(${r.id})">Paid ✓</button>`
-        :`<button class="clear-btn inactive" style="margin-right:4px" onclick="markReminderPaid(${r.id})">Mark Paid</button>`}
+        ?`<button class="clear-btn active" style="margin-right:4px" onclick="unmarkReminderPaid(${r.id})">${isIncome?'Received ✓':'Paid ✓'}</button>`
+        :`<button class="clear-btn inactive" style="margin-right:4px" onclick="markReminderPaid(${r.id})">${isIncome?'Mark Received':'Mark Paid'}</button>`}
       <button class="del-btn" onclick="deleteReminder(${r.id})">✕</button>
     </div>`;
   }).join('');
@@ -2167,10 +2201,11 @@ function checkReminders(){
   if(localStorage.getItem(todayKey))return;
   localStorage.setItem(todayKey,'1');
   rems.forEach(r=>{
-    showToast('🔔 Due today: '+r.name+' '+fmt(r.amount)+' — mark it paid on the Add tab','#6c63ff');
+    const isIncome=r.type==='income';
+    showToast('🔔 Due today: '+r.name+' '+fmt(r.amount)+' — mark it '+(isIncome?'received':'paid')+' on the Add tab','#6c63ff');
     if('Notification' in window && Notification.permission==='granted'){
-      new Notification('ProjectVault — Recurring Payment Due',{
-        body:`📅 ${r.name} — ${fmt(r.amount)} is due today! Has it been paid?`,
+      new Notification('ProjectVault — Recurring '+(isIncome?'Income':'Payment')+' Due',{
+        body:isIncome?`💰 ${r.name} — ${fmt(r.amount)} is due today! Has it been credited?`:`📅 ${r.name} — ${fmt(r.amount)} is due today! Has it been paid?`,
         icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
         tag:'rem-'+r.id,requireInteraction:true
       });
