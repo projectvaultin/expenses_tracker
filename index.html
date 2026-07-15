@@ -976,14 +976,44 @@ function applyCrop(){
   window.addEventListener('touchend',()=>cropDragging=false);
 })();
 
-function doLogin(){
+// ── PASSWORD SECURITY ──
+// Passwords are now stored as a proper one-way SHA-256 hash (prefixed "sha256:") instead of the
+// old btoa() encoding, which was just Base64 — trivially reversible by anyone with access to the
+// browser's localStorage, not a real hash. verifyAndMigratePassword() checks new-style hashes
+// normally, and if it finds an old-style account, verifies against the legacy encoding ONE time
+// and transparently upgrades it to a real hash on successful login — no user action needed, no
+// forced password reset, and old accounts keep working exactly as before from the user's side.
+async function hashPassword(plain){
+  if(!window.crypto||!window.crypto.subtle){
+    console.warn('Web Crypto API unavailable in this environment — falling back to weaker encoding.');
+    return btoa(plain);
+  }
+  const enc=new TextEncoder().encode(plain);
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  return 'sha256:'+Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function verifyAndMigratePassword(users,uname,plain){
+  const acc=users[uname];
+  if(!acc||!acc.password)return false;
+  if(acc.password.startsWith('sha256:')){
+    return acc.password===await hashPassword(plain);
+  }
+  // Legacy account (old btoa encoding) — verify against it, then silently upgrade to a real hash.
+  if(acc.password===btoa(plain)){
+    acc.password=await hashPassword(plain);
+    saveUsers(users);
+    return true;
+  }
+}
+
+async function doLogin(){
   const u=document.getElementById('lu').value.trim().toLowerCase();
   const p=document.getElementById('lp').value;
   // Auto-create admin account if first time
   ensureAdminAccount();
   const users=getUsers();
   if(!users[u]){document.getElementById('lerr').textContent='Username not found.';return;}
-  if(users[u].password!==btoa(p)){document.getElementById('lerr').textContent='Wrong password.';return;}
+  if(!await verifyAndMigratePassword(users,u,p)){document.getElementById('lerr').textContent='Wrong password.';return;}
   CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
 }
 function ensureAdminAccount(){
@@ -996,7 +1026,7 @@ function ensureAdminAccount(){
 const ADMIN_USERNAME='admin';
 const ADMIN_PASSWORD=btoa('admin@2025');
 
-function doSignup(){
+async function doSignup(){
   const name=document.getElementById('sn').value.trim();
   const u=document.getElementById('su').value.trim().toLowerCase();
   const p=document.getElementById('sp').value;
@@ -1012,7 +1042,7 @@ function doSignup(){
   const users=getUsers();
   if(users[u]){err.textContent='Username already taken.';return;}
   if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
-  users[u]={name,password:btoa(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null};
+  users[u]={name,password:await hashPassword(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null};
   saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
 }
 function doLogout(){
@@ -1094,12 +1124,12 @@ function toggleBiometricSetting(){
   if(profile&&profile.bioCredId)disableBiometric();
   else registerBiometric();
 }
-function doUnlock(){
+async function doUnlock(){
   const p=document.getElementById('lock-pw').value;
   const users=getUsers();
   const session=localStorage.getItem('exp_session');
   if(!session||!users[session]){document.getElementById('lock-err').textContent='Session expired.';return;}
-  if(users[session].password!==btoa(p)){
+  if(!await verifyAndMigratePassword(users,session,p)){
     document.getElementById('lock-err').textContent='Wrong password. Try again.';
     document.getElementById('lock-pw').value='';
     return;
@@ -1875,17 +1905,17 @@ document.getElementById('forgotpw-modal').addEventListener('click',function(e){i
 
 // ── CHANGE PASSWORD ──
 function showChangePwModal(){document.getElementById('changepw-modal').classList.add('open');}
-function doChangePw(){
+async function doChangePw(){
   const old=document.getElementById('cp-old').value;
   const nw=document.getElementById('cp-new').value;
   const conf=document.getElementById('cp-conf').value;
   const err=document.getElementById('cp-err');
   const users=getUsers();
   if(!users[CU]){err.textContent='User not found.';return;}
-  if(users[CU].password!==btoa(old)){err.textContent='Current password is wrong.';return;}
+  if(!await verifyAndMigratePassword(users,CU,old)){err.textContent='Current password is wrong.';return;}
   if(nw.length<4){err.textContent='New password must be at least 4 characters.';return;}
   if(nw!==conf){err.textContent='Passwords do not match.';return;}
-  users[CU].password=btoa(nw);saveUsers(users);
+  users[CU].password=await hashPassword(nw);saveUsers(users);
   document.getElementById('changepw-modal').classList.remove('open');
   ['cp-old','cp-new','cp-conf'].forEach(id=>document.getElementById(id).value='');
   err.textContent='';
@@ -2033,7 +2063,7 @@ async function resendOTP(){
   const acc=getUsers()[_fpTargetUser];
   await deliverOTPEmail(acc, _fpTargetUser);
 }
-function verifyForgotOTP(){
+async function verifyForgotOTP(){
   const otp=document.getElementById('fp-otp').value.trim();
   const nw=document.getElementById('fp-newpw').value;
   const conf=document.getElementById('fp-confpw').value;
@@ -2042,7 +2072,7 @@ function verifyForgotOTP(){
   if(nw.length<4){err.textContent='Password must be at least 4 characters.';return;}
   if(nw!==conf){err.textContent='Passwords do not match.';return;}
   const users=getUsers();
-  users[_fpTargetUser].password=btoa(nw);
+  users[_fpTargetUser].password=await hashPassword(nw);
   saveUsers(users);
   document.getElementById('forgotpw-modal').classList.remove('open');
   _fpOTP='';_fpTargetUser='';
