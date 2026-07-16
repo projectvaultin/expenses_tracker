@@ -16,18 +16,33 @@
 :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--placeholder:rgba(122,125,153,.45);--card-shadow:none;--chip-shadow:none;--card-r:20px;--topbar-bg:rgba(15,17,23,.92);--tabs-bg:rgba(26,29,39,.97);--scheme:dark;}
 html[data-theme="light"]{--bg:#eef0f6;--surface:#ffffff;--surface2:#f1f2f9;--border:rgba(20,21,29,0.16);--accent:#6c63ff;--red:#e0355a;--green:#00a86b;--amber:#c98200;--text:#14151d;--muted:#52546b;--placeholder:rgba(82,84,107,.55);--card-shadow:0 1px 3px rgba(20,21,29,.07),0 1px 2px rgba(20,21,29,.05);--chip-shadow:0 1px 2px rgba(20,21,29,.05);--card-r:20px;--topbar-bg:rgba(255,255,255,.92);--tabs-bg:rgba(255,255,255,.97);--scheme:light;}
 html{transition:background-color .25s ease;}
+html[data-textsize="large"] body{zoom:1.15;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;transition:background-color .25s ease,color .25s ease;}
 h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM Sans',sans-serif;}
 /* THEME TOGGLE */
 .theme-toggle{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s;flex-shrink:0;}
 .theme-toggle:active{transform:scale(.9);}
+/* SIDE DRAWER (profile menu) */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s;}
+.drawer-overlay.open{opacity:1;pointer-events:auto;}
+.side-drawer{position:fixed;top:0;right:0;bottom:0;width:78%;max-width:300px;background:var(--surface);border-left:1px solid var(--border);z-index:501;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;padding:22px 16px 16px;overflow-y:auto;}
+.side-drawer.open{transform:translateX(0);}
+.drawer-profile{display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.drawer-av{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;overflow:hidden;margin-bottom:8px;border:2px solid rgba(108,99,255,.4);}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 10px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);transition:background .15s;}
+.drawer-item:active{background:var(--surface2);}
+.drawer-item .di-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0;}
+.hamburger-btn{width:36px;height:36px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;flex-shrink:0;box-shadow:var(--chip-shadow);}
+.hamburger-btn span{width:16px;height:2px;background:var(--muted);border-radius:2px;}
 @media (max-width:400px){
   .tb-name{font-size:12.5px;}
   .tb-av{width:30px;height:30px;font-size:12px;}
   .pill-btn{padding:5px 9px;font-size:10.5px;}
   .theme-toggle{width:30px;height:30px;font-size:14px;}
   .tb-right{gap:5px;}
+  .hamburger-btn{width:30px;height:30px;border-radius:10px;}
+  .hamburger-btn span{width:13px;}
 }
 /* AUTH */
 #auth-screen{min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;position:relative;}
@@ -207,6 +222,9 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .due-alert-info{font-size:12px;color:var(--muted);margin-top:3px;}
 /* TOAST */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#052e1c;font-size:14px;font-weight:700;padding:10px 22px;border-radius:100px;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;z-index:999;}
+.undo-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);border:1px solid var(--border);box-shadow:var(--chip-shadow);font-size:13px;font-weight:600;padding:9px 9px 9px 16px;border-radius:100px;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;z-index:999;display:flex;align-items:center;gap:10px;}
+.undo-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.undo-toast button{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:var(--muted);}
@@ -319,6 +337,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <div id="app-screen">
   <div class="topbar">
     <div class="tb-left">
+      <div class="hamburger-btn" onclick="openDrawer()" aria-label="Menu"><span></span><span></span><span></span></div>
       <div class="tb-av" id="tb-av"></div>
       <div>
         <div class="tb-name">Expenses<span> Tracker</span></div>
@@ -326,10 +345,25 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
     </div>
     <div class="tb-right">
-      <div class="theme-toggle" id="theme-toggle-app" onclick="toggleTheme()">🌙</div>
       <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
-      <div class="pill-btn" onclick="doLogout()">Logout</div>
     </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="side-drawer" id="side-drawer">
+    <div class="drawer-profile">
+      <div class="drawer-av" id="drawer-av"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--text)" id="drawer-name"></div>
+      <div style="font-size:12px;color:var(--muted)" id="drawer-username"></div>
+    </div>
+    <div class="drawer-item" onclick="closeDrawer();showMonthPicker()"><span class="di-icon">📅</span> Filter by Month</div>
+    <div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4])"><span class="di-icon">⚙️</span> Manage Account</div>
+    <div class="drawer-item" onclick="openSwitchAccountModal()"><span class="di-icon">🔀</span> Switch Account</div>
+    <div class="drawer-item" onclick="toggleTheme()"><span class="di-icon" id="drawer-theme-icon">🌙</span> <span id="drawer-theme-label">Switch to Light Theme</span></div>
+    <div class="drawer-item" onclick="toggleTextSize()"><span class="di-icon">🔠</span> <span id="drawer-textsize-label">Switch to Large Text</span></div>
+    <div class="drawer-item" onclick="closeDrawer();showChangePwModal()"><span class="di-icon">🔑</span> Change Password</div>
+    <div class="drawer-item" style="color:var(--red);margin-top:auto" onclick="doLogout()"><span class="di-icon">🚪</span> Logout</div>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.png" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
   </div>
 
   <!-- HOME -->
@@ -338,6 +372,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="hero-label">Net Balance</div>
       <div class="hero-amt" id="grand-total">₹0</div>
       <div class="hero-period" id="total-period">All time</div>
+    </div>
+    <div class="card" id="upcoming-week-card" style="display:none;">
+      <div class="card-title" style="margin-bottom:8px">📅 Upcoming This Week</div>
+      <div id="upcoming-week-list"></div>
     </div>
     <div class="card" id="streak-card" style="display:none;text-align:center;background:linear-gradient(135deg,rgba(255,179,0,.1),rgba(108,99,255,.08));">
       <div style="font-size:22px;line-height:1" id="streak-flame">🔥</div>
@@ -349,6 +387,15 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="dp-amt" id="home-combined-total" style="font-size:26px">₹0</div>
       <div class="dp-count" id="home-combined-count">0 entries</div>
     </div>
+    <div class="card" id="home-insight-card" style="display:none;padding:12px 16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px" id="home-insight-emoji">📊</span>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--muted)">Top spending category</div>
+          <div style="font-size:14px;font-weight:700" id="home-insight-text">—</div>
+        </div>
+      </div>
+    </div>
     <div class="card" id="budget-card" style="display:none">
       <div class="card-title">🎯 Monthly Budget</div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
@@ -359,6 +406,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <div class="bar-fill" id="budget-bar-fill" style="height:8px;border-radius:8px;width:0%;background:var(--accent)"></div>
       </div>
       <div style="font-size:12px;margin-top:8px" id="budget-status-msg"></div>
+      <div style="font-size:12px;margin-top:6px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted)" id="budget-projection"></div>
     </div>
     <div class="dp-grid">
       <div class="dp-card">
@@ -517,6 +565,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <!-- PROFILE EDIT -->
     <div class="card">
       <div class="card-title">👤 Edit Profile</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px" id="profile-stats-row"></div>
       <div class="av-wrap" style="margin-bottom:14px">
         <div class="av-box" id="profile-av-box" onclick="document.getElementById('profile-av-file').click()"><span id="profile-av-ph">📷</span></div>
         <div class="av-hint">Tap to change profile photo</div>
@@ -602,6 +651,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <span style="font-size:20px" id="bio-toggle-icon">👆</span>
         <div><div id="bio-toggle-title">Enable Biometric Login</div><div style="font-size:11px;color:var(--muted);margin-top:2px" id="bio-toggle-sub">Use fingerprint / Face unlock instead of password</div></div>
       </button>
+      <button class="exp-btn" onclick="confirmDeleteAccount()">
+        <span style="font-size:20px">⚠️</span>
+        <div><div style="color:var(--red)">Delete Account</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Permanently erase your account and all data</div></div>
+      </button>
+      <div style="font-size:11px;color:var(--muted);margin:6px 0 8px;">🔒 Auto-locks after 5 minutes of inactivity</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">🕒 Recent Logins (this device)</div>
+      <div id="login-activity-list" style="font-size:12px;color:var(--muted);line-height:1.9"></div>
     </div>
     <!-- Telegram Bot Integration -->
     <div class="card tg-card" id="admin-tg-section" style="display:none">
@@ -738,6 +794,16 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   </div>
 </div>
 
+<!-- SWITCH ACCOUNT MODAL -->
+<div class="modal-overlay" id="switch-account-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔀 Switch Account</div>
+    <div id="switch-account-list" style="max-height:280px;overflow-y:auto;margin-bottom:10px"></div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted)" onclick="document.getElementById('switch-account-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
 <!-- IMAGE CROP MODAL -->
 <div id="crop-modal">
   <div class="crop-title">Adjust Profile Photo</div>
@@ -794,6 +860,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="undo-toast" id="undo-toast"><span id="undo-toast-msg"></span><button onclick="performUndo()">Undo</button></div>
 
 <script>
 // ── EMAILJS CONFIG ── Fill these in from your EmailJS dashboard (see EMAILJS_SETUP.md). ──
@@ -854,6 +921,10 @@ function applyTheme(t){
   if(appBtn)appBtn.textContent=icon;
   if(authBtn)authBtn.textContent=icon;
   if(lockBtn)lockBtn.textContent=icon;
+  const drawerIcon=document.getElementById('drawer-theme-icon');
+  const drawerLabel=document.getElementById('drawer-theme-label');
+  if(drawerIcon)drawerIcon.textContent=icon;
+  if(drawerLabel)drawerLabel.textContent=t==='light'?'Switch to Dark Theme':'Switch to Light Theme';
   const metaTheme=document.querySelector('meta[name="theme-color"]');
   if(metaTheme)metaTheme.setAttribute('content',t==='light'?'#f4f5fa':'#0f1117');
 }
@@ -863,6 +934,20 @@ function toggleTheme(){
   applyTheme(next);
 }
 applyTheme(getTheme()); // apply immediately on script load, before login, so it's consistent from the first paint
+
+// ── Large text accessibility mode (item #47) — saved globally on this device ──
+function getTextSize(){return localStorage.getItem('exp_textsize')||'normal';}
+function applyTextSize(sz){
+  document.documentElement.setAttribute('data-textsize',sz);
+  const label=document.getElementById('drawer-textsize-label');
+  if(label)label.textContent=sz==='large'?'Switch to Normal Text':'Switch to Large Text';
+}
+function toggleTextSize(){
+  const next=getTextSize()==='large'?'normal':'large';
+  localStorage.setItem('exp_textsize',next);
+  applyTextSize(next);
+}
+applyTextSize(getTextSize());
 
 let CU=null,selMonth=null,selCat=null,filterMonth='All',selDebtType=null,pendingAv=null,selEntryType='expense',histSearch='';
 let editIndex=null,editMonth=null,editCat=null;
@@ -959,7 +1044,7 @@ function applyCrop(){
   if(CU){
     const av=document.getElementById('tb-av');
     av.innerHTML=`<img src="${pendingAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    const users=getUsers();if(users[CU]){users[CU].avatar=pendingAv;saveUsers(users);}
+    const users=getUsers();if(users[CU]){users[CU].avatar=pendingAv;saveUsers(users);syncDrawerProfile(users[CU]);}
   }
 }
 (function(){
@@ -1058,11 +1143,39 @@ function doLogout(){
   document.getElementById('lu').value='';document.getElementById('lp').value='';
   document.getElementById('lerr').textContent='';switchAuthTab('login');
 }
+// ── Permanently delete the current account + every trace of its data from this browser ──
+function confirmDeleteAccount(){
+  if(!CU)return;
+  if(!confirm('Delete your account and ALL your data permanently? This cannot be undone.'))return;
+  const typed=prompt('Type DELETE to confirm permanently erasing the account "'+CU+'":');
+  if(typed!=='DELETE'){showToast('Cancelled — account not deleted','#ffb300');return;}
+  const deletedUser=CU;
+  const users=getUsers();
+  delete users[deletedUser];
+  saveUsers(users);
+  // Sweep every localStorage key that belongs to this user (expenses, debts, reminders,
+  // categories, budget, celebration flags, etc.) — anything prefixed with their username.
+  const prefixes=['exp_'+deletedUser+'_','budgetCel_'+deletedUser+'_','savingsCelMax_'+deletedUser];
+  const toRemove=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(prefixes.some(p=>k===p||k.startsWith(p)))toRemove.push(k);
+  }
+  toRemove.forEach(k=>localStorage.removeItem(k));
+  localStorage.removeItem('exp_session');
+  CU=null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  switchAuthTab('login');
+  alert('Your account and all associated data have been permanently deleted from this device.');
+}
 
 // ── LOCK SCREEN (always shown on session resume) ──
 function showLockScreen(username){
   const users=getUsers();
   const profile=users[username];
+  document.getElementById('app-screen').style.display='none';
   document.getElementById('lock-screen').style.display='flex';
   document.getElementById('lock-user-display').textContent='Logged in as: '+username;
   document.getElementById('lock-pw').value='';
@@ -1072,6 +1185,18 @@ function showLockScreen(username){
   const bioBtn=document.getElementById('bio-btn');
   bioBtn.style.display=(window.PublicKeyCredential&&profile&&profile.bioCredId)?'flex':'none';
 }
+// ── Session auto-lock: after 5 minutes with no tap/click/scroll/keypress, show the lock ──
+// ── screen again (still logged in — just requires the password/biometric to resume). ──
+const INACTIVITY_LIMIT_MS=5*60*1000;
+let _inactivityTimer=null;
+function resetInactivityTimer(){
+  if(!CU)return;
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer=setTimeout(()=>{
+    if(CU)showLockScreen(CU);
+  },INACTIVITY_LIMIT_MS);
+}
+['click','touchstart','keydown','scroll'].forEach(evt=>document.addEventListener(evt,resetInactivityTimer,{passive:true}));
 // ── WebAuthn helpers (ArrayBuffer <-> base64) ──
 function bufToB64(buf){
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
@@ -1173,14 +1298,96 @@ async function doBiometric(){
   }
 }
 
+function syncDrawerProfile(profile){
+  if(!profile)return;
+  const av=document.getElementById('drawer-av');
+  if(av){
+    if(profile.avatar)av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    else av.textContent=(profile.name||CU||'?').charAt(0).toUpperCase();
+  }
+  const nameEl=document.getElementById('drawer-name');
+  if(nameEl)nameEl.textContent=profile.name||CU;
+  const userEl=document.getElementById('drawer-username');
+  if(userEl)userEl.textContent='@'+CU;
+}
+function openDrawer(){
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('side-drawer').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('side-drawer').classList.remove('open');
+}
+// ── Switch Account (item #4) — lists other accounts already used on this device ──
+function openSwitchAccountModal(){
+  closeDrawer();
+  const users=getUsers();
+  const others=Object.keys(users).filter(u=>u!==CU&&!(users[u].isAdmin&&u===ADMIN_USERNAME));
+  const list=document.getElementById('switch-account-list');
+  if(!others.length){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0">No other accounts on this device yet.<br>Log out and sign up to add one.</div>';
+  } else {
+    list.innerHTML=others.map(u=>{
+      const p=users[u];
+      const av=p.avatar?`<img src="${p.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(p.name||u).charAt(0).toUpperCase();
+      return `<div class="manage-row" style="cursor:pointer" onclick="switchToAccount('${u}')">
+        <div class="tb-av" style="margin-right:10px">${av}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${p.name||u}</div><div style="font-size:11px;color:var(--muted)">@${u}</div></div>
+        <span style="color:var(--muted);font-size:16px">›</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('switch-account-modal').classList.add('open');
+}
+function switchToAccount(username){
+  document.getElementById('switch-account-modal').classList.remove('open');
+  doLogout();
+  switchAuthTab('login');
+  document.getElementById('lu').value=username;
+  document.getElementById('lp').focus();
+  showToast('Enter password for @'+username,'#6c63ff');
+}
+// ── Login activity log — last 10 sessions on this device, per account (item #29) ──
+function logLoginActivity(){
+  if(!CU)return;
+  const key=uKey('loginLog');
+  const log=JSON.parse(localStorage.getItem(key)||'[]');
+  log.unshift({ts:Date.now(),device:getSimpleDeviceLabel()});
+  localStorage.setItem(key,JSON.stringify(log.slice(0,10)));
+}
+function getSimpleDeviceLabel(){
+  const ua=navigator.userAgent;
+  let os='Unknown device';
+  if(/iPhone|iPad/.test(ua))os='iPhone/iPad';
+  else if(/Android/.test(ua))os='Android';
+  else if(/Windows/.test(ua))os='Windows';
+  else if(/Macintosh/.test(ua))os='Mac';
+  else if(/Linux/.test(ua))os='Linux';
+  let browser='';
+  if(/Edg/.test(ua))browser='Edge';
+  else if(/Chrome/.test(ua))browser='Chrome';
+  else if(/Firefox/.test(ua))browser='Firefox';
+  else if(/Safari/.test(ua))browser='Safari';
+  return os+(browser?' · '+browser:'');
+}
+function renderLoginActivity(){
+  const el=document.getElementById('login-activity-list');
+  if(!el||!CU)return;
+  const log=JSON.parse(localStorage.getItem(uKey('loginLog'))||'[]');
+  if(!log.length){el.textContent='No login history yet.';return;}
+  el.innerHTML=log.map((l,i)=>`${i===0?'<span style="color:var(--green)">●</span>':'○'} ${new Date(l.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})} — ${l.device}`).join('<br>');
+}
 function startApp(profile){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
+  resetInactivityTimer();
+  logLoginActivity();
   const av=document.getElementById('tb-av');
   if(profile.avatar){av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
+  syncDrawerProfile(profile);
   selMonth=MONTHS[new Date().getMonth()];
   document.getElementById('expense-date').value=new Date().toISOString().split('T')[0];
   // Populate reminder day select
@@ -1221,7 +1428,21 @@ function switchTab(name,el){
 
 // ── HELPERS ──
 function emoji(c){return EMOJIS[c]||'💰';}
-function color(c){const cats=getCats();let i=cats.indexOf(c);return COLORS[(i<0?0:i)%COLORS.length];}
+function color(c){
+  const cc=getCatColors();
+  if(cc[c])return cc[c];
+  const cats=getCats();let i=cats.indexOf(c);return COLORS[(i<0?0:i)%COLORS.length];
+}
+function getCatColors(){return JSON.parse(localStorage.getItem(uKey('catColors'))||'{}');}
+function saveCatColors(c){localStorage.setItem(uKey('catColors'),JSON.stringify(c));}
+function setCatColor(catName,hex){
+  const cc=getCatColors();cc[catName]=hex;saveCatColors(cc);
+  renderManage();renderHome();
+}
+function resetCatColor(catName){
+  const cc=getCatColors();delete cc[catName];saveCatColors(cc);
+  renderManage();renderHome();
+}
 function fmt(n){return'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
 // ── Animated count-up for currency figures — makes switching months/filters feel ──
 // ── alive instead of numbers just snapping to their new value. ──
@@ -1281,6 +1502,39 @@ function updateStreak(data){
   document.getElementById('streak-count').textContent=streak+' day'+(streak===1?'':'s')+' streak';
   document.getElementById('streak-flame').textContent=streak>=30?'🔥🔥🔥':streak>=7?'🔥🔥':'🔥';
 }
+function renderUpcomingWeek(){
+  const rems=getReminders().filter(r=>r.active!==false);
+  const today=new Date();
+  const todayDate=today.getDate();
+  const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  const mk=monthKeyNow();
+  const upcoming=[];
+  rems.forEach(r=>{
+    let daysUntil,isPaidThisCycle;
+    if(r.day>=todayDate){
+      daysUntil=r.day-todayDate;
+      isPaidThisCycle=!!(r.paid&&r.paid[mk]);
+    } else {
+      daysUntil=(daysInMonth-todayDate)+r.day;
+      isPaidThisCycle=false;
+    }
+    if(daysUntil<=7&&!isPaidThisCycle)upcoming.push(Object.assign({},r,{daysUntil}));
+  });
+  upcoming.sort((a,b)=>a.daysUntil-b.daysUntil);
+  const card=document.getElementById('upcoming-week-card');
+  if(!card)return;
+  if(!upcoming.length){card.style.display='none';return;}
+  card.style.display='block';
+  document.getElementById('upcoming-week-list').innerHTML=upcoming.map((r,i)=>{
+    const label=r.daysUntil===0?'Today':r.daysUntil===1?'Tomorrow':'In '+r.daysUntil+' days';
+    const isIncome=r.type==='income';
+    const last=i===upcoming.length-1;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${last?'':'border-bottom:1px solid var(--border)'}">
+      <span style="font-size:16px">${isIncome?'💰':'🔔'}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${r.name}</div><div style="font-size:11px;color:var(--muted)">${label} · ${fmt(r.amount)}</div></div>
+    </div>`;
+  }).join('');
+}
 function renderHome(){
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
@@ -1316,6 +1570,16 @@ function renderHome(){
   expense.forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
   const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
   const max=sorted[0]?sorted[0][1]:1;
+  const insightCard=document.getElementById('home-insight-card');
+  if(sorted.length){
+    const [topCat,topAmt]=sorted[0];
+    const topPct=expenseAmt>0?Math.round((topAmt/expenseAmt)*100):0;
+    insightCard.style.display='block';
+    document.getElementById('home-insight-emoji').textContent=emoji(topCat);
+    document.getElementById('home-insight-text').innerHTML=`${topCat} — ${fmt(topAmt)} <span style="color:var(--muted);font-weight:500">(${topPct}% of ${filterMonth==='All'?'all-time':filterMonth} spending)</span>`;
+  } else {
+    insightCard.style.display='none';
+  }
   let html='';
   if(!sorted.length)html='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">📊</div><p>No expenses yet — add one to see your category breakdown.</p></div>';
   sorted.forEach(([cat,amt])=>{
@@ -1354,9 +1618,22 @@ function renderHome(){
     if(over){msgEl.innerHTML=`<span style="color:var(--red);font-weight:700">⚠️ ${fmt(monthExpense-budgetLimit)} over budget!</span>`;}
     else if(pct>80){msgEl.innerHTML=`<span style="color:var(--amber);font-weight:700">⚠️ Almost there — ${fmt(budgetLimit-monthExpense)} left</span>`;}
     else{msgEl.innerHTML=`<span style="color:var(--muted)">${fmt(budgetLimit-monthExpense)} remaining this month</span>`;}
+    // Days-left vs money-left projection
+    const now2=new Date();
+    const daysInMonth=new Date(now2.getFullYear(),now2.getMonth()+1,0).getDate();
+    const daysLeft=daysInMonth-now2.getDate()+1;
+    const projEl=document.getElementById('budget-projection');
+    if(over){
+      projEl.innerHTML=`📅 ${daysLeft} day${daysLeft===1?'':'s'} left this month`;
+    } else {
+      const moneyLeft=budgetLimit-monthExpense;
+      const perDay=daysLeft>0?moneyLeft/daysLeft:moneyLeft;
+      projEl.innerHTML=`📅 ${daysLeft} day${daysLeft===1?'':'s'} left · <b style="color:var(--text)">${fmt(perDay)}/day</b> to stay on budget`;
+    }
   } else {
     budgetCard.style.display='none';
   }
+  renderUpcomingWeek();
 }
 
 // ── ADD EXPENSE ──
@@ -1507,10 +1784,17 @@ function initSwipeToDelete(containerId){
 function setFilter(m){filterMonth=m;document.getElementById('month-modal').classList.remove('open');renderHome();renderHistory();}
 function onHistSearch(v){histSearch=v;renderHistory();}
 function delEntry(i){
-  if(confirm('Delete this entry?')){
-    const d=getData();d.splice(i,1);saveData(d);renderHistory();renderHome();showToast('Deleted','#ff6584');
-    haptic('delete');
-  }
+  const d=getData();
+  const removed=d[i];
+  if(!removed)return;
+  d.splice(i,1);saveData(d);renderHistory();renderHome();
+  haptic('delete');
+  showUndoToast('Entry deleted',()=>{
+    const d2=getData();
+    d2.splice(i,0,removed);
+    saveData(d2);renderHistory();renderHome();
+    showToast('✅ Restored');
+  });
 }
 // ── EDIT ENTRY ──
 function openEditEntry(i){
@@ -1744,7 +2028,8 @@ function renderManage(){
   if(!cats.length)html='<div style="color:var(--muted);font-size:13px;padding:6px 0">No categories.</div>';
   cats.forEach((c,i)=>{
     const cl=color(c);
-    html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${c}</span><div style="width:10px;height:10px;border-radius:50%;background:${cl};margin-right:8px"></div><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
+    const isCustom=!!getCatColors()[c];
+    html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${c}</span>${isCustom?`<button onclick="resetCatColor('${c}')" title="Reset to default color" style="background:none;border:none;color:var(--muted);font-size:10px;margin-right:4px;cursor:pointer;">↺</button>`:''}<input type="color" value="${cl}" onchange="setCatColor('${c}',this.value)" title="Choose a custom color for ${c}" style="width:20px;height:20px;border:none;border-radius:50%;padding:0;margin-right:8px;cursor:pointer;background:none;"/><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
   });
   document.getElementById('manage-cat-list').innerHTML=html;
   document.getElementById('budget-limit-input').value=getBudgetLimit()||'';
@@ -1761,6 +2046,19 @@ function renderManage(){
     const pavBox=document.getElementById('profile-av-box');
     if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}"/>`;}
     else{pavBox.innerHTML=`<span id="profile-av-ph">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
+    // Profile stats: member since + total entries logged
+    const memberSince=profile.createdAt?new Date(profile.createdAt).toLocaleDateString('en-IN',{month:'short',year:'numeric'}):'—';
+    const totalEntries=getData().length;
+    document.getElementById('profile-stats-row').innerHTML=`
+      <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center;">
+        <div style="font-size:15px;font-weight:700">${memberSince}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Member since</div>
+      </div>
+      <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center;">
+        <div style="font-size:15px;font-weight:700">${totalEntries}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Entries logged</div>
+      </div>`;
+    renderLoginActivity();
   }
   // Biometric login toggle state
   const bioBtn=document.getElementById('bio-toggle-btn');
@@ -1991,6 +2289,7 @@ function saveProfile(){
   if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
+  syncDrawerProfile(users[CU]);
   showToast('✅ Profile updated!');
 }
 
@@ -2268,19 +2567,30 @@ function renderReminders(){
   el.innerHTML=rems.map(r=>{
     const isPaid=r.paid&&r.paid[mk];
     const isIncome=r.type==='income';
+    const isPaused=r.active===false;
     return `
-    <div class="rem-row">
-      <span style="font-size:20px">${isPaid?'✅':(isIncome?'💰':'🔔')}</span>
+    <div class="rem-row" style="${isPaused?'opacity:.5':''}">
+      <span style="font-size:20px">${isPaused?'⏸️':isPaid?'✅':(isIncome?'💰':'🔔')}</span>
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:600">${r.name}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}</div>
+        <div style="font-size:14px;font-weight:600">${r.name}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}${isPaused?' <span style="font-size:10px;color:var(--muted);font-weight:700">PAUSED</span>':''}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px"><span style="color:${isIncome?'var(--green)':'var(--text)'}">${fmt(r.amount)}</span> · Every month on <b>day ${r.day}</b></div>
       </div>
-      ${isPaid
+      ${!isPaused?(isPaid
         ?`<button class="clear-btn active" style="margin-right:4px" onclick="unmarkReminderPaid(${r.id})">${isIncome?'Received ✓':'Paid ✓'}</button>`
-        :`<button class="clear-btn inactive" style="margin-right:4px" onclick="markReminderPaid(${r.id})">${isIncome?'Mark Received':'Mark Paid'}</button>`}
+        :`<button class="clear-btn inactive" style="margin-right:4px" onclick="markReminderPaid(${r.id})">${isIncome?'Mark Received':'Mark Paid'}</button>`):''}
+      <button class="del-btn" style="margin-right:4px;font-size:14px" onclick="toggleReminderActive(${r.id})" title="${isPaused?'Resume':'Pause'}">${isPaused?'▶️':'⏸️'}</button>
       <button class="del-btn" onclick="deleteReminder(${r.id})">✕</button>
     </div>`;
   }).join('');
+}
+function toggleReminderActive(id){
+  const rems=getReminders();
+  const r=rems.find(x=>x.id===id);
+  if(!r)return;
+  r.active=r.active===false?true:false;
+  saveReminders(rems);
+  renderReminders();
+  showToast(r.active?'▶️ Reminder resumed':'⏸️ Reminder paused','#ffb300');
 }
 function checkReminders(){
   const today=new Date().getDate();
@@ -2482,6 +2792,21 @@ function showToast(msg,c){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=c||'var(--green)';t.style.color=c?'#fff':'#052e1c';
   t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+// ── Undo toast: shows a dismissable "Undo" action for 5s after a destructive change. ──
+let _undoAction=null,_undoTimer=null;
+function showUndoToast(msg,restoreFn){
+  _undoAction=restoreFn;
+  document.getElementById('undo-toast-msg').textContent=msg;
+  const t=document.getElementById('undo-toast');
+  t.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(()=>{t.classList.remove('show');_undoAction=null;},5000);
+}
+function performUndo(){
+  if(_undoAction){_undoAction();_undoAction=null;}
+  document.getElementById('undo-toast').classList.remove('show');
+  clearTimeout(_undoTimer);
 }
 // ── Haptic feedback — subtle vibration on supported devices (mostly Android). ──
 // ── Silently does nothing on iOS/desktop, which don't support the Vibration API. ──
