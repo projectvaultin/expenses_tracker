@@ -13,8 +13,8 @@
 <title>Expenses Tracker — by ProjectVault</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--placeholder:rgba(122,125,153,.45);--card-shadow:none;--card-r:20px;--topbar-bg:rgba(15,17,23,.92);--tabs-bg:rgba(26,29,39,.97);--scheme:dark;}
-html[data-theme="light"]{--bg:#eef0f6;--surface:#ffffff;--surface2:#f1f2f9;--border:rgba(20,21,29,0.12);--accent:#6c63ff;--red:#e0355a;--green:#00a86b;--amber:#c98200;--text:#14151d;--muted:#65677f;--placeholder:rgba(101,103,127,.55);--card-shadow:0 1px 3px rgba(20,21,29,.07),0 1px 2px rgba(20,21,29,.05);--card-r:20px;--topbar-bg:rgba(255,255,255,.92);--tabs-bg:rgba(255,255,255,.97);--scheme:light;}
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--placeholder:rgba(122,125,153,.45);--card-shadow:none;--chip-shadow:none;--card-r:20px;--topbar-bg:rgba(15,17,23,.92);--tabs-bg:rgba(26,29,39,.97);--scheme:dark;}
+html[data-theme="light"]{--bg:#eef0f6;--surface:#ffffff;--surface2:#f1f2f9;--border:rgba(20,21,29,0.16);--accent:#6c63ff;--red:#e0355a;--green:#00a86b;--amber:#c98200;--text:#14151d;--muted:#52546b;--placeholder:rgba(82,84,107,.55);--card-shadow:0 1px 3px rgba(20,21,29,.07),0 1px 2px rgba(20,21,29,.05);--chip-shadow:0 1px 2px rgba(20,21,29,.05);--card-r:20px;--topbar-bg:rgba(255,255,255,.92);--tabs-bg:rgba(255,255,255,.97);--scheme:light;}
 html{transition:background-color .25s ease;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;transition:background-color .25s ease,color .25s ease;}
@@ -66,7 +66,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .tb-name span{color:var(--accent);}
 .tb-sub{font-size:11px;color:var(--muted);margin-top:1px;}
 .tb-right{display:flex;gap:7px;}
-.pill-btn{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;position:relative;}
+.pill-btn{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;position:relative;box-shadow:var(--chip-shadow);}
 .pill-btn:active{background:var(--accent);color:#fff;}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:var(--red);border-radius:50%;border:2px solid var(--bg);animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
@@ -103,7 +103,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
 .sgrid.m3{grid-template-columns:repeat(3,1fr);}
 .sgrid.m4{grid-template-columns:repeat(4,1fr);}
-.sel-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 5px;font-size:13px;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.sel-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 5px;font-size:13px;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;box-shadow:var(--chip-shadow);}
 .sel-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500;}
 .sel-btn:active{transform:scale(.96);}
 .amt-wrap{position:relative;margin-bottom:15px;}
@@ -117,7 +117,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 /* Payment mode */
 .pay-mode-wrap{margin-bottom:13px;}
 .pay-mode-row{display:flex;gap:8px;margin-bottom:8px;}
-.pay-chip{flex:1;padding:11px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.pay-chip{flex:1;padding:11px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;box-shadow:var(--chip-shadow);}
 .pay-chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
 .upi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1);}
 .upi-grid.open{max-height:200px;}
@@ -165,7 +165,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 /* HISTORY */
 .mscroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:11px;scrollbar-width:none;}
 .mscroll::-webkit-scrollbar{display:none;}
-.mchip{flex-shrink:0;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.mchip{flex-shrink:0;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;box-shadow:var(--chip-shadow);}
 .mchip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 /* MANAGE */
 .manage-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
@@ -227,7 +227,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .crop-btn.apply{background:var(--accent);color:#fff;}
 /* Debt filter */
 .debt-filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
-.dfilter-chip{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.dfilter-chip{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;box-shadow:var(--chip-shadow);}
 .dfilter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 /* Debt partial repayment */
 .repay-row{display:flex;gap:6px;margin-top:8px;align-items:center;}
@@ -256,7 +256,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <body>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
-<div id="lock-screen" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
+<div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
+  <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px">🌙</div>
   <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
@@ -274,6 +275,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
     </div>
   </div>
+  <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:5px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ AUTH ═══════════ -->
@@ -310,7 +312,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--muted);letter-spacing:.3px;">Powered by <span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
+  <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:5px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ APP ═══════════ -->
@@ -848,8 +850,10 @@ function applyTheme(t){
   const icon=t==='light'?'☀️':'🌙';
   const appBtn=document.getElementById('theme-toggle-app');
   const authBtn=document.getElementById('theme-toggle-auth');
+  const lockBtn=document.getElementById('theme-toggle-lock');
   if(appBtn)appBtn.textContent=icon;
   if(authBtn)authBtn.textContent=icon;
+  if(lockBtn)lockBtn.textContent=icon;
   const metaTheme=document.querySelector('meta[name="theme-color"]');
   if(metaTheme)metaTheme.setAttribute('content',t==='light'?'#f4f5fa':'#0f1117');
 }
