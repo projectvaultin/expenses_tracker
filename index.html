@@ -492,6 +492,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div id="pay-mode-display" style="font-size:12px;color:var(--accent);margin-bottom:12px;min-height:16px;"></div>
       <div class="form-label">Tags <span style="color:var(--muted);font-weight:400">(optional, comma-separated)</span></div>
       <input type="text" class="ti" id="expense-tags" placeholder="e.g. work, Goa trip, urgent" style="width:100%;margin-bottom:13px"/>
+      <div class="form-label">Receipt Photo <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+      <div id="receipt-preview-wrap" style="margin-bottom:13px">
+        <div id="receipt-add-btn" onclick="document.getElementById('receipt-file').click()" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px dashed var(--border);border-radius:14px;padding:12px;cursor:pointer;font-size:13px;color:var(--muted)">
+          <span style="font-size:18px">📎</span> Attach a photo of the receipt
+        </div>
+        <input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="handleReceiptPhoto(event)"/>
+      </div>
       <button class="save-btn" id="save-exp-btn" onclick="saveExpense()" style="background:var(--red)">Save Expense</button>
     </div>
     <!-- MONTHLY REMINDERS -->
@@ -1788,6 +1795,32 @@ function getPayModeLabel(){
   if(selPayMode==='card')return'Card';
   if(selPayMode==='bank')return'Bank Transfer';
   return'';
+}
+let pendingReceipt=null;
+function handleReceiptPhoto(e){
+  const f=e.target.files[0];if(!f)return;
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    img.onload=()=>{
+      // Compress aggressively — receipts are just for reference, not archival quality,
+      // and localStorage has a small total quota shared across every entry.
+      const maxW=500;
+      const scale=Math.min(1,maxW/img.width);
+      const canvas=document.createElement('canvas');
+      canvas.width=img.width*scale;canvas.height=img.height*scale;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      pendingReceipt=canvas.toDataURL('image/jpeg',.6);
+      document.getElementById('receipt-preview-wrap').innerHTML=`
+        <div style="position:relative;display:inline-block">
+          <img src="${pendingReceipt}" style="max-width:100px;max-height:100px;border-radius:10px;border:1px solid var(--border)"/>
+          <button onclick="pendingReceipt=null;renderAddForm()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:11px;cursor:pointer">✕</button>
+        </div>`;
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
 }
 function saveExpense(){
   const amt=parseFloat(document.getElementById('amount-input').value);
