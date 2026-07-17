@@ -277,7 +277,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
-  <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px">🌙</div>
+  <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
   <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
@@ -300,7 +300,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ AUTH ═══════════ -->
 <div id="auth-screen">
-  <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px">🌙</div>
+  <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
   <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
   <div class="auth-card">
@@ -585,7 +585,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <span style="color:var(--muted);font-size:16px">›</span>
     </div>
     <!-- PROFILE EDIT -->
-    <div class="card">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div id="cover-photo-box" onclick="document.getElementById('cover-photo-file').click()" style="height:100px;background:linear-gradient(135deg,rgba(108,99,255,.25),rgba(0,208,132,.15));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">
+        <span id="cover-photo-ph" style="font-size:12px;color:var(--muted);background:rgba(0,0,0,.4);padding:6px 12px;border-radius:100px;">📷 Tap to add a cover photo</span>
+      </div>
+      <input type="file" id="cover-photo-file" accept="image/*" style="display:none" onchange="handleCoverPhoto(event)"/>
+      <div style="padding:16px">
       <div class="card-title">👤 Edit Profile</div>
       <div style="display:flex;gap:8px;margin-bottom:14px" id="profile-stats-row"></div>
       <div class="av-wrap" style="margin-bottom:14px">
@@ -598,6 +603,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input class="ai" id="edit-email" type="email" placeholder="you@gmail.com"/></div>
       <div class="fl"><div class="fl-label">Mobile Number</div><input class="ai" id="edit-mobile" type="tel" placeholder="10-digit mobile" maxlength="10"/></div>
       <button class="save-btn" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎭 Your Money Personality</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">A fun, light-hearted read on your spending habits based on your logged entries.</div>
+      <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="showMoneyPersonality()">✨ Reveal My Money Personality</button>
     </div>
     <!-- MONTHLY STATEMENT -->
     <div class="card">
@@ -731,25 +742,25 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   </div>
 
   <!-- TABS -->
-  <nav class="tabs">
-    <div class="tab active" onclick="switchTab('home',this)">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  <nav class="tabs" role="tablist" aria-label="Main navigation">
+    <div class="tab active" onclick="switchTab('home',this)" role="tab" aria-selected="true" aria-label="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span class="tab-label">Home</span>
     </div>
-    <div class="tab" onclick="switchTab('add',this)">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <div class="tab" onclick="switchTab('add',this)" role="tab" aria-selected="false" aria-label="Add expense or income">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       <span class="tab-label">Add</span>
     </div>
-    <div class="tab" onclick="switchTab('history',this)">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <div class="tab" onclick="switchTab('history',this)" role="tab" aria-selected="false" aria-label="History">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span class="tab-label">History</span>
     </div>
-    <div class="tab" onclick="switchTab('debt',this)">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <div class="tab" onclick="switchTab('debt',this)" role="tab" aria-selected="false" aria-label="Debts">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       <span class="tab-label">Debts</span>
     </div>
-    <div class="tab" onclick="switchTab('manage',this)">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    <div class="tab" onclick="switchTab('manage',this)" role="tab" aria-selected="false" aria-label="Manage account">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       <span class="tab-label">Manage</span>
     </div>
   </nav>
@@ -1465,9 +1476,10 @@ function startApp(profile){
 // ── TABS ──
 function switchTab(name,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false');});
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
+  el.setAttribute('aria-selected','true');
   if(name==='home')renderHome();
   if(name==='add')renderAddForm();
   if(name==='history')renderHistory();
@@ -2152,6 +2164,11 @@ function renderManage(){
     const pavBox=document.getElementById('profile-av-box');
     if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}"/>`;}
     else{pavBox.innerHTML=`<span id="profile-av-ph">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
+    const coverBox=document.getElementById('cover-photo-box');
+    if(coverBox){
+      if(profile.coverPhoto){coverBox.style.backgroundImage=`url(${profile.coverPhoto})`;const ph=document.getElementById('cover-photo-ph');if(ph)ph.style.display='none';}
+      else{coverBox.style.backgroundImage='';const ph=document.getElementById('cover-photo-ph');if(ph)ph.style.display='inline-block';}
+    }
     // Profile stats: member since + total entries logged
     const memberSince=profile.createdAt?new Date(profile.createdAt).toLocaleDateString('en-IN',{month:'short',year:'numeric'}):'—';
     const totalEntries=getData().length;
@@ -2368,6 +2385,20 @@ function importAccount(e){
 }
 
 // ── PROFILE EDIT ──
+let pendingCover=null;
+function handleCoverPhoto(e){
+  const f=e.target.files[0];if(!f)return;
+  if(f.size>3*1024*1024){showToast('Image too large (max 3MB)','#ffb300');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    pendingCover=ev.target.result;
+    const box=document.getElementById('cover-photo-box');
+    box.style.backgroundImage=`url(${pendingCover})`;
+    const ph=document.getElementById('cover-photo-ph');
+    if(ph)ph.style.display='none';
+  };
+  r.readAsDataURL(f);
+}
 function handleProfileAvatar(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -2389,6 +2420,7 @@ function saveProfile(){
   users[CU].mobile=mobile||null;
   // If a new avatar was cropped after opening manage tab
   if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
+  if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
   // Update topbar
   const av=document.getElementById('tb-av');
@@ -2953,6 +2985,30 @@ function addRepayment(i){
 // ── INIT ENSURE ADMIN handled in INIT block below ──
 
 
+function showMoneyPersonality(){
+  const data=getData();
+  if(data.length<3){showToast('Log a few more entries first — need more data for this! 📊','#ffb300');return;}
+  const income=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  const savingsRate=income>0?(income-expense)/income:(expense>0?-1:0);
+  const bycat={};
+  data.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
+  const topCat=Object.entries(bycat).sort((a,b)=>b[1]-a[1])[0];
+  let persona,personaEmoji,desc;
+  if(savingsRate>=0.3){persona='The Vault Keeper';personaEmoji='🏦';desc="You save aggressively and think ahead. Future you is very grateful.";}
+  else if(savingsRate>=0.1){persona='The Balanced Planner';personaEmoji='⚖️';desc="You spend on what matters and still tuck money away. Solid instincts.";}
+  else if(savingsRate>=0){persona='The Tightrope Walker';personaEmoji='🎪';desc="You're right on the edge of your budget — impressive control, but not much cushion.";}
+  else{persona='The Free Spirit';personaEmoji='🦋';desc="You spend more than you earn right now — no judgment, but worth a look at your budget.";}
+  const catNote=topCat?` Your biggest weakness: ${emoji(topCat[0])} ${topCat[0]}.`:'';
+  renderCelebration({
+    emoji:personaEmoji,
+    title:persona.toUpperCase()+' '+personaEmoji,
+    color:'var(--accent)',
+    name:persona,
+    msg:desc+catNote,
+    btnLabel:'Nice! 😄'
+  });
+}
 function showToast(msg,c){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=c||'var(--green)';t.style.color=c?'#fff':'#052e1c';
