@@ -15,6 +15,8 @@
 <style>
 :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#6c63ff;--red:#ff6584;--green:#00d084;--amber:#ffb300;--text:#f0f0f5;--muted:#7a7d99;--placeholder:rgba(122,125,153,.45);--card-shadow:none;--chip-shadow:none;--card-r:20px;--topbar-bg:rgba(15,17,23,.92);--tabs-bg:rgba(26,29,39,.97);--scheme:dark;}
 html[data-theme="light"]{--bg:#eef0f6;--surface:#ffffff;--surface2:#f1f2f9;--border:rgba(20,21,29,0.16);--accent:#6c63ff;--red:#e0355a;--green:#00a86b;--amber:#c98200;--text:#14151d;--muted:#52546b;--placeholder:rgba(82,84,107,.55);--card-shadow:0 1px 3px rgba(20,21,29,.07),0 1px 2px rgba(20,21,29,.05);--chip-shadow:0 1px 2px rgba(20,21,29,.05);--card-r:20px;--topbar-bg:rgba(255,255,255,.92);--tabs-bg:rgba(255,255,255,.97);--scheme:light;}
+html[data-theme="contrast"]{--bg:#000000;--surface:#0a0a0a;--surface2:#1a1a1a;--border:rgba(255,255,255,0.4);--accent:#ffdd00;--red:#ff5555;--green:#00ff88;--amber:#ffdd00;--text:#ffffff;--muted:#cccccc;--placeholder:rgba(204,204,204,.6);--card-shadow:none;--chip-shadow:none;--card-r:20px;--topbar-bg:rgba(0,0,0,.97);--tabs-bg:rgba(0,0,0,.98);--scheme:dark;}
+html[data-theme="contrast"] .card,html[data-theme="contrast"] .hero{border-width:2px;}
 html{transition:background-color .25s ease;}
 html[data-textsize="large"] body{zoom:1.15;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -361,6 +363,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="drawer-item" onclick="openSwitchAccountModal()"><span class="di-icon">🔀</span> Switch Account</div>
     <div class="drawer-item" onclick="toggleTheme()"><span class="di-icon" id="drawer-theme-icon">🌙</span> <span id="drawer-theme-label">Switch to Light Theme</span></div>
     <div class="drawer-item" onclick="toggleTextSize()"><span class="di-icon">🔠</span> <span id="drawer-textsize-label">Switch to Large Text</span></div>
+    <div class="drawer-item" onclick="toggleContrastMode()"><span class="di-icon">🔲</span> <span id="drawer-contrast-label">Turn On High Contrast</span></div>
     <div class="drawer-item" onclick="closeDrawer();showChangePwModal()"><span class="di-icon">🔑</span> Change Password</div>
     <div class="drawer-item" style="color:var(--red);margin-top:auto" onclick="doLogout()"><span class="di-icon">🚪</span> Logout</div>
     <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.png" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
@@ -395,6 +398,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
           <div style="font-size:14px;font-weight:700" id="home-insight-text">—</div>
         </div>
       </div>
+    </div>
+    <div class="card" id="cat-budget-warn-card" style="display:none;padding:12px 16px;border-color:rgba(255,101,132,.35)">
+      <div style="font-size:12px;color:var(--red);font-weight:700;margin-bottom:6px">⚠️ Over category budget</div>
+      <div id="cat-budget-warn-list" style="font-size:12px;color:var(--muted);line-height:1.8"></div>
     </div>
     <div class="card" id="budget-card" style="display:none">
       <div class="card-title">🎯 Monthly Budget</div>
@@ -483,6 +490,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         </div>
       </div>
       <div id="pay-mode-display" style="font-size:12px;color:var(--accent);margin-bottom:12px;min-height:16px;"></div>
+      <div class="form-label">Tags <span style="color:var(--muted);font-weight:400">(optional, comma-separated)</span></div>
+      <input type="text" class="ti" id="expense-tags" placeholder="e.g. work, Goa trip, urgent" style="width:100%;margin-bottom:13px"/>
       <button class="save-btn" id="save-exp-btn" onclick="saveExpense()" style="background:var(--red)">Save Expense</button>
     </div>
     <!-- MONTHLY REMINDERS -->
@@ -607,6 +616,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <input type="number" class="ti" id="budget-limit-input" placeholder="e.g. 20000" style="padding-left:30px;width:100%"/>
       </div>
       <button class="add-btn" style="width:100%;padding:12px" onclick="saveBudgetLimit()">💾 Save Budget</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Per-Category Budgets</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Optional finer limits — e.g. cap Food at ₹5,000/month even if your overall budget is higher. Leave blank for no limit.</div>
+      <div id="cat-budget-list"></div>
     </div>
     <div class="card">
       <div class="card-title">Your Categories</div>
@@ -912,8 +926,14 @@ const APP_VERSION='3.0';
 
 // ── THEME (Light/Dark) ── Saved globally on this device, independent of which account is logged in ──
 function getTheme(){return localStorage.getItem('exp_theme')||'dark';}
+function getContrastMode(){return localStorage.getItem('exp_contrast')==='on';}
+function toggleContrastMode(){
+  localStorage.setItem('exp_contrast',getContrastMode()?'off':'on');
+  applyTheme(getTheme());
+}
 function applyTheme(t){
-  document.documentElement.setAttribute('data-theme',t);
+  const effective=getContrastMode()?'contrast':t;
+  document.documentElement.setAttribute('data-theme',effective);
   const icon=t==='light'?'☀️':'🌙';
   const appBtn=document.getElementById('theme-toggle-app');
   const authBtn=document.getElementById('theme-toggle-auth');
@@ -925,8 +945,10 @@ function applyTheme(t){
   const drawerLabel=document.getElementById('drawer-theme-label');
   if(drawerIcon)drawerIcon.textContent=icon;
   if(drawerLabel)drawerLabel.textContent=t==='light'?'Switch to Dark Theme':'Switch to Light Theme';
+  const contrastLabel=document.getElementById('drawer-contrast-label');
+  if(contrastLabel)contrastLabel.textContent=getContrastMode()?'Turn Off High Contrast':'Turn On High Contrast';
   const metaTheme=document.querySelector('meta[name="theme-color"]');
-  if(metaTheme)metaTheme.setAttribute('content',t==='light'?'#f4f5fa':'#0f1117');
+  if(metaTheme)metaTheme.setAttribute('content',effective==='contrast'?'#000000':t==='light'?'#f4f5fa':'#0f1117');
 }
 function toggleTheme(){
   const next=getTheme()==='light'?'dark':'light';
@@ -973,6 +995,14 @@ function saveCats(c){localStorage.setItem(uKey('cats'),JSON.stringify(c));}
 function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]');}
 function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
 function getBudgetLimit(){return parseFloat(localStorage.getItem(uKey('budget'))||'0')||0;}
+function getCatBudgets(){return JSON.parse(localStorage.getItem(uKey('catBudgets'))||'{}');}
+function setCatBudget(cat,val){
+  const b=getCatBudgets();
+  const v=parseFloat(val);
+  if(!v||v<=0)delete b[cat];else b[cat]=v;
+  localStorage.setItem(uKey('catBudgets'),JSON.stringify(b));
+  renderHome();
+}
 function saveBudgetLimit(){
   const v=parseFloat(document.getElementById('budget-limit-input').value);
   if(!v||v<=0){localStorage.removeItem(uKey('budget'));showToast('Budget limit cleared','#ffb300');}
@@ -1394,7 +1424,12 @@ function startApp(profile){
   const ds=document.getElementById('rem-day');
   ds.innerHTML='<option value="">Day of month</option>';
   for(let i=1;i<=31;i++)ds.innerHTML+=`<option value="${i}">${i}</option>`;
-  switchTab('home',document.querySelector('.tab'));
+  const urlParams=new URLSearchParams(location.search);
+  if(urlParams.get('action')==='add'){
+    switchTab('add',document.querySelectorAll('.tab')[1]);
+  } else {
+    switchTab('home',document.querySelector('.tab'));
+  }
   setTimeout(checkDueAlerts,600);
   setTimeout(checkReminders,800);
   setInterval(checkDueAlerts,3600000);
@@ -1411,6 +1446,7 @@ function startApp(profile){
   setTimeout(checkAndSendMonthlyStatement,1500);
   setTimeout(maybeCelebrateBudgetWin,2000);
   setTimeout(maybeCelebrateSavingsMilestone,2200);
+  setTimeout(maybeShowDailyNudge,2600);
 }
 
 // ── TABS ──
@@ -1580,6 +1616,24 @@ function renderHome(){
   } else {
     insightCard.style.display='none';
   }
+  // Per-category budget warnings (always based on the real current month, not the filter)
+  const catBudgets=getCatBudgets();
+  const warnCard=document.getElementById('cat-budget-warn-card');
+  if(Object.keys(catBudgets).length){
+    const curMonthName=MONTHS[new Date().getMonth()];
+    const curYearNow=new Date().getFullYear();
+    const curMonthByCat={};
+    data.filter(e=>e.type!=='income'&&e.month===curMonthName&&(e.year||curYearNow)===curYearNow).forEach(e=>{curMonthByCat[e.category]=(curMonthByCat[e.category]||0)+e.amount;});
+    const overs=Object.entries(catBudgets).filter(([cat,lim])=>(curMonthByCat[cat]||0)>lim);
+    if(overs.length){
+      warnCard.style.display='block';
+      document.getElementById('cat-budget-warn-list').innerHTML=overs.map(([cat,lim])=>`${emoji(cat)} ${cat}: ${fmt(curMonthByCat[cat])} of ${fmt(lim)}`).join('<br>');
+    } else {
+      warnCard.style.display='none';
+    }
+  } else {
+    warnCard.style.display='none';
+  }
   let html='';
   if(!sorted.length)html='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">📊</div><p>No expenses yet — add one to see your category breakdown.</p></div>';
   sorted.forEach(([cat,amt])=>{
@@ -1703,9 +1757,11 @@ function saveExpense(){
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   const dateVal=document.getElementById('expense-date').value;
   const payMode=getPayModeLabel();
+  const tagsRaw=document.getElementById('expense-tags').value;
+  const tags=tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
   const data=getData();
-  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode});
-  saveData(data);document.getElementById('amount-input').value='';selCat=null;
+  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode,tags});
+  saveData(data);document.getElementById('amount-input').value='';document.getElementById('expense-tags').value='';selCat=null;
   renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
   haptic('success');
   maybeCelebrateSavingsMilestone();
@@ -1722,7 +1778,7 @@ function renderHistory(){
   if(histSearch.trim()){
     const q=histSearch.trim().toLowerCase();
     filtered=filtered.filter(e=>{
-      const hay=[e.category,e.type,e.payMode,e.month,e.date,e.year,e.amount,e.debtName].filter(Boolean).join(' ').toLowerCase();
+      const hay=[e.category,e.type,e.payMode,e.month,e.date,e.year,e.amount,e.debtName,...(e.tags||[])].filter(Boolean).join(' ').toLowerCase();
       return hay.includes(q);
     });
   }
@@ -1736,7 +1792,8 @@ function renderHistory(){
     const bg=isInc?'rgba(0,208,132,.15)':c+'22';
     const payLabel=e.payMode?` · ${e.payMode}`:'';
     const debtTag=e.debtLinked?` · 🔁 ${e.debtName||'Debt'} repayment`:'';
-    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div></div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
+    const tagChips=(e.tags&&e.tags.length)?`<div style="margin-top:4px">${e.tags.map(t=>`<span style="display:inline-block;background:var(--surface2);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:100px;margin-right:4px;margin-top:2px;">#${t}</span>`).join('')}</div>`:'';
+    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
   });
   document.getElementById('history-list').innerHTML=html;
   initSwipeToDelete('history-list');
@@ -2032,6 +2089,16 @@ function renderManage(){
     html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${c}</span>${isCustom?`<button onclick="resetCatColor('${c}')" title="Reset to default color" style="background:none;border:none;color:var(--muted);font-size:10px;margin-right:4px;cursor:pointer;">↺</button>`:''}<input type="color" value="${cl}" onchange="setCatColor('${c}',this.value)" title="Choose a custom color for ${c}" style="width:20px;height:20px;border:none;border-radius:50%;padding:0;margin-right:8px;cursor:pointer;background:none;"/><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
   });
   document.getElementById('manage-cat-list').innerHTML=html;
+  const catBudgets=getCatBudgets();
+  document.getElementById('cat-budget-list').innerHTML=cats.map(c=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span style="font-size:16px;width:24px;text-align:center">${emoji(c)}</span>
+      <span style="flex:1;font-size:13px">${c}</span>
+      <div style="position:relative;width:110px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px">₹</span>
+        <input type="number" class="ti" value="${catBudgets[c]||''}" placeholder="No limit" onchange="setCatBudget('${c}',this.value)" style="padding:7px 7px 7px 22px;font-size:12px;width:100%"/>
+      </div>
+    </div>`).join('');
   document.getElementById('budget-limit-input').value=getBudgetLimit()||'';
   const statusNote=document.getElementById('emailjs-status-note');
   if(statusNote)statusNote.innerHTML=EMAILJS_READY?' <span style="color:var(--green)">✓ Email delivery is configured.</span>':' <span style="color:var(--amber)">⚠ Email delivery not set up yet — see EMAILJS_SETUP.md.</span>';
@@ -2733,6 +2800,18 @@ function maybeCelebrateSavingsMilestone(){
 }
 function closeCelebration(){
   document.getElementById('celebrate-modal').style.display='none';
+}
+// ── Daily nudge (item #37) — gentle once-per-day reminder if nothing's been logged today ──
+function maybeShowDailyNudge(){
+  if(!CU)return;
+  const todayKey=new Date().toISOString().split('T')[0];
+  const flagKey='dailyNudge_'+CU+'_'+todayKey;
+  if(localStorage.getItem(flagKey))return; // already shown today
+  const data=getData();
+  const loggedToday=data.some(e=>e.date===todayKey);
+  if(loggedToday)return;
+  localStorage.setItem(flagKey,'1');
+  showToast('👋 Nothing logged today yet — add an expense to keep your streak!','#6c63ff');
 }
 
 // ── Log a debt repayment/receipt as a real cashflow entry so Home/History totals ──
