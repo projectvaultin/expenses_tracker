@@ -505,9 +505,20 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
           <div class="pay-chip" id="remtype-income" onclick="selectRemType('income')">💰 Income (e.g. Salary)</div>
         </div>
         <input type="text" class="ti" id="rem-name" placeholder="e.g. PG Rent, EMI, Netflix…" style="width:100%;margin-bottom:8px"/>
+        <select class="ti" id="rem-freq" style="width:100%;margin-bottom:8px" onchange="onRemFreqChange()">
+          <option value="monthly">Repeats Monthly</option>
+          <option value="weekly">Repeats Weekly</option>
+          <option value="quarterly">Repeats Quarterly (every 3 months)</option>
+          <option value="yearly">Repeats Yearly</option>
+        </select>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <div style="flex:1;position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:700">₹</span><input type="number" class="ti" id="rem-amount" placeholder="Amount" style="padding-left:28px;width:100%"/></div>
           <select class="ti" id="rem-day" style="flex:1"></select>
+          <select class="ti" id="rem-weekday" style="flex:1;display:none">
+            <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+            <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+          </select>
+          <input type="date" class="ti" id="rem-yearly-date" style="flex:1;display:none"/>
         </div>
         <button class="add-btn" style="width:100%;padding:12px" onclick="addReminder()">+ Add Reminder</button>
       </div>
@@ -545,6 +556,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <div class="form-label">Due Date (optional — get reminder 2 days before)</div>
       <input type="date" id="debt-due-date" class="date-inp" style="padding-left:14px;font-size:15px;"/>
+      <div class="form-label">Annual Interest Rate % <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+      <input type="number" step="0.1" class="ti" id="debt-interest" placeholder="e.g. 12" style="width:100%;margin-bottom:13px"/>
       <button class="save-btn" onclick="saveDebt()">Save Entry</button>
     </div>
     <div class="card">
@@ -1538,22 +1551,36 @@ function updateStreak(data){
   document.getElementById('streak-count').textContent=streak+' day'+(streak===1?'':'s')+' streak';
   document.getElementById('streak-flame').textContent=streak>=30?'🔥🔥🔥':streak>=7?'🔥🔥':'🔥';
 }
+function daysUntilDue(r){
+  const now=new Date();
+  const freq=r.frequency||'monthly';
+  if(freq==='weekly')return(r.day-now.getDay()+7)%7;
+  if(freq==='yearly'){
+    let next=new Date(now.getFullYear(),r.month,r.day);
+    if(next<now)next=new Date(now.getFullYear()+1,r.month,r.day);
+    return Math.ceil((next-now)/86400000);
+  }
+  if(freq==='quarterly'){
+    const createdMonth=new Date(r.id).getMonth();
+    for(let add=0;add<12;add++){
+      const checkMonth=(now.getMonth()+add)%12;
+      const checkYear=now.getFullYear()+Math.floor((now.getMonth()+add)/12);
+      if(((checkMonth-createdMonth)+12)%3===0){
+        const next=new Date(checkYear,checkMonth,r.day);
+        if(next>=new Date(now.getFullYear(),now.getMonth(),now.getDate()))return Math.ceil((next-now)/86400000);
+      }
+    }
+    return 999;
+  }
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  return r.day>=now.getDate()?r.day-now.getDate():(daysInMonth-now.getDate())+r.day;
+}
 function renderUpcomingWeek(){
   const rems=getReminders().filter(r=>r.active!==false);
-  const today=new Date();
-  const todayDate=today.getDate();
-  const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
-  const mk=monthKeyNow();
   const upcoming=[];
   rems.forEach(r=>{
-    let daysUntil,isPaidThisCycle;
-    if(r.day>=todayDate){
-      daysUntil=r.day-todayDate;
-      isPaidThisCycle=!!(r.paid&&r.paid[mk]);
-    } else {
-      daysUntil=(daysInMonth-todayDate)+r.day;
-      isPaidThisCycle=false;
-    }
+    const daysUntil=daysUntilDue(r);
+    const isPaidThisCycle=!!(r.paid&&r.paid[cycleKeyFor(r)]);
     if(daysUntil<=7&&!isPaidThisCycle)upcoming.push(Object.assign({},r,{daysUntil}));
   });
   upcoming.sort((a,b)=>a.daysUntil-b.daysUntil);
@@ -1937,15 +1964,17 @@ function saveDebt(){
   const name=document.getElementById('debt-name').value.trim();
   const amt=parseFloat(document.getElementById('debt-amount').value);
   const dueDate=document.getElementById('debt-due-date').value;
+  const interestRate=parseFloat(document.getElementById('debt-interest').value)||0;
   if(!name){showToast('Enter a name','#ffb300');return;}
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!selDebtType){showToast('Select type','#ffb300');return;}
   const debts=getDebts();
-  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null});
+  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null,interestRate:interestRate||null});
   saveDebts(debts);
   document.getElementById('debt-name').value='';
   document.getElementById('debt-amount').value='';
   document.getElementById('debt-due-date').value='';
+  document.getElementById('debt-interest').value='';
   selDebtType=null;
   document.getElementById('dtype-debt').classList.remove('sel');
   document.getElementById('dtype-profit').classList.remove('sel');
@@ -1999,6 +2028,15 @@ function renderDebtPage(){
       else if(dueDays<=7)dueLabel=`<span style="font-size:10px;color:var(--amber)">⏰ Due in ${dueDays}d</span>`;
       else dueLabel=`<span style="font-size:10px;color:var(--muted)">📅 ${d.dueDate}</span>`;
     }
+    // Interest accrual (simple interest, based on time since entry was created)
+    let interestLabel='';
+    if(d.interestRate&&!fullyCleared){
+      const yearsElapsed=(Date.now()-d.ts)/(1000*60*60*24*365);
+      const accrued=remaining*(d.interestRate/100)*yearsElapsed;
+      if(accrued>=1){
+        interestLabel=`<div style="font-size:10px;color:var(--amber);margin-top:2px">📈 +${fmt(accrued)} interest accrued (${d.interestRate}%/yr) — ${fmt(remaining+accrued)} total</div>`;
+      }
+    }
     // Repayment history
     const repayLog=(d.repayLog||[]).map(r=>`<div style="font-size:11px;color:var(--muted);margin-top:2px">↩ Returned ${fmt(r.amount)} on ${r.date}</div>`).join('');
     const repaidBadge=repaid>0&&!fullyCleared?`<span class="remaining-badge">Remaining: ${fmt(remaining)}</span>`:'';
@@ -2011,6 +2049,7 @@ function renderDebtPage(){
       <div class="entry-info" style="flex:1">
         <div class="entry-cat">${d.name} ${repaidBadge}</div>
         <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
+        ${interestLabel}
         ${repayLog}
         ${partialControl}
       </div>
@@ -2556,20 +2595,69 @@ function selectRemType(t){
   // up in reports, so the name field becomes an optional note (e.g. "Acme Corp") instead.
   document.getElementById('rem-name').placeholder=t==='income'?'e.g. Acme Corp (optional note)':'e.g. PG Rent, EMI, Netflix…';
 }
+function onRemFreqChange(){
+  const freq=document.getElementById('rem-freq').value;
+  document.getElementById('rem-day').style.display=(freq==='monthly'||freq==='quarterly')?'block':'none';
+  document.getElementById('rem-weekday').style.display=freq==='weekly'?'block':'none';
+  document.getElementById('rem-yearly-date').style.display=freq==='yearly'?'block':'none';
+}
+// Returns a cycle key that uniquely identifies the current due period for a reminder,
+// so "already paid this cycle" works correctly regardless of frequency.
+function cycleKeyFor(r){
+  const d=new Date();
+  if(r.frequency==='weekly'){
+    const onejan=new Date(d.getFullYear(),0,1);
+    const week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);
+    return 'w'+d.getFullYear()+'-'+week;
+  }
+  if(r.frequency==='yearly')return 'y'+d.getFullYear();
+  return d.getFullYear()+'-'+(d.getMonth()+1); // monthly & quarterly both use month granularity
+}
+function isReminderDueToday(r){
+  const d=new Date();
+  const freq=r.frequency||'monthly';
+  if(freq==='weekly')return r.day===d.getDay();
+  if(freq==='yearly')return r.day===d.getDate()&&r.month===d.getMonth();
+  if(freq==='quarterly'){
+    if(r.day!==d.getDate())return false;
+    const createdMonth=new Date(r.id).getMonth();
+    return ((d.getMonth()-createdMonth)+12)%3===0;
+  }
+  return r.day===d.getDate(); // monthly
+}
+function freqLabel(r){
+  const freq=r.frequency||'monthly';
+  if(freq==='weekly')return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][r.day]+' every week';
+  if(freq==='yearly')return MONTHS[r.month]+' '+r.day+' every year';
+  if(freq==='quarterly')return'Day '+r.day+' every 3 months';
+  return'Day '+r.day+' every month';
+}
 function addReminder(){
   const name=document.getElementById('rem-name').value.trim();
   const amount=parseFloat(document.getElementById('rem-amount').value);
-  const day=parseInt(document.getElementById('rem-day').value);
+  const freq=document.getElementById('rem-freq').value;
   const type=selRemType||'expense';
+  let day,month=null;
+  if(freq==='weekly'){
+    day=parseInt(document.getElementById('rem-weekday').value);
+  } else if(freq==='yearly'){
+    const dv=document.getElementById('rem-yearly-date').value;
+    if(!dv){showToast('Pick a date','#ffb300');return;}
+    const dt=new Date(dv+'T00:00:00');
+    day=dt.getDate();month=dt.getMonth();
+  } else {
+    day=parseInt(document.getElementById('rem-day').value);
+  }
   if(type==='expense'&&!name){showToast('Enter reminder name','#ffb300');return;}
   if(!amount||amount<=0){showToast('Enter a valid amount','#ffb300');return;}
-  if(!day){showToast('Select day of month','#ffb300');return;}
+  if(day===undefined||day===null||isNaN(day)){showToast('Select when this repeats','#ffb300');return;}
   const rems=getReminders();
-  rems.push({id:Date.now(),name:name||(type==='income'?'Salary':name),amount,day,active:true,paid:{},type});
+  rems.push({id:Date.now(),name:name||(type==='income'?'Salary':name),amount,day,month,active:true,paid:{},type,frequency:freq});
   saveReminders(rems);
   document.getElementById('rem-name').value='';
   document.getElementById('rem-amount').value='';
   document.getElementById('rem-day').value='';
+  document.getElementById('rem-yearly-date').value='';
   selectRemType('expense');
   renderReminders();
   showToast(type==='income'?'🔁 Recurring income added!':'🔁 Recurring expense added!');
@@ -2584,7 +2672,7 @@ function markReminderPaid(id){
   const r=rems.find(x=>x.id===id);
   if(!r)return;
   if(!r.paid)r.paid={};
-  const mk=monthKeyNow();
+  const mk=cycleKeyFor(r);
   if(r.paid[mk])return;
   const now=new Date();
   const data=getData();
@@ -2613,7 +2701,7 @@ function unmarkReminderPaid(id){
   const rems=getReminders();
   const r=rems.find(x=>x.id===id);
   if(!r||!r.paid)return;
-  const mk=monthKeyNow();
+  const mk=cycleKeyFor(r);
   const entryTs=r.paid[mk];
   if(entryTs){
     const data=getData();
@@ -2630,8 +2718,8 @@ function renderReminders(){
   const el=document.getElementById('reminders-list');
   if(!el)return;
   if(!rems.length){el.innerHTML='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">🔁</div><p>No recurring bills yet.<br>Add rent, EMIs, or subscriptions to get reminders.</p></div>';return;}
-  const mk=monthKeyNow();
   el.innerHTML=rems.map(r=>{
+    const mk=cycleKeyFor(r);
     const isPaid=r.paid&&r.paid[mk];
     const isIncome=r.type==='income';
     const isPaused=r.active===false;
@@ -2640,7 +2728,7 @@ function renderReminders(){
       <span style="font-size:20px">${isPaused?'⏸️':isPaid?'✅':(isIncome?'💰':'🔔')}</span>
       <div style="flex:1">
         <div style="font-size:14px;font-weight:600">${r.name}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}${isPaused?' <span style="font-size:10px;color:var(--muted);font-weight:700">PAUSED</span>':''}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px"><span style="color:${isIncome?'var(--green)':'var(--text)'}">${fmt(r.amount)}</span> · Every month on <b>day ${r.day}</b></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px"><span style="color:${isIncome?'var(--green)':'var(--text)'}">${fmt(r.amount)}</span> · ${freqLabel(r)}</div>
       </div>
       ${!isPaused?(isPaid
         ?`<button class="clear-btn active" style="margin-right:4px" onclick="unmarkReminderPaid(${r.id})">${isIncome?'Received ✓':'Paid ✓'}</button>`
@@ -2660,9 +2748,7 @@ function toggleReminderActive(id){
   showToast(r.active?'▶️ Reminder resumed':'⏸️ Reminder paused','#ffb300');
 }
 function checkReminders(){
-  const today=new Date().getDate();
-  const mk=monthKeyNow();
-  const rems=getReminders().filter(r=>r.active&&r.day===today&&!(r.paid&&r.paid[mk]));
+  const rems=getReminders().filter(r=>r.active&&isReminderDueToday(r)&&!(r.paid&&r.paid[cycleKeyFor(r)]));
   if(!rems.length)return;
   // Check if already notified today
   const todayKey='rem_notified_'+CU+'_'+new Date().toDateString();
