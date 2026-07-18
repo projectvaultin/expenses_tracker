@@ -1,21 +1,28 @@
-# ProjectVault — All-in-One Expense Tracker
+# Expenses Tracker — by ProjectVault
 
 A fast, offline-first Progressive Web App (PWA) for tracking expenses, income, debts, budgets,
 and recurring bills. No backend, no signup servers — everything runs in your browser and data
 stays on your device.
 
-![ProjectVault icon](icon-192.png)
+![Expenses Tracker icon](icon-192.png)
 
 ## Features
 - 💰 Track income & expenses by category, with visual breakdowns
 - 🧾 Debt tracker — money you owe and money owed to you, with partial repayments
 - 🎯 Monthly budget limits with progress tracking
-- 🔁 Recurring bill reminders
+- 🔁 Recurring bills **and recurring income** (e.g. salary), with reminders
 - 📧 Automatic monthly email statements (income, expenses, daily/monthly averages)
 - 🔑 Email-based OTP password recovery (find account by mobile number or email)
 - 📲 Installable as a native-feeling app on Android/iOS/desktop (PWA)
 - 🔒 Local biometric/device login support
-- 🌙 Dark, mobile-first UI
+- 🌙 Light & dark theme, mobile-first UI
+- 🎉 Animated celebrations for cleared debts, budget wins, and savings milestones
+
+## Branding
+"ProjectVault" is the umbrella brand (shown as "Powered by ProjectVault" on the login screen and
+in emails); **Expenses Tracker** is this specific app's name. Future apps under the same brand
+will each get their own name/logo while keeping the ProjectVault credit.
+
 
 ## Tech stack
 Plain HTML, CSS, and JavaScript — no framework, no build step. Data is stored in the browser's

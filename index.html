@@ -585,6 +585,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <input type="date" id="debt-due-date" class="date-inp" style="padding-left:14px;font-size:15px;"/>
       <div class="form-label">Annual Interest Rate % <span style="color:var(--muted);font-weight:400">(optional)</span></div>
       <input type="number" step="0.1" class="ti" id="debt-interest" placeholder="e.g. 12" style="width:100%;margin-bottom:13px"/>
+      <div class="form-label">Repay in Installments? <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+      <input type="number" class="ti" id="debt-installments" placeholder="e.g. 12 (number of installments)" style="width:100%;margin-bottom:13px"/>
       <button class="save-btn" onclick="saveDebt()">Save Entry</button>
     </div>
     <div class="card">
@@ -2237,16 +2239,18 @@ function saveDebt(){
   const amt=parseFloat(document.getElementById('debt-amount').value);
   const dueDate=document.getElementById('debt-due-date').value;
   const interestRate=parseFloat(document.getElementById('debt-interest').value)||0;
+  const installments=parseInt(document.getElementById('debt-installments').value)||0;
   if(!name){showToast('Enter a name','#ffb300');return;}
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!selDebtType){showToast('Select type','#ffb300');return;}
   const debts=getDebts();
-  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null,interestRate:interestRate||null});
+  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null});
   saveDebts(debts);
   document.getElementById('debt-name').value='';
   document.getElementById('debt-amount').value='';
   document.getElementById('debt-due-date').value='';
   document.getElementById('debt-interest').value='';
+  document.getElementById('debt-installments').value='';
   selDebtType=null;
   document.getElementById('dtype-debt').classList.remove('sel');
   document.getElementById('dtype-profit').classList.remove('sel');
@@ -2311,6 +2315,14 @@ function renderDebtPage(){
     }
     // Repayment history
     const repayLog=(d.repayLog||[]).map(r=>`<div style="font-size:11px;color:var(--muted);margin-top:2px">↩ Returned ${fmt(r.amount)} on ${r.date}</div>`).join('');
+    // Installment plan progress
+    let installmentLabel='';
+    if(d.installments&&d.installments>1){
+      const paidCount=(d.repayLog||[]).length;
+      const perInstallment=d.amount/d.installments;
+      const doneCount=Math.min(paidCount,d.installments);
+      installmentLabel=`<div style="font-size:10px;color:var(--accent);margin-top:2px">📋 Installment ${doneCount} of ${d.installments} (${fmt(perInstallment)}/installment)</div>`;
+    }
     const repaidBadge=repaid>0&&!fullyCleared?`<span class="remaining-badge">Remaining: ${fmt(remaining)}</span>`:'';
     const partialControl=!fullyCleared?`<div class="repay-row">
       <input class="repay-inp" type="number" inputmode="decimal" placeholder="Amount returned" id="repay-inp-${oi}"/>
@@ -2322,6 +2334,7 @@ function renderDebtPage(){
         <div class="entry-cat">${d.name} ${repaidBadge}</div>
         <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
         ${interestLabel}
+        ${installmentLabel}
         ${repayLog}
         ${partialControl}
       </div>
@@ -2538,7 +2551,15 @@ function renderMembers(){
   const users=getUsers();
   const entries=Object.entries(users);
   const nonAdminCount=entries.filter(([u,p])=>!p.isAdmin).length;
-  summaryEl.textContent=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)`;
+  let totalIncomeAll=0,totalExpenseAll=0;
+  entries.forEach(([u])=>{
+    try{
+      const d=JSON.parse(localStorage.getItem('exp_'+u+'_data')||'[]');
+      totalIncomeAll+=d.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+      totalExpenseAll+=d.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
+    }catch(e){}
+  });
+  summaryEl.innerHTML=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)<br><span style="color:var(--green)">${fmt(totalIncomeAll)} income</span> · <span style="color:var(--red)">${fmt(totalExpenseAll)} expenses</span> combined across all accounts`;
   if(!entries.length){listEl.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No members yet.</div>';return;}
   const sorted=entries.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   listEl.innerHTML=sorted.map(([u,p])=>{

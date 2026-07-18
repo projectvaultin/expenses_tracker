@@ -15,44 +15,123 @@ Go to https://www.emailjs.com → Sign Up (free plan is fine).
 - Copy the **Service ID** (looks like `service_xxxxxxx`)
 
 ## 3. Create two email templates
-Dashboard → **Email Templates** → **Create New Template**, twice:
+Dashboard → **Email Templates** → **Create New Template**, twice.
+
+For each one, switch the body editor from **Design Editor** to **Code Editor** (a `</>` icon
+near the top of the editor) and paste the raw HTML below instead of typing plain text. This
+gives you a real branded email — logo, dark card, colored numbers — instead of plain text.
+The app now automatically sends a `{{logo_url}}` variable (an absolute link to `icon-512.png`
+on wherever you've deployed the app), so the logo will appear once you've deployed it (e.g. to
+GitHub Pages); it won't resolve while you're just opening `index.html` from your own computer.
 
 ### Template A — OTP (password reset)
-Subject: `Your ProjectVault OTP`
-Body (use these exact variable names so the app's data lines up):
-```
-Hi {{to_name}},
-
-Your one-time password to reset your ProjectVault account ({{username}}) is:
-
-{{otp_code}}
-
-If you didn't request this, you can ignore this email.
-
-— {{app_name}}
+Subject: `Your {{app_name}} OTP`
+Body (Code Editor — HTML):
+```html
+<div style="background:#0f1117;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" style="max-width:420px;margin:0 auto;border-collapse:collapse;">
+    <tr>
+      <td style="text-align:center;padding-bottom:20px;">
+        <img src="{{logo_url}}" width="56" height="56" alt="{{app_name}}" style="border-radius:14px;display:inline-block;">
+        <div style="font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#f0f0f5;margin-top:10px;">
+          {{app_name}}
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#1a1d27;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px 24px;">
+        <p style="color:#f0f0f5;font-size:15px;margin:0 0 14px;">Hi {{to_name}},</p>
+        <p style="color:#a7a9bd;font-size:14px;line-height:1.6;margin:0 0 18px;">
+          Your one-time password to reset your <b style="color:#f0f0f5;">{{app_name}}</b> account
+          (<b style="color:#f0f0f5;">{{username}}</b>) is:
+        </p>
+        <div style="background:#22263a;border:1px solid rgba(108,99,255,.4);border-radius:14px;padding:16px 8px;text-align:center;margin-bottom:18px;">
+          <span style="font-family:Georgia,serif;font-size:28px;font-weight:bold;letter-spacing:4px;color:#6c63ff;">{{otp_code}}</span>
+        </div>
+        <p style="color:#7a7d99;font-size:12px;line-height:1.6;margin:0;">
+          If you didn't request this, you can safely ignore this email.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:center;padding-top:18px;">
+        <span style="color:#7a7d99;font-size:11px;">— {{app_name}}</span><br><span style="color:#4a4d66;font-size:10px;">Powered by {{brand_name}}</span>
+      </td>
+    </tr>
+  </table>
+</div>
 ```
 Copy this template's **Template ID** (e.g. `template_otp123`).
 
 ### Template B — Monthly Statement
-Subject: `Your ProjectVault statement — {{month}} {{year}}`
-Body:
-```
-Hi {{to_name}},
+Subject: `Your {{app_name}} statement — {{month}} {{year}}`
+Body (Code Editor — HTML):
+```html
+<div style="background:#0f1117;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" style="max-width:460px;margin:0 auto;border-collapse:collapse;">
+    <tr>
+      <td style="text-align:center;padding-bottom:20px;">
+        <img src="{{logo_url}}" width="56" height="56" alt="{{app_name}}" style="border-radius:14px;display:inline-block;">
+        <div style="font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#f0f0f5;margin-top:10px;">
+          {{app_name}}
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#1a1d27;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px 24px;">
+        <p style="color:#f0f0f5;font-size:15px;margin:0 0 4px;">Hi {{to_name}},</p>
+        <p style="color:#7a7d99;font-size:13px;margin:0 0 20px;">Here's your summary for {{month}} {{year}}.</p>
 
-Here's your ProjectVault summary for {{month}} {{year}}:
+        <table role="presentation" width="100%" style="border-collapse:collapse;table-layout:fixed;margin-bottom:18px;">
+          <tr>
+            <td width="50%" style="padding:0 4px 0 0;">
+              <div style="background:#22263a;border-radius:14px;padding:14px;">
+                <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Income</div>
+                <div style="color:#00d084;font-family:Georgia,serif;font-size:20px;font-weight:bold;">{{total_income}}</div>
+              </div>
+            </td>
+            <td width="50%" style="padding:0 0 0 4px;">
+              <div style="background:#22263a;border-radius:14px;padding:14px;">
+                <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Expenses</div>
+                <div style="color:#ff6584;font-family:Georgia,serif;font-size:20px;font-weight:bold;">{{total_expense}}</div>
+              </div>
+            </td>
+          </tr>
+        </table>
 
-Registered mobile: {{mobile}}
-Total income: {{total_income}}
-Total expenses: {{total_expense}}
-Average daily spend this month: {{avg_daily_spend}}
+        <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0 0 18px;">
+          Registered mobile: <b style="color:#f0f0f5;">{{mobile}}</b><br>
+          Average daily spend this month: <b style="color:#f0f0f5;">{{avg_daily_spend}}</b>
+        </p>
 
-Year-to-date ({{year}}):
-Total expenses: {{year_total_expense}}
-Average monthly spend: {{year_avg_monthly_spend}}
-
-— {{app_name}}
+        <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
+          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Year-to-date ({{year}})</div>
+          <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0;">
+            Total expenses: <b style="color:#f0f0f5;">{{year_total_expense}}</b><br>
+            Average monthly spend: <b style="color:#f0f0f5;">{{year_avg_monthly_spend}}</b>
+          </p>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:center;padding-top:18px;">
+        <span style="color:#7a7d99;font-size:11px;">— {{app_name}}</span><br><span style="color:#4a4d66;font-size:10px;">Powered by {{brand_name}}</span>
+      </td>
+    </tr>
+  </table>
+</div>
 ```
 Copy this template's **Template ID** (e.g. `template_statement456`).
+
+Both templates use the same `{{variable}}` names as before, plus two new ones — `{{logo_url}}`
+and `{{brand_name}}` (set to "ProjectVault") — which the app now sends automatically. No changes
+needed on the app side.
+
+**Fixed:** the statement template previously caused horizontal scrolling on narrow/mobile
+previews — the two income/expense boxes had both `width:50%` and their own padding on the same
+cell, which in HTML email rendering means the padding adds on top of that 50%, overflowing past
+100% combined. Fixed by moving the padding to an inner `<div>` instead of the table cell itself.
+If you already pasted the old version in, re-copy and re-paste the Template B code below.
 
 ## 4. Get your Public Key
 Dashboard → **Account** → **General** → copy the **Public Key**.
