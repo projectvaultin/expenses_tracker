@@ -25,6 +25,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 /* THEME TOGGLE */
 .theme-toggle{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s;flex-shrink:0;}
 .theme-toggle:active{transform:scale(.9);}
+#rollover-switch::before{content:'';position:absolute;height:18px;width:18px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s;}
+#rollover-toggle:checked+#rollover-switch{background:var(--accent);border-color:var(--accent);}
+#rollover-toggle:checked+#rollover-switch::before{transform:translateX(18px);background:#fff;}
+#require2fa-switch::before{content:'';position:absolute;height:18px;width:18px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s;}
+#require2fa-toggle:checked+#require2fa-switch{background:var(--accent);border-color:var(--accent);}
+#require2fa-toggle:checked+#require2fa-switch::before{transform:translateX(18px);background:#fff;}
 /* SIDE DRAWER (profile menu) */
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s;}
 .drawer-overlay.open{opacity:1;pointer-events:auto;}
@@ -539,6 +545,20 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <input type="text" class="ti" id="hist-search" placeholder="Search category, amount, payment mode, date…" style="width:100%;padding-left:36px" oninput="onHistSearch(this.value)"/>
     </div>
     <div class="mscroll" id="hist-months"></div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleDateRangeReport()">
+        <div class="card-title" style="margin-bottom:0">📆 Custom Date-Range Report</div>
+        <span id="date-range-caret" style="color:var(--muted)">▾</span>
+      </div>
+      <div id="date-range-body" style="display:none;margin-top:12px">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="flex:1"><div class="fl-label">From</div><input type="date" class="date-inp" id="range-from" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="fl-label">To</div><input type="date" class="date-inp" id="range-to" style="margin-bottom:0"/></div>
+        </div>
+        <button class="add-btn" style="width:100%;padding:10px" onclick="showDateRangeReport()">Show Report</button>
+        <div id="date-range-result" style="margin-top:12px"></div>
+      </div>
+    </div>
     <div class="card"><div id="history-list"></div></div>
   </div>
 
@@ -647,6 +667,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <input type="number" class="ti" id="budget-limit-input" placeholder="e.g. 20000" style="padding-left:30px;width:100%"/>
       </div>
       <button class="add-btn" style="width:100%;padding:12px" onclick="saveBudgetLimit()">💾 Save Budget</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:600">🔄 Roll over unused budget</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Money left over this month adds to next month's limit</div></div>
+        <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0">
+          <input type="checkbox" id="rollover-toggle" onchange="setBudgetRollover(this.checked)" style="opacity:0;width:0;height:0">
+          <span id="rollover-switch" style="position:absolute;cursor:pointer;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:24px;transition:.2s"></span>
+        </label>
+      </div>
     </div>
     <div class="card">
       <div class="card-title">🎯 Per-Category Budgets</div>
@@ -700,6 +727,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <span style="font-size:20px">⚠️</span>
         <div><div style="color:var(--red)">Delete Account</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Permanently erase your account and all data</div></div>
       </button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0;padding-top:12px;border-top:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:600">🔐 Two-Factor Login</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Require an emailed code every time you log in</div></div>
+        <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0">
+          <input type="checkbox" id="require2fa-toggle" onchange="toggleRequire2FA(this.checked)" style="opacity:0;width:0;height:0">
+          <span id="require2fa-switch" style="position:absolute;cursor:pointer;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:24px;transition:.2s"></span>
+        </label>
+      </div>
       <div style="font-size:11px;color:var(--muted);margin:6px 0 8px;">🔒 Auto-locks after 5 minutes of inactivity</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">🕒 Recent Logins (this device)</div>
       <div id="login-activity-list" style="font-size:12px;color:var(--muted);line-height:1.9"></div>
@@ -846,6 +880,61 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="modal-title">🔀 Switch Account</div>
     <div id="switch-account-list" style="max-height:280px;overflow-y:auto;margin-bottom:10px"></div>
     <button class="save-btn" style="background:var(--surface2);color:var(--muted)" onclick="document.getElementById('switch-account-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+<!-- TWO-FACTOR LOGIN CHALLENGE -->
+<div class="modal-overlay" id="login2fa-modal" style="align-items:center">
+  <div style="background:var(--surface);border-radius:24px;padding:28px 24px;width:100%;max-width:320px;text-align:center;margin:20px">
+    <div style="font-size:36px;margin-bottom:10px">🔒</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:6px">Two-Factor Verification</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">We emailed a 6-digit code to your registered email. Enter it below to finish logging in.</div>
+    <input class="ai" id="login2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:10px"/>
+    <div class="auth-err" id="login2fa-err"></div>
+    <button class="auth-btn" onclick="verifyLogin2FA()">Verify & Continue</button>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);cursor:pointer" onclick="cancel2FA()">Cancel</div>
+  </div>
+</div>
+
+<!-- ONBOARDING WALKTHROUGH -->
+<div class="modal-overlay" id="onboarding-modal" style="align-items:center">
+  <div style="background:var(--surface);border-radius:24px;padding:28px 24px;width:100%;max-width:340px;text-align:center;margin:20px">
+    <div id="onboard-step-0" class="onboard-step">
+      <div style="font-size:44px;margin-bottom:12px">👋</div>
+      <div style="font-size:19px;font-weight:800;margin-bottom:8px">Welcome to Expenses Tracker!</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">A quick 4-step tour of what you can do — takes 20 seconds.</div>
+    </div>
+    <div id="onboard-step-1" class="onboard-step" style="display:none">
+      <div style="font-size:44px;margin-bottom:12px">💸</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px">Track income & expenses</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Use the <b style="color:var(--text)">Add</b> tab to log spending by category, with tags, receipts, and payment method.</div>
+    </div>
+    <div id="onboard-step-2" class="onboard-step" style="display:none">
+      <div style="font-size:44px;margin-bottom:12px">🎯</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px">Set a budget</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Go to <b style="color:var(--text)">Manage</b> to set a monthly limit — overall or per category — and get warned before you overspend.</div>
+    </div>
+    <div id="onboard-step-3" class="onboard-step" style="display:none">
+      <div style="font-size:44px;margin-bottom:12px">🔁</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px">Never miss a bill</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Add recurring bills or salary — weekly, monthly, or yearly — and get reminded automatically.</div>
+    </div>
+    <div id="onboard-step-4" class="onboard-step" style="display:none">
+      <div style="font-size:44px;margin-bottom:12px">☰</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px">Everything else lives here</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Tap the menu icon (top-left) for your profile, theme, and account settings any time.</div>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;margin:20px 0 16px" id="onboard-dots"></div>
+    <button class="auth-btn" onclick="onboardNext()" id="onboard-next-btn">Next →</button>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);cursor:pointer" onclick="closeOnboarding()">Skip</div>
+  </div>
+</div>
+
+<!-- RECEIPT LIGHTBOX -->
+<div class="modal-overlay" id="receipt-modal" style="align-items:center" onclick="if(event.target===this)this.classList.remove('open')">
+  <div style="max-width:90vw;max-height:80vh;text-align:center">
+    <img id="receipt-modal-img" src="" style="max-width:100%;max-height:70vh;border-radius:14px;border:1px solid var(--border)"/>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:14px" onclick="document.getElementById('receipt-modal').classList.remove('open')">Close</button>
   </div>
 </div>
 
@@ -1026,6 +1115,24 @@ function saveCats(c){localStorage.setItem(uKey('cats'),JSON.stringify(c));}
 function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]');}
 function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
 function getBudgetLimit(){return parseFloat(localStorage.getItem(uKey('budget'))||'0')||0;}
+function getRolloverEnabled(){return localStorage.getItem(uKey('rollover'))==='on';}
+function setBudgetRollover(on){
+  localStorage.setItem(uKey('rollover'),on?'on':'off');
+  renderHome();
+}
+// Rollover amount = last month's leftover budget (only counted if rollover is enabled and last month wasn't over budget)
+function getRolloverAmount(){
+  if(!getRolloverEnabled())return 0;
+  const base=getBudgetLimit();
+  if(!base)return 0;
+  const now=new Date();
+  const prevMonthDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const prevMonthName=MONTHS[prevMonthDate.getMonth()];
+  const prevYear=prevMonthDate.getFullYear();
+  const prevExpense=getData().filter(e=>e.type!=='income'&&e.month===prevMonthName&&(e.year||now.getFullYear())===prevYear).reduce((s,e)=>s+e.amount,0);
+  const leftover=base-prevExpense;
+  return leftover>0?leftover:0;
+}
 function getCatBudgets(){return JSON.parse(localStorage.getItem(uKey('catBudgets'))||'{}');}
 function setCatBudget(cat,val){
   const b=getCatBudgets();
@@ -1164,7 +1271,52 @@ async function doLogin(){
   const users=getUsers();
   if(!users[u]){document.getElementById('lerr').textContent='Username not found.';return;}
   if(!await verifyAndMigratePassword(users,u,p)){document.getElementById('lerr').textContent='Wrong password.';return;}
+  if(users[u].require2FA&&users[u].email){
+    await start2FAChallenge(u);
+    return;
+  }
   CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+}
+// ── Two-Factor Login (item #25) — optional, per-account. If enabled, an OTP email is required ──
+// ── after the password before the session actually opens. ──
+let _login2FAUser='',_login2FACode='';
+async function start2FAChallenge(username){
+  const users=getUsers();
+  const acc=users[username];
+  _login2FAUser=username;
+  _login2FACode=String(Math.floor(100000+Math.random()*900000));
+  document.getElementById('login2fa-err').textContent='';
+  document.getElementById('login2fa-code').value='';
+  document.getElementById('login2fa-modal').classList.add('open');
+  const result=await sendEmailViaEmailJS(EMAILJS_CONFIG.otpTemplateId,{
+    to_email:acc.email,to_name:acc.name||username,username,otp_code:_login2FACode,
+    app_name:'Expenses Tracker',brand_name:'ProjectVault',logo_url:APP_LOGO_URL
+  });
+  if(!result.ok){
+    setTimeout(()=>showToast('Login code: '+_login2FACode+' (email not configured — shown here instead)','#6c63ff'),1200);
+  }
+}
+function verifyLogin2FA(){
+  const entered=document.getElementById('login2fa-code').value.trim();
+  if(entered!==_login2FACode){document.getElementById('login2fa-err').textContent='Incorrect code. Try again.';return;}
+  const users=getUsers();
+  document.getElementById('login2fa-modal').classList.remove('open');
+  CU=_login2FAUser;localStorage.setItem('exp_session',CU);
+  _login2FAUser='';_login2FACode='';
+  startApp(users[CU]);
+}
+function cancel2FA(){
+  document.getElementById('login2fa-modal').classList.remove('open');
+  _login2FAUser='';_login2FACode='';
+}
+function toggleRequire2FA(on){
+  if(!CU)return;
+  const users=getUsers();
+  if(!users[CU])return;
+  if(on&&!users[CU].email){showToast('Add an email in your profile first','#ffb300');document.getElementById('require2fa-toggle').checked=false;return;}
+  users[CU].require2FA=on;
+  saveUsers(users);
+  showToast(on?'🔒 Two-factor login enabled':'Two-factor login disabled');
 }
 function ensureAdminAccount(){
   const users=getUsers();
@@ -1192,8 +1344,9 @@ async function doSignup(){
   const users=getUsers();
   if(users[u]){err.textContent='Username already taken.';return;}
   if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
-  users[u]={name,password:await hashPassword(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null};
+  users[u]={name,password:await hashPassword(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null,onboarded:false};
   saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+  setTimeout(showOnboarding,900);
 }
 function doLogout(){
   localStorage.removeItem('exp_session');
@@ -1475,6 +1628,8 @@ function startApp(profile){
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   setTimeout(checkAndSendMonthlyStatement,1500);
+  setTimeout(checkAndSendWeeklyDigest,1700);
+  setTimeout(checkAndSendAnnualSummary,1900);
   setTimeout(maybeCelebrateBudgetWin,2000);
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
@@ -1701,15 +1856,17 @@ function renderHome(){
   document.getElementById('recent-list').innerHTML=rhtml;
   updateStreak(data);
   // Budget progress (based on current-month expenses regardless of filter)
-  const budgetLimit=getBudgetLimit();
+  const baseBudget=getBudgetLimit();
+  const rolloverAmt=getRolloverAmount();
+  const budgetLimit=baseBudget+rolloverAmt;
   const budgetCard=document.getElementById('budget-card');
-  if(budgetLimit>0){
+  if(baseBudget>0){
     budgetCard.style.display='block';
     const curMonth=MONTHS[new Date().getMonth()];
     const monthExpense=data.filter(e=>e.type!=='income'&&e.month===curMonth&&(e.year||new Date().getFullYear())===new Date().getFullYear()).reduce((s,e)=>s+e.amount,0);
     const pct=Math.min(100,Math.round((monthExpense/budgetLimit)*100));
     document.getElementById('budget-spent-label').textContent=fmt(monthExpense)+' spent';
-    document.getElementById('budget-limit-label').textContent='of '+fmt(budgetLimit)+' ('+curMonth+')';
+    document.getElementById('budget-limit-label').textContent='of '+fmt(budgetLimit)+(rolloverAmt>0?' (incl. '+fmt(rolloverAmt)+' rolled over)':' ('+curMonth+')');
     const fillEl=document.getElementById('budget-bar-fill');
     fillEl.style.width=pct+'%';
     const over=monthExpense>budgetLimit;
@@ -1745,6 +1902,10 @@ function renderAddForm(){
   document.getElementById('month-grid').innerHTML=mh;
   renderCatGrid();
   renderReminders();
+  const receiptWrap=document.getElementById('receipt-preview-wrap');
+  if(receiptWrap&&!pendingReceipt){
+    receiptWrap.innerHTML=`<div id="receipt-add-btn" onclick="document.getElementById('receipt-file').click()" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px dashed var(--border);border-radius:14px;padding:12px;cursor:pointer;font-size:13px;color:var(--muted)"><span style="font-size:18px">📎</span> Attach a photo of the receipt</div><input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="handleReceiptPhoto(event)"/>`;
+  }
 }
 function renderCatGrid(){
   const cats=getCats();let ch='';
@@ -1796,6 +1957,41 @@ function getPayModeLabel(){
   if(selPayMode==='bank')return'Bank Transfer';
   return'';
 }
+function viewReceipt(idx){
+  const data=getData();
+  const e=data[idx];
+  if(!e||!e.receipt)return;
+  document.getElementById('receipt-modal-img').src=e.receipt;
+  document.getElementById('receipt-modal').classList.add('open');
+}
+let _onboardStep=0;
+const ONBOARD_STEPS=5;
+function showOnboarding(){
+  _onboardStep=0;
+  renderOnboardStep();
+  document.getElementById('onboarding-modal').classList.add('open');
+}
+function renderOnboardStep(){
+  for(let i=0;i<ONBOARD_STEPS;i++){
+    document.getElementById('onboard-step-'+i).style.display=i===_onboardStep?'block':'none';
+  }
+  document.getElementById('onboard-dots').innerHTML=Array.from({length:ONBOARD_STEPS}).map((_,i)=>
+    `<span style="width:${i===_onboardStep?18:6}px;height:6px;border-radius:3px;background:${i===_onboardStep?'var(--accent)':'var(--border)'};transition:.2s"></span>`
+  ).join('');
+  document.getElementById('onboard-next-btn').textContent=_onboardStep===ONBOARD_STEPS-1?"Let's go! 🚀":'Next →';
+}
+function onboardNext(){
+  if(_onboardStep>=ONBOARD_STEPS-1){closeOnboarding();return;}
+  _onboardStep++;
+  renderOnboardStep();
+}
+function closeOnboarding(){
+  document.getElementById('onboarding-modal').classList.remove('open');
+  if(CU){
+    const users=getUsers();
+    if(users[CU]){users[CU].onboarded=true;saveUsers(users);}
+  }
+}
 let pendingReceipt=null;
 function handleReceiptPhoto(e){
   const f=e.target.files[0];if(!f)return;
@@ -1832,8 +2028,8 @@ function saveExpense(){
   const tagsRaw=document.getElementById('expense-tags').value;
   const tags=tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
   const data=getData();
-  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode,tags});
-  saveData(data);document.getElementById('amount-input').value='';document.getElementById('expense-tags').value='';selCat=null;
+  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode,tags,receipt:pendingReceipt});
+  saveData(data);document.getElementById('amount-input').value='';document.getElementById('expense-tags').value='';selCat=null;pendingReceipt=null;
   renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
   haptic('success');
   maybeCelebrateSavingsMilestone();
@@ -1865,7 +2061,8 @@ function renderHistory(){
     const payLabel=e.payMode?` · ${e.payMode}`:'';
     const debtTag=e.debtLinked?` · 🔁 ${e.debtName||'Debt'} repayment`:'';
     const tagChips=(e.tags&&e.tags.length)?`<div style="margin-top:4px">${e.tags.map(t=>`<span style="display:inline-block;background:var(--surface2);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:100px;margin-right:4px;margin-top:2px;">#${t}</span>`).join('')}</div>`:'';
-    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span><button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
+    const receiptBtn=e.receipt?`<button class="del-btn" onclick="viewReceipt(${oi})" title="View receipt">🧾</button>`:'';
+    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span>${receiptBtn}<button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
   });
   document.getElementById('history-list').innerHTML=html;
   initSwipeToDelete('history-list');
@@ -1911,6 +2108,36 @@ function initSwipeToDelete(containerId){
   });
 }
 function setFilter(m){filterMonth=m;document.getElementById('month-modal').classList.remove('open');renderHome();renderHistory();}
+function toggleDateRangeReport(){
+  const body=document.getElementById('date-range-body');
+  const caret=document.getElementById('date-range-caret');
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  caret.textContent=open?'▾':'▴';
+}
+function showDateRangeReport(){
+  const from=document.getElementById('range-from').value;
+  const to=document.getElementById('range-to').value;
+  const resultEl=document.getElementById('date-range-result');
+  if(!from||!to){resultEl.innerHTML='<div style="color:var(--amber);font-size:12px">Pick both a start and end date.</div>';return;}
+  if(from>to){resultEl.innerHTML='<div style="color:var(--amber);font-size:12px">"From" date must be before "To" date.</div>';return;}
+  const data=getData().filter(e=>e.date&&e.date>=from&&e.date<=to);
+  const income=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  const bycat={};
+  data.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
+  const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
+  const catRows=sorted.map(([c,amt])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>${emoji(c)} ${c}</span><span style="color:var(--muted)">${fmt(amt)}</span></div>`).join('');
+  resultEl.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--green)">${fmt(income)}</div><div style="font-size:10px;color:var(--muted)">Income</div></div>
+      <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--red)">${fmt(expense)}</div><div style="font-size:10px;color:var(--muted)">Expenses</div></div>
+      <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700">${fmt(income-expense)}</div><div style="font-size:10px;color:var(--muted)">Net</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${data.length} entries · ${from} to ${to}</div>
+    ${catRows||'<div style="font-size:12px;color:var(--muted)">No expense entries in this range.</div>'}
+  `;
+}
 function onHistSearch(v){histSearch=v;renderHistory();}
 function delEntry(i){
   const d=getData();
@@ -2184,11 +2411,15 @@ function renderManage(){
       </div>
     </div>`).join('');
   document.getElementById('budget-limit-input').value=getBudgetLimit()||'';
+  const rolloverCb=document.getElementById('rollover-toggle');
+  if(rolloverCb)rolloverCb.checked=getRolloverEnabled();
   const statusNote=document.getElementById('emailjs-status-note');
   if(statusNote)statusNote.innerHTML=EMAILJS_READY?' <span style="color:var(--green)">✓ Email delivery is configured.</span>':' <span style="color:var(--amber)">⚠ Email delivery not set up yet — see EMAILJS_SETUP.md.</span>';
   // Load profile fields
   const users=getUsers();
   const profile=users[CU];
+  const require2faCb=document.getElementById('require2fa-toggle');
+  if(require2faCb&&profile)require2faCb.checked=!!profile.require2FA;
   if(profile){
     document.getElementById('edit-name').value=profile.name||'';
     document.getElementById('edit-username').value=CU;
@@ -2582,6 +2813,50 @@ function computeYearStats(data,year){
   return {totalExpense,avgMonthly:totalExpense/monthsWithData,monthsWithData};
 }
 let _statementCheckInFlight=false;
+function isoWeekKey(d){
+  const onejan=new Date(d.getFullYear(),0,1);
+  const week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);
+  return d.getFullYear()+'-w'+week;
+}
+// Weekly digest — sent once per week (checked on Monday app-opens), covering the previous 7 days.
+// Reuses the monthly statement template (EmailJS free plan only allows 2 templates), with the
+// "month" field relabeled to a date-range so it reads naturally in the email.
+async function checkAndSendWeeklyDigest(){
+  if(!CU)return;
+  if(new Date().getDay()!==1)return; // only check on Mondays
+  const users=getUsers();
+  const acc=users[CU];
+  if(!acc||!acc.email||acc.isAdmin)return;
+  const now=new Date();
+  const wk=isoWeekKey(now);
+  if(acc.lastWeeklyDigestSent===wk)return;
+  const weekEnd=new Date(now);weekEnd.setDate(weekEnd.getDate()-1);
+  const weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-7);
+  const data=getData().filter(e=>e.date&&e.date>=weekStart.toISOString().split('T')[0]&&e.date<=weekEnd.toISOString().split('T')[0]);
+  if(!data.length)return;
+  const totalIncome=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const totalExpense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
+  const rangeLabel='Week of '+weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'–'+weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  const yStats=computeYearStats(getData(),now.getFullYear());
+  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7)},yStats);
+  if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
+}
+// Annual summary — sent once per year (checked in January), covering the previous calendar year.
+async function checkAndSendAnnualSummary(){
+  if(!CU)return;
+  if(new Date().getMonth()!==0)return; // only check in January
+  const users=getUsers();
+  const acc=users[CU];
+  if(!acc||!acc.email||acc.isAdmin)return;
+  const prevYear=new Date().getFullYear()-1;
+  if(acc.lastAnnualSummarySent===prevYear)return;
+  const allData=getData();
+  const yStats=computeYearStats(allData,prevYear);
+  const yearIncome=allData.filter(e=>e.type==='income'&&e.year===prevYear).reduce((s,e)=>s+e.amount,0);
+  if(yStats.totalExpense===0&&yearIncome===0)return;
+  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365},yStats);
+  if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
+}
 async function checkAndSendMonthlyStatement(){
   if(!CU)return;
   if(_statementCheckInFlight)return; // prevent a second concurrent check (e.g. quick lock/unlock) from double-sending
