@@ -1,7 +1,7 @@
 // IMPORTANT: bump CACHE_NAME any time index.html, manifest.json, or any icon/image file changes —
 // otherwise returning visitors keep seeing the OLD cached version indefinitely (icons especially,
 // since they're cached cache-first below with no expiry check).
-const CACHE_NAME = 'expensestracker-cache-v4';
+const CACHE_NAME = 'expensestracker-cache-v5';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
