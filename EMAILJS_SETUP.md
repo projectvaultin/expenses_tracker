@@ -106,12 +106,20 @@ Body (Code Editor — HTML):
           </tr>
         </table>
 
-        <!-- Category breakdown — uses white-space:pre-line so the real newlines in the data ──
-             render as line breaks. Do NOT put "<br>" inside the {{category_breakdown}} value
-             itself — email templates show that as literal text, not an actual line break. -->
+        <!-- Category breakdown — 6 separate real rows (not one joined block of text). This is ──
+             deliberate: relying on "\n" + CSS to fake line breaks can silently fail in clients ──
+             like Gmail's mobile app that strip a lot of CSS. Separate rows always work. Empty ──
+             slots (fewer than 6 categories that period) just render as blank, which is harmless. -->
         <div style="margin-bottom:18px;">
           <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Expense Breakdown</div>
-          <div style="background:#22263a;border-radius:14px;padding:14px;color:#f0f0f5;font-size:13px;line-height:1.9;white-space:pre-line;">{{category_breakdown}}</div>
+          <div style="background:#22263a;border-radius:14px;padding:14px;color:#f0f0f5;font-size:13px;">
+            <div style="padding:3px 0;">{{cat_line_1}}</div>
+            <div style="padding:3px 0;">{{cat_line_2}}</div>
+            <div style="padding:3px 0;">{{cat_line_3}}</div>
+            <div style="padding:3px 0;">{{cat_line_4}}</div>
+            <div style="padding:3px 0;">{{cat_line_5}}</div>
+            <div style="padding:3px 0;">{{cat_line_6}}</div>
+          </div>
         </div>
 
         <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0 0 18px;">
@@ -148,14 +156,14 @@ Copy this template's **Template ID** (e.g. `template_statement456`).
 
 **Changelog for this template:**
 - Income / Expenses / Remaining are 3 equal columns side by side
-- Added a real **Expense Breakdown** section (top 6 categories by amount) via a new
-  `{{category_breakdown}}` variable the app now sends automatically — replaces any manually-added
-  version of that field, which showed literal `<br>` text since the data wasn't actually supplied
+- Added a real **Expense Breakdown** section (top 6 categories by amount) using 6 separate
+  `{{cat_line_1}}` through `{{cat_line_6}}` variables — one real row each, not one block of text
+  with line breaks, which is more reliable across email clients that strip CSS (e.g. Gmail's app)
 - Added a reminder at the bottom to export/backup your data regularly
 - Fixed an earlier mobile-scrolling bug in the stat boxes
 
-If you've pasted any earlier version of this template in before, **re-copy and re-paste the whole
-thing above** to get all of these at once.
+If you've pasted any earlier version of this template in before — including the one with a single
+`{{category_breakdown}}` field — **re-copy and re-paste the whole thing above** to get this fix.
 
 ## 4. Get your Public Key
 Dashboard → **Account** → **General** → copy the **Public Key**.
