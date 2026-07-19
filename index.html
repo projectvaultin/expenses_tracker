@@ -2865,15 +2865,51 @@ function computeCategoryBreakdown(rows,type){
 // largest first, income lines before expense lines. Dropped straight into the
 // {{category_breakdown}} slot in the EmailJS template, one per line via <br>, matching the app's
 // own plain "Category + amount" naming style.
-function categoryBreakdownHTML(bycat,incomeBycat){
-  const expEntries=Object.entries(bycat||{}).filter(([,amt])=>amt>0).sort((a,b)=>b[1]-a[1]);
-  const incEntries=Object.entries(incomeBycat||{}).filter(([,amt])=>amt>0).sort((a,b)=>b[1]-a[1]);
-  const lines=[
-    ...incEntries.map(([cat,amt])=>`${cat} income ${fmt(amt)}`),
-    ...expEntries.map(([cat,amt])=>`${cat} expense ${fmt(amt)}`)
-  ];
-  if(!lines.length)return 'No entries recorded.';
-  return lines.join('<br>');
+function categoryBreakdownHTML(bycat, incomeBycat) {
+
+  const expEntries = Object.entries(bycat || {})
+    .filter(([, amt]) => amt > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (!expEntries.length) {
+    return `
+      <tr>
+        <td colspan="3"
+            style="padding:12px;text-align:center;color:#a7a9bd;">
+          No expenses recorded.
+        </td>
+      </tr>
+    `;
+  }
+
+  const totalExpense = expEntries.reduce((sum, [, amt]) => sum + amt, 0);
+
+  return expEntries.map(([cat, amt]) => {
+
+    const percent = ((amt / totalExpense) * 100).toFixed(1);
+
+    return `
+      <tr>
+
+        <td style="padding:10px 12px;color:#f0f0f5;border-top:1px solid rgba(255,255,255,.08);">
+          ${cat}
+        </td>
+
+        <td align="right"
+            style="padding:10px 12px;color:#f0f0f5;border-top:1px solid rgba(255,255,255,.08);">
+          ${fmt(amt)}
+        </td>
+
+        <td align="right"
+            style="padding:10px 12px;color:#6c63ff;border-top:1px solid rgba(255,255,255,.08);font-weight:bold;">
+          ${percent}%
+        </td>
+
+      </tr>
+    `;
+
+  }).join("");
+
 }
 function computeStatsForMonth(data,monthName,year){
   const rows=data.filter(e=>e.month===monthName&&e.year===year);
