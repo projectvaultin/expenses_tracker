@@ -2852,16 +2852,19 @@ function getPreviousMonthInfo(ref){
   d.setDate(1); d.setMonth(d.getMonth()-1);
   return {monthName:MONTHS[d.getMonth()], year:d.getFullYear()};
 }
-// Builds a plain-text, newline-separated category breakdown (top 6 by amount). Deliberately uses
-// real "\n" characters, NOT "<br>" — email templates treat variable content as plain text, so any
-// HTML tags typed into a data string show up literally instead of rendering. The template pairs
-// this with a "white-space:pre-line" CSS style so the newlines still show as real line breaks.
-function buildCategoryBreakdownText(periodData){
+// Builds up to 6 separate category "slots" (cat_line_1..cat_line_6) instead of one joined string.
+// This avoids relying on ANY special whitespace/line-break CSS being supported by the email
+// client (Gmail strips a lot of CSS, especially in its mobile app) — each category becomes its
+// own genuinely separate HTML row in the template, so there's nothing that can silently fail.
+function buildCategoryBreakdownSlots(periodData){
   const bycat={};
   periodData.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
   const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  if(!sorted.length)return 'No expenses logged this period.';
-  return sorted.map(([cat,amt])=>`${emoji(cat)} ${cat}: ${fmt(amt)}`).join('\n');
+  const lines=sorted.map(([cat,amt])=>`${emoji(cat)} ${cat}: ${fmt(amt)}`);
+  const slots={};
+  for(let i=0;i<6;i++)slots['cat_line_'+(i+1)]=lines[i]||'';
+  if(!lines.length)slots.cat_line_1='No expenses logged this period.';
+  return slots;
 }
 function computeStatsForMonth(data,monthName,year){
   const rows=data.filter(e=>e.month===monthName&&e.year===year);
@@ -2904,7 +2907,7 @@ async function checkAndSendWeeklyDigest(){
   const totalExpense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
   const rangeLabel='Week of '+weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'–'+weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
   const yStats=computeYearStats(getData(),now.getFullYear());
-  const catBreakdown=buildCategoryBreakdownText(data);
+  const catBreakdown=buildCategoryBreakdownSlots(data);
   const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7)},yStats,catBreakdown);
   if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
 }
@@ -2922,7 +2925,7 @@ async function checkAndSendAnnualSummary(){
   const yearIncome=allData.filter(e=>e.type==='income'&&e.year===prevYear).reduce((s,e)=>s+e.amount,0);
   if(yStats.totalExpense===0&&yearIncome===0)return;
   const yearData=allData.filter(e=>e.year===prevYear);
-  const catBreakdown=buildCategoryBreakdownText(yearData);
+  const catBreakdown=buildCategoryBreakdownSlots(yearData);
   const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365},yStats,catBreakdown);
   if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
 }
@@ -2942,7 +2945,7 @@ async function checkAndSendMonthlyStatement(){
   _statementCheckInFlight=true;
   try{
     const periodData=data.filter(e=>e.month===monthName&&e.year===year);
-    const catBreakdown=buildCategoryBreakdownText(periodData);
+    const catBreakdown=buildCategoryBreakdownSlots(periodData);
     const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
     if(result.ok){
       acc.lastStatementSent=key;
@@ -2954,8 +2957,9 @@ async function checkAndSendMonthlyStatement(){
     _statementCheckInFlight=false;
   }
 }
-async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,categoryBreakdown){
+async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,catSlots){
   const remaining=(mStats.totalIncome||0)-(mStats.totalExpense||0);
+  const slots=catSlots||{cat_line_1:'',cat_line_2:'',cat_line_3:'',cat_line_4:'',cat_line_5:'',cat_line_6:''};
   return await sendEmailViaEmailJS(EMAILJS_CONFIG.statementTemplateId,{
     to_email:acc.email,
     to_name:acc.name||uname,
@@ -2969,7 +2973,7 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,categor
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
-    category_breakdown:categoryBreakdown||'No expenses logged this period.',
+    ...slots,
     app_name:'Expenses Tracker',
     brand_name:'ProjectVault',
     logo_url:APP_LOGO_URL
@@ -2988,7 +2992,7 @@ async function sendTestStatementNow(){
   if(mStats.count===0){showToast('No data for '+monthName+' '+year+' to report','#ffb300');return;}
   showToast('Sending test statement…','#6c63ff');
   const periodData=data.filter(e=>e.month===monthName&&e.year===year);
-  const catBreakdown=buildCategoryBreakdownText(periodData);
+  const catBreakdown=buildCategoryBreakdownSlots(periodData);
   const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
   if(result.ok){
     showToast('📧 Statement emailed to '+acc.email,'#00d084');
