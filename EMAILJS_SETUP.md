@@ -82,39 +82,42 @@ Body (Code Editor — HTML):
         <p style="color:#f0f0f5;font-size:15px;margin:0 0 4px;">Hi {{to_name}},</p>
         <p style="color:#7a7d99;font-size:13px;margin:0 0 20px;">Here's your summary for {{month}} {{year}}.</p>
 
+        <!-- Income / Expenses / Remaining — 3 equal columns -->
         <table role="presentation" width="100%" style="border-collapse:collapse;table-layout:fixed;margin-bottom:18px;">
           <tr>
-            <td width="50%" style="padding:0 4px 0 0;">
-              <div style="background:#22263a;border-radius:14px;padding:14px;">
-                <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Income</div>
-                <div style="color:#00d084;font-family:Georgia,serif;font-size:20px;font-weight:bold;">{{total_income}}</div>
+            <td width="33.33%" style="padding:0 4px 0 0;">
+              <div style="background:#22263a;border-radius:14px;padding:12px 8px;text-align:center;">
+                <div style="color:#7a7d99;font-size:9px;text-transform:uppercase;letter-spacing:.3px;">Income</div>
+                <div style="color:#00d084;font-family:Georgia,serif;font-size:16px;font-weight:bold;">{{total_income}}</div>
               </div>
             </td>
-            <td width="50%" style="padding:0 0 0 4px;">
-              <div style="background:#22263a;border-radius:14px;padding:14px;">
-                <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Expenses</div>
-                <div style="color:#ff6584;font-family:Georgia,serif;font-size:20px;font-weight:bold;">{{total_expense}}</div>
+            <td width="33.33%" style="padding:0 4px;">
+              <div style="background:#22263a;border-radius:14px;padding:12px 8px;text-align:center;">
+                <div style="color:#7a7d99;font-size:9px;text-transform:uppercase;letter-spacing:.3px;">Expenses</div>
+                <div style="color:#ff6584;font-family:Georgia,serif;font-size:16px;font-weight:bold;">{{total_expense}}</div>
+              </div>
+            </td>
+            <td width="33.33%" style="padding:0 0 0 4px;">
+              <div style="background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);border-radius:14px;padding:11px 8px;text-align:center;">
+                <div style="color:#a7a2ff;font-size:9px;text-transform:uppercase;letter-spacing:.3px;">Remaining</div>
+                <div style="color:#8b7fff;font-family:Georgia,serif;font-size:16px;font-weight:bold;">{{remaining_balance}}</div>
               </div>
             </td>
           </tr>
         </table>
 
-        <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);border-radius:14px;padding:12px 14px;margin-bottom:18px;text-align:center;">
-          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Remaining</div>
-          <div style="color:#6c63ff;font-family:Georgia,serif;font-size:22px;font-weight:bold;">{{remaining_balance}}</div>
+        <!-- Category breakdown — uses white-space:pre-line so the real newlines in the data ──
+             render as line breaks. Do NOT put "<br>" inside the {{category_breakdown}} value
+             itself — email templates show that as literal text, not an actual line break. -->
+        <div style="margin-bottom:18px;">
+          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Expense Breakdown</div>
+          <div style="background:#22263a;border-radius:14px;padding:14px;color:#f0f0f5;font-size:13px;line-height:1.9;white-space:pre-line;">{{category_breakdown}}</div>
         </div>
 
         <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0 0 18px;">
           Registered mobile: <b style="color:#f0f0f5;">{{mobile}}</b><br>
           Average daily spend this month: <b style="color:#f0f0f5;">{{avg_daily_spend}}</b>
         </p>
-
-        <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;margin-bottom:16px;">
-          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Category breakdown</div>
-          <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0;">
-            {{category_breakdown}}
-          </p>
-        </div>
 
         <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
           <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Year-to-date ({{year}})</div>
@@ -143,30 +146,16 @@ Body (Code Editor — HTML):
 ```
 Copy this template's **Template ID** (e.g. `template_statement456`).
 
-**Changed:** the category breakdown is now plain text lines instead of a boxed table, matching
-the app's own naming style — e.g. `Salary income ₹10000`, `Medicine expense ₹300`,
-`Food expense ₹500`. Only categories with actual entries that month appear (a category with ₹0
-spent that month is simply left out, not shown as zero). Income categories (if any) list first,
-then expense categories, largest amount first. Re-paste Template B below if you already had an
-older version in.
+**Changelog for this template:**
+- Income / Expenses / Remaining are 3 equal columns side by side
+- Added a real **Expense Breakdown** section (top 6 categories by amount) via a new
+  `{{category_breakdown}}` variable the app now sends automatically — replaces any manually-added
+  version of that field, which showed literal `<br>` text since the data wasn't actually supplied
+- Added a reminder at the bottom to export/backup your data regularly
+- Fixed an earlier mobile-scrolling bug in the stat boxes
 
-**Fixed:** a bug where 2 emails could be sent for the same statement — `checkAndSendMonthlyStatement`,
-`checkAndSendWeeklyDigest`, and `checkAndSendAnnualSummary` now share one in-flight lock across all
-three, so quickly locking/unlocking the app (or two send-checks landing close together) can no
-longer trigger a duplicate send.
-
-**Added:** the statement template now includes a reminder at the bottom to export/backup your
-data regularly, since this app stores data only on your device with no cloud copy.
-
-**Added:** a "Remaining" figure (income minus expenses) now shows between the Income/Expenses
-boxes and the rest of the email — Income and Expenses themselves are unchanged. Re-paste Template
-B if you already had a previous version in.
-
-**Fixed:** the statement template previously caused horizontal scrolling on narrow/mobile
-previews — the two income/expense boxes had both `width:50%` and their own padding on the same
-cell, which in HTML email rendering means the padding adds on top of that 50%, overflowing past
-100% combined. Fixed by moving the padding to an inner `<div>` instead of the table cell itself.
-If you already pasted the old version in, re-copy and re-paste the Template B code below.
+If you've pasted any earlier version of this template in before, **re-copy and re-paste the whole
+thing above** to get all of these at once.
 
 ## 4. Get your Public Key
 Dashboard → **Account** → **General** → copy the **Public Key**.
