@@ -1644,9 +1644,7 @@ function startApp(profile){
     switchTab('home',document.querySelector('.tab'));
   }
   setTimeout(checkDueAlerts,600);
-  setTimeout(checkReminders,800);
   setInterval(checkDueAlerts,3600000);
-  setInterval(checkReminders,3600000);
   setTimeout(checkUpdateNotice,1000);
   // Notification permission MUST be requested from a real tap/click — browsers silently ignore
   // requests triggered by a timer with no user gesture, which was the bug here (permission stayed
@@ -2384,39 +2382,47 @@ function delDebt(i){
 // ── DUE DATE ALERTS ──
 function checkDueAlerts(){
   const debts=getDebts().filter(d=>!d.cleared&&d.dueDate);
-  const upcoming=debts.filter(d=>{
+  const upcomingDebts=debts.filter(d=>{
     const dd=daysDiff(d.dueDate);
     return dd!==null&&dd<=2&&dd>=-1; // only 2 days before + same day + 1 day overdue
-  });
+  }).map(d=>({
+    name:d.name,amount:d.amount,daysLeft:daysDiff(d.dueDate),
+    info:d.type==='debt'?'You need to pay':'They need to pay you',isRecurring:false
+  }));
+  // Recurring bills/income due within the same 2-day window, not yet marked paid this cycle
+  const upcomingRecurring=getReminders().filter(r=>r.active!==false).map(r=>{
+    const daysLeft=daysUntilDue(r);
+    const isPaid=!!(r.paid&&r.paid[cycleKeyFor(r)]);
+    return{r,daysLeft,isPaid};
+  }).filter(x=>!x.isPaid&&x.daysLeft>=0&&x.daysLeft<=2).map(x=>({
+    name:x.r.name,amount:x.r.amount,daysLeft:x.daysLeft,
+    info:x.r.type==='income'?'Expected to arrive':'Payment due',isRecurring:true
+  }));
+  const upcoming=[...upcomingDebts,...upcomingRecurring];
   if(!upcoming.length)return;
   let html='';
-  upcoming.forEach(d=>{
-    const dd=daysDiff(d.dueDate);
+  upcoming.forEach(item=>{
+    const dd=item.daysLeft;
     const urgency=dd<0?`⚠️ Overdue by ${Math.abs(dd)} day(s)`:dd===0?'🔴 Due TODAY':`⏰ Due in ${dd} day(s) — arrange money now!`;
-    const isDebt=d.type==='debt';
     html+=`<div class="due-alert-item">
-      <div class="due-alert-name">${d.name} — ${fmt(d.amount)}</div>
-      <div class="due-alert-info">${isDebt?'You need to pay':'They need to pay you'} · ${urgency}</div>
+      <div class="due-alert-name">${item.isRecurring?'🔁 ':''}${item.name} — ${fmt(item.amount)}</div>
+      <div class="due-alert-info">${item.info} · ${urgency}</div>
     </div>`;
   });
   document.getElementById('due-alert-list').innerHTML=html;
   document.getElementById('due-alert-modal').classList.add('open');
-  if('Notification' in window){
-    Notification.requestPermission().then(perm=>{
-      if(perm==='granted'){
-        upcoming.forEach(d=>{
-          const dd=daysDiff(d.dueDate);
-          const msg=dd<0?`OVERDUE: ${d.name} — ${fmt(d.amount)} — arrange money!`:
-            dd===0?`DUE TODAY: ${d.name} — ${fmt(d.amount)}`:
-            `Due in ${dd}d: ${d.name} — ${fmt(d.amount)} — arrange money now!`;
-          new Notification('Expenses Tracker — Payment Reminder',{
-            body:msg,
-            icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💰</text></svg>',
-            tag:'due-'+d.name,
-            requireInteraction:true
-          });
-        });
-      }
+  if('Notification' in window && Notification.permission==='granted'){
+    upcoming.forEach(item=>{
+      const dd=item.daysLeft;
+      const msg=dd<0?`OVERDUE: ${item.name} — ${fmt(item.amount)} — arrange money!`:
+        dd===0?`DUE TODAY: ${item.name} — ${fmt(item.amount)}`:
+        `Due in ${dd}d: ${item.name} — ${fmt(item.amount)} — arrange money now!`;
+      new Notification('Expenses Tracker — Payment Reminder',{
+        body:msg,
+        icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💰</text></svg>',
+        tag:'due-'+item.name,
+        requireInteraction:true
+      });
     });
   }
 }
@@ -2933,6 +2939,7 @@ async function checkAndSendMonthlyStatement(){
   }
 }
 async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
+  const remaining=(mStats.totalIncome||0)-(mStats.totalExpense||0);
   return await sendEmailViaEmailJS(EMAILJS_CONFIG.statementTemplateId,{
     to_email:acc.email,
     to_name:acc.name||uname,
@@ -2942,6 +2949,7 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
     year:String(year),
     total_income:fmt(mStats.totalIncome),
     total_expense:fmt(mStats.totalExpense),
+    remaining_balance:fmt(remaining),
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
