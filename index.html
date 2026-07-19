@@ -2852,6 +2852,24 @@ function getPreviousMonthInfo(ref){
   d.setDate(1); d.setMonth(d.getMonth()-1);
   return {monthName:MONTHS[d.getMonth()], year:d.getFullYear()};
 }
+// Builds a {category: totalAmount} map from a set of expense rows (income rows ignored).
+function computeCategoryBreakdown(rows){
+  const bycat={};
+  rows.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
+  return bycat;
+}
+// Turns a {category: amount} map into an HTML block (category name + amount per line, largest
+// first) that gets dropped straight into the {{category_breakdown}} slot in the EmailJS template.
+function categoryBreakdownHTML(bycat){
+  const entries=Object.entries(bycat||{}).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){
+    return '<tr><td style="padding:4px 0;color:#7a7d99;font-size:13px;">No category spending recorded.</td></tr>';
+  }
+  return entries.map(([cat,amt])=>
+    `<tr><td style="padding:6px 0;color:#a7a9bd;font-size:13px;border-bottom:1px solid rgba(255,255,255,.06);">${emoji(cat)} ${cat}</td>`+
+    `<td style="padding:6px 0;text-align:right;color:#f0f0f5;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.06);">${fmt(amt)}</td></tr>`
+  ).join('');
+}
 function computeStatsForMonth(data,monthName,year){
   const rows=data.filter(e=>e.month===monthName&&e.year===year);
   const totalIncome=rows.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
@@ -2859,7 +2877,8 @@ function computeStatsForMonth(data,monthName,year){
   const mIdx=MONTHS.indexOf(monthName);
   const daysInMonth=new Date(year,mIdx+1,0).getDate();
   const avgDaily=totalExpense/daysInMonth;
-  return {totalIncome,totalExpense,avgDaily,count:rows.length,daysInMonth};
+  const byCategory=computeCategoryBreakdown(rows);
+  return {totalIncome,totalExpense,avgDaily,count:rows.length,daysInMonth,byCategory};
 }
 function computeYearStats(data,year){
   const rows=data.filter(e=>e.year===year&&e.type!=='income');
@@ -2893,7 +2912,8 @@ async function checkAndSendWeeklyDigest(){
   const totalExpense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
   const rangeLabel='Week of '+weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'–'+weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
   const yStats=computeYearStats(getData(),now.getFullYear());
-  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7)},yStats);
+  const byCategory=computeCategoryBreakdown(data);
+  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7),byCategory},yStats);
   if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
 }
 // Annual summary — sent once per year (checked in January), covering the previous calendar year.
@@ -2909,7 +2929,8 @@ async function checkAndSendAnnualSummary(){
   const yStats=computeYearStats(allData,prevYear);
   const yearIncome=allData.filter(e=>e.type==='income'&&e.year===prevYear).reduce((s,e)=>s+e.amount,0);
   if(yStats.totalExpense===0&&yearIncome===0)return;
-  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365},yStats);
+  const byCategory=computeCategoryBreakdown(allData.filter(e=>e.year===prevYear));
+  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365,byCategory},yStats);
   if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
 }
 async function checkAndSendMonthlyStatement(){
@@ -2953,6 +2974,7 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
+    category_breakdown:categoryBreakdownHTML(mStats.byCategory),
     app_name:'Expenses Tracker',
     brand_name:'ProjectVault',
     logo_url:APP_LOGO_URL
