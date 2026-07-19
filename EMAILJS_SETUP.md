@@ -110,10 +110,10 @@ Body (Code Editor — HTML):
         </p>
 
         <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;margin-bottom:16px;">
-          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Spending by category</div>
-          <table role="presentation" width="100%" style="border-collapse:collapse;">
+          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Category breakdown</div>
+          <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0;">
             {{category_breakdown}}
-          </table>
+          </p>
         </div>
 
         <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
@@ -143,13 +143,17 @@ Body (Code Editor — HTML):
 ```
 Copy this template's **Template ID** (e.g. `template_statement456`).
 
-**Added:** the statement template now includes a **"Spending by category"** section, listing every
-category you logged an expense in that month (e.g. Medicine ₹300, Food ₹500, Travelling ₹0) sorted
-highest-to-lowest, between the daily-average line and the year-to-date section. This comes from a
-new `{{category_breakdown}}` variable that the app builds and sends as ready-made HTML table rows —
-you don't need to do anything for it beyond re-pasting Template B below if you already had an older
-version in. If a category has zero spending that month it simply won't appear in the list (only
-categories with actual entries are included).
+**Changed:** the category breakdown is now plain text lines instead of a boxed table, matching
+the app's own naming style — e.g. `Salary income ₹10000`, `Medicine expense ₹300`,
+`Food expense ₹500`. Only categories with actual entries that month appear (a category with ₹0
+spent that month is simply left out, not shown as zero). Income categories (if any) list first,
+then expense categories, largest amount first. Re-paste Template B below if you already had an
+older version in.
+
+**Fixed:** a bug where 2 emails could be sent for the same statement — `checkAndSendMonthlyStatement`,
+`checkAndSendWeeklyDigest`, and `checkAndSendAnnualSummary` now share one in-flight lock across all
+three, so quickly locking/unlocking the app (or two send-checks landing close together) can no
+longer trigger a duplicate send.
 
 **Added:** the statement template now includes a reminder at the bottom to export/backup your
 data regularly, since this app stores data only on your device with no cloud copy.
