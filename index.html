@@ -280,6 +280,22 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
+<!-- SPLASH INTRO SCREEN -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;">
+  <img src="icon-192.png" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);"/>
+  <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f0f0f5;margin-top:18px;opacity:0;animation:splashFadeIn .6s ease .3s forwards;">Expenses<span style="color:#6c63ff;"> Tracker</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0;animation:splashFadeIn .6s ease .5s forwards;">
+    <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto"/>
+    <span style="font-size:11px;color:#7a7d99;letter-spacing:.4px;">by ProjectVault</span>
+  </div>
+  <div style="width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:32px;overflow:hidden;">
+    <div id="splash-bar" style="width:0%;height:100%;background:#6c63ff;border-radius:3px;"></div>
+  </div>
+</div>
+<style>
+@keyframes splashPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes splashFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
@@ -377,6 +393,16 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <!-- HOME -->
   <div id="page-home" class="page active">
+    <div class="card" id="notif-prompt-card" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,208,132,.08));">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">🔔</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">Turn on reminders</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Get a real popup when a recurring bill is due</div>
+        </div>
+        <button class="pill-btn" style="background:var(--accent);color:#fff" onclick="enableNotifications()">Enable</button>
+      </div>
+    </div>
     <div class="hero">
       <div class="hero-label">Net Balance</div>
       <div class="hero-amt" id="grand-total">₹0</div>
@@ -511,6 +537,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card">
       <div class="card-title">🔁 Recurring Bills &amp; Income</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Add recurring payments (rent, EMI, subscriptions) <b style="color:var(--text)">or</b> recurring income (salary, freelance retainer). You'll get reminded on the day — tap <b style="color:var(--text)">Mark Paid / Received</b> each month and it's logged automatically to the right place.</div>
+      <button class="pill-btn" style="margin-bottom:12px" onclick="sendTestReminderAlert()">🔔 Send Test Alert</button>
       <div id="reminders-list"></div>
       <div style="margin-top:12px">
         <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -1621,10 +1648,10 @@ function startApp(profile){
   setInterval(checkDueAlerts,3600000);
   setInterval(checkReminders,3600000);
   setTimeout(checkUpdateNotice,1000);
-  // Request notification permission
-  if('Notification' in window && Notification.permission==='default'){
-    setTimeout(()=>Notification.requestPermission(),3000);
-  }
+  // Notification permission MUST be requested from a real tap/click — browsers silently ignore
+  // requests triggered by a timer with no user gesture, which was the bug here (permission stayed
+  // stuck at "default" forever, so native reminder popups never appeared). Show a real button instead.
+  maybeShowNotifPrompt();
   // Show/hide admin sections
   const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
@@ -1775,6 +1802,7 @@ function renderUpcomingWeek(){
   }).join('');
 }
 function renderHome(){
+  maybeShowNotifPrompt();
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
   const income=filtered.filter(e=>e.type==='income');
@@ -3108,6 +3136,43 @@ function toggleReminderActive(id){
   renderReminders();
   showToast(r.active?'▶️ Reminder resumed':'⏸️ Reminder paused','#ffb300');
 }
+// Shows the "Enable reminders" card only when it's actually needed (permission not yet decided)
+function maybeShowNotifPrompt(){
+  const card=document.getElementById('notif-prompt-card');
+  if(!card)return;
+  const dismissed=localStorage.getItem(uKey('notifPromptDismissed'));
+  if('Notification' in window && Notification.permission==='default' && !dismissed){
+    card.style.display='block';
+  } else {
+    card.style.display='none';
+  }
+}
+// Called directly from a button tap — this is a real user gesture, so the browser will actually
+// show its permission dialog (unlike the old timer-based auto-request, which browsers ignore).
+function enableNotifications(){
+  if(!('Notification' in window)){showToast('Notifications aren\'t supported in this browser','#ffb300');return;}
+  Notification.requestPermission().then(perm=>{
+    localStorage.setItem(uKey('notifPromptDismissed'),'1');
+    document.getElementById('notif-prompt-card').style.display='none';
+    if(perm==='granted')showToast('🔔 Reminders enabled!');
+    else showToast('Notifications blocked — you can still see reminders as in-app messages','#ffb300');
+  });
+}
+// Manual test — fires an immediate sample reminder alert so you can confirm popups actually work,
+// without waiting for a real bill's due date.
+function sendTestReminderAlert(){
+  showToast('🔔 Test: "Sample Bill" ₹500 — mark it paid on the Add tab','#6c63ff');
+  if('Notification' in window && Notification.permission==='granted'){
+    new Notification('Expenses Tracker — Test Reminder',{
+      body:'📅 This is a test alert. If you see this, reminder popups are working!',
+      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+      tag:'test-reminder'
+    });
+    showToast('✅ Native popup sent too — check your notifications');
+  } else {
+    showToast('ℹ️ Native popups are OFF — tap "Enable" on Home to turn them on','#ffb300');
+  }
+}
 function checkReminders(){
   const rems=getReminders().filter(r=>r.active&&isReminderDueToday(r)&&!(r.paid&&r.paid[cycleKeyFor(r)]));
   if(!rems.length)return;
@@ -3442,6 +3507,27 @@ if('serviceWorker' in navigator){
     console.error('App failed to initialize:',e);
     document.getElementById('auth-screen').style.display='flex';
   }
+})();
+
+// ── SPLASH INTRO — shown once per app load, dismisses automatically or on tap ──
+// To change the duration, edit SPLASH_DURATION_MS below (currently ~2.8s — kept shorter than a
+// literal 10s on purpose since this is an app people open many times a day; a 10s forced wait
+// every single time would get frustrating fast. Change to 10000 if you'd still prefer that.)
+(function(){
+  const SPLASH_DURATION_MS=2800;
+  const splash=document.getElementById('splash-screen');
+  const bar=document.getElementById('splash-bar');
+  if(!splash)return;
+  requestAnimationFrame(()=>{
+    bar.style.transition=`width ${SPLASH_DURATION_MS}ms linear`;
+    bar.style.width='100%';
+  });
+  const dismiss=()=>{
+    splash.style.opacity='0';
+    setTimeout(()=>{splash.style.display='none';},500);
+  };
+  const timer=setTimeout(dismiss,SPLASH_DURATION_MS);
+  splash.addEventListener('click',()=>{clearTimeout(timer);dismiss();});
 })();
 </script>
 </body>
