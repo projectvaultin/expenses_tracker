@@ -2852,83 +2852,16 @@ function getPreviousMonthInfo(ref){
   d.setDate(1); d.setMonth(d.getMonth()-1);
   return {monthName:MONTHS[d.getMonth()], year:d.getFullYear()};
 }
-// Builds a {category: totalAmount} map from a set of rows. type='expense' (default) sums
-// non-income rows, type='income' sums income rows only.
-function computeCategoryBreakdown(rows,type){
+// Builds a plain-text, newline-separated category breakdown (top 6 by amount). Deliberately uses
+// real "\n" characters, NOT "<br>" — email templates treat variable content as plain text, so any
+// HTML tags typed into a data string show up literally instead of rendering. The template pairs
+// this with a "white-space:pre-line" CSS style so the newlines still show as real line breaks.
+function buildCategoryBreakdownText(periodData){
   const bycat={};
-  const wantIncome=type==='income';
-  rows.filter(e=>(e.type==='income')===wantIncome).forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
-  return bycat;
-}
-// Turns expense/income category maps into plain lines like "Medicine expense ₹300" and
-// "Salary income ₹10000" (only categories that actually have entries appear — no zero lines),
-// largest first, income lines before expense lines. Dropped straight into the
-// {{category_breakdown}} slot in the EmailJS template, one per line via <br>, matching the app's
-// own plain "Category + amount" naming style.
-function categoryBreakdownHTML(bycat, incomeBycat) {
-
-  const expEntries = Object.entries(bycat || {})
-    .filter(([, amt]) => amt > 0)
-    .sort((a, b) => b[1] - a[1]);
-
-  if (!expEntries.length) {
-    return "No expenses recorded.";
-  }
-
-  const totalExpense = expEntries.reduce((sum, [, amt]) => sum + amt, 0);
-
-  let result = "";
-
-  expEntries.forEach(([cat, amt]) => {
-
-    const percent = ((amt / totalExpense) * 100).toFixed(1);
-
-    let emoji = "📌";
-
-    switch (cat.toLowerCase()) {
-
-      case "food":
-        emoji = "🍔";
-        break;
-
-      case "travel":
-        emoji = "🚌";
-        break;
-
-      case "medical":
-        emoji = "💊";
-        break;
-
-      case "rent":
-        emoji = "🏠";
-        break;
-
-      case "shopping":
-        emoji = "🛍️";
-        break;
-
-      case "fuel":
-        emoji = "⛽";
-        break;
-
-      case "education":
-        emoji = "📚";
-        break;
-
-      case "entertainment":
-        emoji = "🎬";
-        break;
-
-      default:
-        emoji = "📌";
-    }
-
-    result += `${emoji} ${cat}: ${fmt(amt)} (${percent}%)<br>`;
-
-  });
-
- return "LINE 1\nLINE 2\nLINE 3";
-
+  periodData.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
+  const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(!sorted.length)return 'No expenses logged this period.';
+  return sorted.map(([cat,amt])=>`${emoji(cat)} ${cat}: ${fmt(amt)}`).join('\n');
 }
 function computeStatsForMonth(data,monthName,year){
   const rows=data.filter(e=>e.month===monthName&&e.year===year);
@@ -2937,9 +2870,7 @@ function computeStatsForMonth(data,monthName,year){
   const mIdx=MONTHS.indexOf(monthName);
   const daysInMonth=new Date(year,mIdx+1,0).getDate();
   const avgDaily=totalExpense/daysInMonth;
-  const byCategory=computeCategoryBreakdown(rows,'expense');
-  const incomeByCategory=computeCategoryBreakdown(rows,'income');
-  return {totalIncome,totalExpense,avgDaily,count:rows.length,daysInMonth,byCategory,incomeByCategory};
+  return {totalIncome,totalExpense,avgDaily,count:rows.length,daysInMonth};
 }
 function computeYearStats(data,year){
   const rows=data.filter(e=>e.year===year&&e.type!=='income');
@@ -2947,7 +2878,7 @@ function computeYearStats(data,year){
   const monthsWithData=new Set(rows.map(e=>e.month)).size||1;
   return {totalExpense,avgMonthly:totalExpense/monthsWithData,monthsWithData};
 }
-let _emailSendInFlight=false; // shared across monthly/weekly/annual senders — prevents 2 mails firing from overlapping startApp calls (e.g. quick lock/unlock)
+let _statementCheckInFlight=false;
 function isoWeekKey(d){
   const onejan=new Date(d.getFullYear(),0,1);
   const week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);
@@ -2958,7 +2889,6 @@ function isoWeekKey(d){
 // "month" field relabeled to a date-range so it reads naturally in the email.
 async function checkAndSendWeeklyDigest(){
   if(!CU)return;
-  if(_emailSendInFlight)return;
   if(new Date().getDay()!==1)return; // only check on Mondays
   const users=getUsers();
   const acc=users[CU];
@@ -2974,20 +2904,13 @@ async function checkAndSendWeeklyDigest(){
   const totalExpense=data.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
   const rangeLabel='Week of '+weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'–'+weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
   const yStats=computeYearStats(getData(),now.getFullYear());
-  const byCategory=computeCategoryBreakdown(data,'expense');
-  const incomeByCategory=computeCategoryBreakdown(data,'income');
-  _emailSendInFlight=true;
-  try{
-    const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7),byCategory,incomeByCategory},yStats);
-    if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
-  } finally {
-    _emailSendInFlight=false;
-  }
+  const catBreakdown=buildCategoryBreakdownText(data);
+  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7)},yStats,catBreakdown);
+  if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
 }
 // Annual summary — sent once per year (checked in January), covering the previous calendar year.
 async function checkAndSendAnnualSummary(){
   if(!CU)return;
-  if(_emailSendInFlight)return;
   if(new Date().getMonth()!==0)return; // only check in January
   const users=getUsers();
   const acc=users[CU];
@@ -2998,20 +2921,14 @@ async function checkAndSendAnnualSummary(){
   const yStats=computeYearStats(allData,prevYear);
   const yearIncome=allData.filter(e=>e.type==='income'&&e.year===prevYear).reduce((s,e)=>s+e.amount,0);
   if(yStats.totalExpense===0&&yearIncome===0)return;
-  const yearRows=allData.filter(e=>e.year===prevYear);
-  const byCategory=computeCategoryBreakdown(yearRows,'expense');
-  const incomeByCategory=computeCategoryBreakdown(yearRows,'income');
-  _emailSendInFlight=true;
-  try{
-    const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365,byCategory,incomeByCategory},yStats);
-    if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
-  } finally {
-    _emailSendInFlight=false;
-  }
+  const yearData=allData.filter(e=>e.year===prevYear);
+  const catBreakdown=buildCategoryBreakdownText(yearData);
+  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365},yStats,catBreakdown);
+  if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
 }
 async function checkAndSendMonthlyStatement(){
   if(!CU)return;
-  if(_emailSendInFlight)return; // prevent a second concurrent check (e.g. quick lock/unlock) from double-sending
+  if(_statementCheckInFlight)return; // prevent a second concurrent check (e.g. quick lock/unlock) from double-sending
   const users=getUsers();
   const acc=users[CU];
   if(!acc||!acc.email||acc.isAdmin)return;
@@ -3022,9 +2939,11 @@ async function checkAndSendMonthlyStatement(){
   const mStats=computeStatsForMonth(data,monthName,year);
   if(mStats.count===0)return; // nothing to report — don't send an empty statement
   const yStats=computeYearStats(data,year);
-  _emailSendInFlight=true;
+  _statementCheckInFlight=true;
   try{
-    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats);
+    const periodData=data.filter(e=>e.month===monthName&&e.year===year);
+    const catBreakdown=buildCategoryBreakdownText(periodData);
+    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
     if(result.ok){
       acc.lastStatementSent=key;
       saveUsers(users);
@@ -3032,10 +2951,10 @@ async function checkAndSendMonthlyStatement(){
       console.warn('Monthly statement auto-send failed, will retry next app open:', result.detail);
     }
   } finally {
-    _emailSendInFlight=false;
+    _statementCheckInFlight=false;
   }
 }
-async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
+async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,categoryBreakdown){
   const remaining=(mStats.totalIncome||0)-(mStats.totalExpense||0);
   return await sendEmailViaEmailJS(EMAILJS_CONFIG.statementTemplateId,{
     to_email:acc.email,
@@ -3050,7 +2969,7 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats){
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
-    category_breakdown:categoryBreakdownHTML(mStats.byCategory,mStats.incomeByCategory),
+    category_breakdown:categoryBreakdown||'No expenses logged this period.',
     app_name:'Expenses Tracker',
     brand_name:'ProjectVault',
     logo_url:APP_LOGO_URL
@@ -3068,7 +2987,9 @@ async function sendTestStatementNow(){
   const yStats=computeYearStats(data,year);
   if(mStats.count===0){showToast('No data for '+monthName+' '+year+' to report','#ffb300');return;}
   showToast('Sending test statement…','#6c63ff');
-  const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats);
+  const periodData=data.filter(e=>e.month===monthName&&e.year===year);
+  const catBreakdown=buildCategoryBreakdownText(periodData);
+  const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
   if(result.ok){
     showToast('📧 Statement emailed to '+acc.email,'#00d084');
   } else if(result.reason==='send_failed'){
