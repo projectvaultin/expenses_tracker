@@ -99,6 +99,11 @@ Body (Code Editor — HTML):
           </tr>
         </table>
 
+        <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);border-radius:14px;padding:12px 14px;margin-bottom:18px;text-align:center;">
+          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Remaining</div>
+          <div style="color:#6c63ff;font-family:Georgia,serif;font-size:22px;font-weight:bold;">{{remaining_balance}}</div>
+        </div>
+
         <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0 0 18px;">
           Registered mobile: <b style="color:#f0f0f5;">{{mobile}}</b><br>
           Average daily spend this month: <b style="color:#f0f0f5;">{{avg_daily_spend}}</b>
@@ -109,6 +114,14 @@ Body (Code Editor — HTML):
           <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0;">
             Total expenses: <b style="color:#f0f0f5;">{{year_total_expense}}</b><br>
             Average monthly spend: <b style="color:#f0f0f5;">{{year_avg_monthly_spend}}</b>
+          </p>
+        </div>
+
+        <div style="background:#22263a;border-radius:12px;padding:12px 14px;margin-top:18px;">
+          <p style="color:#a7a9bd;font-size:11px;line-height:1.6;margin:0;">
+            💡 <b style="color:#f0f0f5;">Tip:</b> This app stores your data only on your device — if you
+            ever uninstall it, that data is gone for good. Open the app → menu (☰) → Manage Account →
+            Export &amp; Data to download a backup regularly, and Import it back any time you reinstall.
           </p>
         </div>
       </td>
@@ -123,9 +136,12 @@ Body (Code Editor — HTML):
 ```
 Copy this template's **Template ID** (e.g. `template_statement456`).
 
-Both templates use the same `{{variable}}` names as before, plus two new ones — `{{logo_url}}`
-and `{{brand_name}}` (set to "ProjectVault") — which the app now sends automatically. No changes
-needed on the app side.
+**Added:** the statement template now includes a reminder at the bottom to export/backup your
+data regularly, since this app stores data only on your device with no cloud copy.
+
+**Added:** a "Remaining" figure (income minus expenses) now shows between the Income/Expenses
+boxes and the rest of the email — Income and Expenses themselves are unchanged. Re-paste Template
+B if you already had a previous version in.
 
 **Fixed:** the statement template previously caused horizontal scrolling on narrow/mobile
 previews — the two income/expense boxes had both `width:50%` and their own padding on the same
