@@ -109,6 +109,13 @@ Body (Code Editor — HTML):
           Average daily spend this month: <b style="color:#f0f0f5;">{{avg_daily_spend}}</b>
         </p>
 
+        <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;margin-bottom:16px;">
+          <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Spending by category</div>
+          <table role="presentation" width="100%" style="border-collapse:collapse;">
+            {{category_breakdown}}
+          </table>
+        </div>
+
         <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
           <div style="color:#7a7d99;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Year-to-date ({{year}})</div>
           <p style="color:#a7a9bd;font-size:13px;line-height:1.9;margin:0;">
@@ -135,6 +142,14 @@ Body (Code Editor — HTML):
 </div>
 ```
 Copy this template's **Template ID** (e.g. `template_statement456`).
+
+**Added:** the statement template now includes a **"Spending by category"** section, listing every
+category you logged an expense in that month (e.g. Medicine ₹300, Food ₹500, Travelling ₹0) sorted
+highest-to-lowest, between the daily-average line and the year-to-date section. This comes from a
+new `{{category_breakdown}}` variable that the app builds and sends as ready-made HTML table rows —
+you don't need to do anything for it beyond re-pasting Template B below if you already had an older
+version in. If a category has zero spending that month it simply won't appear in the list (only
+categories with actual entries are included).
 
 **Added:** the statement template now includes a reminder at the bottom to export/backup your
 data regularly, since this app stores data only on your device with no cloud copy.
