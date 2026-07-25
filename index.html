@@ -3631,11 +3631,11 @@ if('serviceWorker' in navigator){
 const SUPABASE_URL = "https://vzetpnizonsiefwxnpmr.supabase.co";
 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXRwbml6b25zaWVmd3hucG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzQ5MzQsImV4cCI6MjEwMDA1MDkzNH0.Evn7aY3ZORN9MFcDr2jrDAJLkeATMKApEI_1NFbjBzE";
-
-const supabase = window.supabase.createClient(
+const sb = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
 console.log(window.supabase);
 console.log(supabase);
 console.log("Supabase Connected");
