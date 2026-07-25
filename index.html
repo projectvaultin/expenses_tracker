@@ -1373,7 +1373,7 @@ async function doSignup(){
   if(mobile&&!/^\d{10}$/.test(mobile)){err.textContent='Enter a valid 10-digit mobile.';return;}
   const users=getUsers();
   // Check username in Supabase
-const { data: existingUser, error: userCheckError } = await supabase
+const { data: existingUser, error: userCheckError } = await sb
   .from("users")
   .select("id")
   .eq("username", u)
@@ -1389,7 +1389,7 @@ if (existingUser) {
 }
 
 // Check email in Supabase
-const { data: existingEmail, error: emailCheckError } = await supabase
+const { data: existingEmail, error: emailCheckError } = await sb
   .from("users")
   .select("id")
   .eq("email", email)
@@ -1408,7 +1408,7 @@ if (existingEmail) {
   const hashedPassword = await hashPassword(p);
 
 // Save user in Supabase
-const { error: insertError } = await supabase
+const { error: insertError } = await sb
   .from("users")
   .insert([
     {
@@ -3637,7 +3637,7 @@ const sb = window.supabase.createClient(
 );
 
 console.log(window.supabase);
-console.log(supabase);
+console.log(sb);
 console.log("Supabase Connected");
 </script>
 </body>
