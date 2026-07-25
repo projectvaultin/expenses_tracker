@@ -1405,7 +1405,41 @@ if (existingEmail) {
 }
   if(users[u]){err.textContent='Username already taken.';return;}
   if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
-  users[u]={name,password:await hashPassword(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null,onboarded:false};
+  const hashedPassword = await hashPassword(p);
+
+// Save user in Supabase
+const { error: insertError } = await supabase
+  .from("users")
+  .insert([
+    {
+      name: name,
+      username: u,
+      email: email,
+      mobile: mobile || null,
+      password_hash: hashedPassword,
+      avatar: pendingAv || null,
+      is_admin: false
+    }
+  ]);
+
+if (insertError) {
+  console.error(insertError);
+  err.textContent = insertError.message;
+  return;
+}
+
+// Keep local copy (temporary until full migration)
+users[u] = {
+  name,
+  password: hashedPassword,
+  avatar: pendingAv || null,
+  email,
+  mobile: mobile || null,
+  isAdmin: false,
+  createdAt: Date.now(),
+  lastStatementSent: null,
+  onboarded: false
+};
   saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
   setTimeout(showOnboarding,900);
 }
