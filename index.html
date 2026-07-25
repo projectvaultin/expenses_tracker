@@ -1372,6 +1372,37 @@ async function doSignup(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='Enter a valid email address.';return;}
   if(mobile&&!/^\d{10}$/.test(mobile)){err.textContent='Enter a valid 10-digit mobile.';return;}
   const users=getUsers();
+  // Check username in Supabase
+const { data: existingUser, error: userCheckError } = await supabase
+  .from("users")
+  .select("id")
+  .eq("username", u)
+  .maybeSingle();
+
+if (userCheckError) {
+  console.error(userCheckError);
+}
+
+if (existingUser) {
+  err.textContent = "Username already taken.";
+  return;
+}
+
+// Check email in Supabase
+const { data: existingEmail, error: emailCheckError } = await supabase
+  .from("users")
+  .select("id")
+  .eq("email", email)
+  .maybeSingle();
+
+if (emailCheckError) {
+  console.error(emailCheckError);
+}
+
+if (existingEmail) {
+  err.textContent = "An account already uses this email.";
+  return;
+}
   if(users[u]){err.textContent='Username already taken.';return;}
   if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
   users[u]={name,password:await hashPassword(p),avatar:pendingAv||null,email,mobile:mobile||null,isAdmin:false,createdAt:Date.now(),lastStatementSent:null,onboarded:false};
