@@ -2882,25 +2882,41 @@ function showForgotPw(){
   document.getElementById('fp-title').textContent='🔑 Forgot Password';
   document.getElementById('forgotpw-modal').classList.add('open');
 }
-// Look up a user by either their registered mobile number or email address
-function findUserByIdentifier(idRaw){
+// Look up a user by either their registered mobile number or email address.
+// Checks local storage first (fast path), then falls back to Supabase so this
+// works even for accounts created on a different device.
+async function findUserByIdentifierAsync(idRaw){
   const id=idRaw.trim().toLowerCase();
-  const users=getUsers();
-  for(const uname in users){
-    const acc=users[uname];
-    if(acc.email&&acc.email.toLowerCase()===id) return uname;
-    if(acc.mobile&&acc.mobile===idRaw.trim()) return uname;
+  const localUsers=getUsers();
+  for(const uname in localUsers){
+    const acc=localUsers[uname];
+    if(acc.email&&acc.email.toLowerCase()===id) return{uname,row:null};
+    if(acc.mobile&&acc.mobile===idRaw.trim()) return{uname,row:null};
   }
-  return null;
+  const{data,error}=await sb.from('users').select('*').or(`email.eq.${id},mobile.eq.${idRaw.trim()}`).maybeSingle();
+  if(error){console.error('Forgot-password lookup failed:',error);return null;}
+  if(!data)return null;
+  return{uname:data.username,row:data};
 }
 async function sendForgotOTP(){
   const idVal=document.getElementById('fp-identifier').value.trim();
   const err=document.getElementById('fp-err');
   err.textContent='';
   if(!idVal){err.textContent='Enter your registered mobile number or email.';return;}
-  const uname=findUserByIdentifier(idVal);
-  if(!uname){err.textContent='No account found with that mobile number or email.';return;}
-  const acc=getUsers()[uname];
+  const found=await findUserByIdentifierAsync(idVal);
+  if(!found){err.textContent='No account found with that mobile number or email.';return;}
+  const uname=found.uname;
+  const localUsers=getUsers();
+  let acc=localUsers[uname];
+  if(!acc){
+    // Account exists in Supabase but not on this device — build a local record
+    // from it so the rest of this flow (and resendOTP) work unchanged.
+    const row=found.row;
+    acc={name:row.name,email:row.email,mobile:row.mobile||null,password:row.password_hash,
+      isAdmin:!!row.is_admin,require2FA:!!row.require2FA,createdAt:Date.now(),onboarded:true};
+    localUsers[uname]=acc;
+    saveUsers(localUsers);
+  }
   if(!acc.email){err.textContent='This account has no email on file — please contact support.';return;}
   // Generate 6-digit OTP
   _fpOTP=String(Math.floor(100000+Math.random()*900000));
@@ -2953,9 +2969,24 @@ async function verifyForgotOTP(){
   if(otp!==_fpOTP){err.textContent='Incorrect OTP. Try again.';return;}
   if(nw.length<4){err.textContent='Password must be at least 4 characters.';return;}
   if(nw!==conf){err.textContent='Passwords do not match.';return;}
+
+  const newHash=await hashPassword(nw);
+
+  // Update Supabase first — this is the actual source of truth doLogin() checks.
+  const{error}=await sb.from('users').update({password_hash:newHash}).eq('username',_fpTargetUser);
+  if(error){
+    console.error('Password reset failed in Supabase:',error);
+    err.textContent='Could not reset password — check your connection and try again.';
+    return;
+  }
+
+  // Keep the local copy in sync too (used for require2FA and profile display).
   const users=getUsers();
-  users[_fpTargetUser].password=await hashPassword(nw);
-  saveUsers(users);
+  if(users[_fpTargetUser]){
+    users[_fpTargetUser].password=newHash;
+    saveUsers(users);
+  }
+
   document.getElementById('forgotpw-modal').classList.remove('open');
   _fpOTP='';_fpTargetUser='';
   showToast('✅ Password reset! Please login.');
