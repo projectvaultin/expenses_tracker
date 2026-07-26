@@ -1296,26 +1296,30 @@ async function verifyAndMigratePassword(users,uname,plain){
 async function doLogin(){
   const u=document.getElementById('lu').value.trim().toLowerCase();
   const p=document.getElementById('lp').value;
-  // Auto-create admin account if first time
+
   ensureAdminAccount();
-  // Get user from Supabase
-const { data: user, error } = await sb
-  .from("users")
-  .select("*")
-  .eq("username", u)
-  .maybeSingle();
 
-if(error){
-  console.error(error);
-  document.getElementById("lerr").textContent = error.message;
-  return;
+  const users=getUsers();
+
+  if(!users[u]){
+    document.getElementById('lerr').textContent='Username not found.';
+    return;
+  }
+
+  if(!await verifyAndMigratePassword(users,u,p)){
+    document.getElementById('lerr').textContent='Wrong password.';
+    return;
+  }
+
+  if(users[u].require2FA&&users[u].email){
+    await start2FAChallenge(u);
+    return;
+  }
+
+  CU=u;
+  localStorage.setItem('exp_session',u);
+  startApp(users[u]);
 }
-
-if(!user){
-  document.getElementById("lerr").textContent = "Username not found.";
-  return;
-}
-
 // Verify password
 const enteredHash = await hashPassword(p);
 
