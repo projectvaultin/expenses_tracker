@@ -1320,19 +1320,8 @@ async function doLogin(){
   localStorage.setItem('exp_session',u);
   startApp(users[u]);
 }
-// Verify password
-const enteredHash = await hashPassword(p);
+// (next function starts here — start2FAChallenge...)
 
-if(user.password_hash !== enteredHash){
-  document.getElementById("lerr").textContent = "Wrong password.";
-  return;
-}
-
-// 2FA
-if(user.require_2fa && user.email){
-  await start2FAChallenge(u);
-  return;
-}
 
 // Login successful
 CU = u;
