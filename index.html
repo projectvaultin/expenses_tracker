@@ -1298,10 +1298,37 @@ async function doLogin(){
   const p=document.getElementById('lp').value;
   // Auto-create admin account if first time
   ensureAdminAccount();
-  const users=getUsers();
-  if(!users[u]){document.getElementById('lerr').textContent='Username not found.';return;}
-  if(!await verifyAndMigratePassword(users,u,p)){document.getElementById('lerr').textContent='Wrong password.';return;}
-  if(users[u].require2FA&&users[u].email){
+  // Get user from Supabase
+const { data: user, error } = await sb
+  .from("users")
+  .select("*")
+  .eq("username", u)
+  .maybeSingle();
+
+if(error){
+  console.error(error);
+  document.getElementById("lerr").textContent = error.message;
+  return;
+}
+
+if(!user){
+  document.getElementById("lerr").textContent = "Username not found.";
+  return;
+}
+
+// Verify password
+const enteredHash = await hashPassword(p);
+
+if(user.password_hash !== enteredHash){
+  document.getElementById("lerr").textContent = "Wrong password.";
+  return;
+}
+
+// 2FA
+if(user.require_2fa && user.email){
+  await start2FAChallenge(u);
+  return;
+}
     await start2FAChallenge(u);
     return;
   }
