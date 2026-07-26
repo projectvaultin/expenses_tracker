@@ -1322,12 +1322,6 @@ async function doLogin(){
 }
 // (next function starts here — start2FAChallenge...)
 
-
-// Login successful
-CU = u;
-localStorage.setItem("exp_session", u);
-startApp(user);
-}
 // ── Two-Factor Login (item #25) — optional, per-account. If enabled, an OTP email is required ──
 // ── after the password before the session actually opens. ──
 let _login2FAUser='',_login2FACode='';
