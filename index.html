@@ -1756,6 +1756,7 @@ function startApp(profile){
   setTimeout(maybeCelebrateBudgetWin,2000);
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
+  syncAndroidTransactions();
 }
 
 // ── TABS ──
@@ -3669,6 +3670,95 @@ const sb = window.supabase.createClient(
 console.log(window.supabase);
 console.log(sb);
 console.log("Supabase Connected");
+</script>
+  <script>
+// ── ANDROID → WEBAPP TRANSACTION SYNC ──
+// Pulls in transactions inserted by the Android notification-listener app (PhonePe/GPay/Paytm)
+// and keeps them live-synced via Supabase Realtime, without touching the existing manual
+// add-expense flow. Each imported entry is tagged with supaId so re-syncing never duplicates it.
+
+async function resolveSupabaseUserId(){
+  if(!CU)return null;
+  const{data,error}=await sb.from('users').select('id').eq('username',CU).maybeSingle();
+  if(error||!data){console.error('Could not resolve Supabase user id for',CU,error);return null;}
+  return data.id;
+}
+
+function mapPayApp(paymentApp,paymentMode){
+  const map={
+    'com.phonepe.app':'PhonePe',
+    'com.google.android.apps.nbu.paisa.user':'GPay',
+    'net.one97.paytm':'Paytm'
+  };
+  return map[paymentApp]||paymentMode||'UPI';
+}
+
+function mapAndroidCategory(cat){
+  const cats=getCats();
+  if(cat&&cats.includes(cat))return cat;
+  return 'Other';
+}
+
+function androidTxnToEntry(txn){
+  const raw=txn.transaction_date||txn.created_at;
+  const dt=new Date(String(raw).replace(' ','T'));
+  const validDt=isNaN(dt.getTime())?new Date():dt;
+  return{
+    month:MONTHS[validDt.getMonth()],
+    year:validDt.getFullYear(),
+    date:String(raw).split(' ')[0],
+    category:mapAndroidCategory(txn.category),
+    amount:parseFloat(txn.amount)||0,
+    type:txn.type==='CREDIT'?'income':'expense',
+    ts:validDt.getTime(),
+    payMode:mapPayApp(txn.payment_app,txn.payment_mode),
+    tags:['Auto-synced'],
+    receipt:null,
+    supaId:txn.id
+  };
+}
+
+function refreshVisibleTabsAfterSync(){
+  if(document.getElementById('page-home')?.classList.contains('active'))renderHome();
+  if(document.getElementById('page-history')?.classList.contains('active'))renderHistory();
+}
+
+async function syncAndroidTransactions(){
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const{data:rows,error}=await sb.from('transactions').select('*').eq('user_id',userId).order('transaction_date',{ascending:true});
+  if(error){console.error('Error fetching Android transactions:',error);return;}
+  const data=getData();
+  const existingIds=new Set(data.filter(e=>e.supaId).map(e=>e.supaId));
+  let added=0;
+  (rows||[]).forEach(txn=>{
+    if(existingIds.has(txn.id))return;
+    data.push(androidTxnToEntry(txn));
+    added++;
+  });
+  if(added>0){
+    saveData(data);
+    refreshVisibleTabsAfterSync();
+    showToast(`📲 ${added} new transaction${added>1?'s':''} synced from your phone`);
+  }
+  subscribeAndroidRealtime(userId);
+}
+
+let _androidRealtimeChannel=null;
+function subscribeAndroidRealtime(userId){
+  if(_androidRealtimeChannel){sb.removeChannel(_androidRealtimeChannel);}
+  _androidRealtimeChannel=sb.channel('android-transactions-'+userId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'transactions',filter:`user_id=eq.${userId}`},(payload)=>{
+      const txn=payload.new;
+      const data=getData();
+      if(data.some(e=>e.supaId===txn.id))return;
+      data.push(androidTxnToEntry(txn));
+      saveData(data);
+      refreshVisibleTabsAfterSync();
+      showToast('📲 New transaction synced from your phone!');
+    })
+    .subscribe();
+}
 </script>
 </body>
 </html>
