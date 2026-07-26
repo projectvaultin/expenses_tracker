@@ -1319,12 +1319,9 @@ if (!user) {
   return;
 }
 
- const isPasswordCorrect = await verifyPassword(
-    p,
-    user.password_hash
-);
+const enteredHash = await hashPassword(p);
 
-if (!isPasswordCorrect) {
+if (enteredHash !== user.password_hash) {
     document.getElementById("lerr").textContent = "Wrong password.";
     return;
 }
