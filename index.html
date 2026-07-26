@@ -1329,10 +1329,11 @@ if(user.require_2fa && user.email){
   await start2FAChallenge(u);
   return;
 }
-    await start2FAChallenge(u);
-    return;
-  }
-  CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+
+// Login successful
+CU = u;
+localStorage.setItem("exp_session", u);
+startApp(user);
 }
 // ── Two-Factor Login (item #25) — optional, per-account. If enabled, an OTP email is required ──
 // ── after the password before the session actually opens. ──
