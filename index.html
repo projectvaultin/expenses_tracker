@@ -1296,44 +1296,69 @@ async function verifyAndMigratePassword(users,uname,plain){
 async function doLogin(){
   const u=document.getElementById('lu').value.trim().toLowerCase();
   const p=document.getElementById('lp').value;
+  const errEl=document.getElementById('lerr');
+  errEl.textContent='';
 
-  ensureAdminAccount();
+  try{
+    ensureAdminAccount();
 
-// Check user in Supabase
-const { data: user, error } = await sb
-  .from("users")
-  .select("*")
-  .eq("username", u)
-  .maybeSingle();
+    // Check user in Supabase
+    const { data: user, error } = await sb
+      .from("users")
+      .select("*")
+      .eq("username", u)
+      .maybeSingle();
 
-  const users = getUsers();
+    if (error) {
+      console.error(error);
+      errEl.textContent = "Database error. Check your connection and try again.";
+      return;
+    }
 
-if (error) {
-  console.error(error);
-  document.getElementById("lerr").textContent = "Database error.";
-  return;
-}
+    if (!user) {
+      errEl.textContent = "Username not found.";
+      return;
+    }
 
-if (!user) {
-  document.getElementById("lerr").textContent = "Username not found.";
-  return;
-}
+    const enteredHash = await hashPassword(p);
 
-const enteredHash = await hashPassword(p);
+    if (enteredHash !== user.password_hash) {
+      errEl.textContent = "Wrong password.";
+      return;
+    }
 
-if (enteredHash !== user.password_hash) {
-    document.getElementById("lerr").textContent = "Wrong password.";
-    return;
-}
+    const users = getUsers();
+    // This device's localStorage may have no local record for this account —
+    // e.g. it was created on a different device. Build one from the verified
+    // Supabase row instead of crashing on users[u] being undefined.
+    if(!users[u]){
+      users[u] = {
+        name: user.name,
+        password: user.password_hash,
+        avatar: user.avatar || null,
+        email: user.email,
+        mobile: user.mobile || null,
+        isAdmin: !!user.is_admin,
+        require2FA: !!user.require2FA,
+        createdAt: Date.now(),
+        lastStatementSent: null,
+        onboarded: true
+      };
+      saveUsers(users);
+    }
 
-  if(users[u].require2FA&&users[u].email){
-    await start2FAChallenge(u);
-    return;
+    if(users[u].require2FA && users[u].email){
+      await start2FAChallenge(u);
+      return;
+    }
+
+    CU=u;
+    localStorage.setItem('exp_session',u);
+    startApp(users[u]);
+  } catch(e){
+    console.error('Login failed:',e);
+    errEl.textContent='Something went wrong: '+(e.message||e);
   }
-
-  CU=u;
-  localStorage.setItem('exp_session',u);
-  startApp(users[u]);
 }
 // (next function starts here — start2FAChallenge...)
 
