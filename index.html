@@ -1299,12 +1299,25 @@ async function doLogin(){
 
   ensureAdminAccount();
 
-  const users=getUsers();
+// Check user in Supabase
+const { data: user, error } = await sb
+  .from("users")
+  .select("*")
+  .eq("username", u)
+  .maybeSingle();
 
-  if(!users[u]){
-    document.getElementById('lerr').textContent='Username not found.';
-    return;
-  }
+  const users = getUsers();
+
+if (error) {
+  console.error(error);
+  document.getElementById("lerr").textContent = "Database error.";
+  return;
+}
+
+if (!user) {
+  document.getElementById("lerr").textContent = "Username not found.";
+  return;
+}
 
   if(!await verifyAndMigratePassword(users,u,p)){
     document.getElementById('lerr').textContent='Wrong password.';
