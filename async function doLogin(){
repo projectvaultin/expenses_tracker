@@ -1301,14 +1301,6 @@ async function doLogin(){
 
   const users=getUsers();
   
-  const { data, error } = await sb
-  .from("users")
-  .select("*")
-  .eq("username", u)
-  .maybeSingle();
-
-console.log("Supabase User:", data);
-console.log("Supabase Error:", error);
 
   if(!users[u]){
     document.getElementById('lerr').textContent='Username not found.';
