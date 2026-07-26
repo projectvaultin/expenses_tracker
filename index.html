@@ -1319,10 +1319,15 @@ if (!user) {
   return;
 }
 
-  if(!await verifyAndMigratePassword(users,u,p)){
-    document.getElementById('lerr').textContent='Wrong password.';
+  const isPasswordCorrect = await verifyPassword(
+    p,
+    user.password_hash
+);
+
+if (!isPasswordCorrect) {
+    document.getElementById("lerr").textContent = "Wrong password.";
     return;
-  }
+}
 
   if(users[u].require2FA&&users[u].email){
     await start2FAChallenge(u);
