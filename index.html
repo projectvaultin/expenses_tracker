@@ -3890,7 +3890,11 @@ async function syncAndroidTransactions(){
   const userId=await resolveSupabaseUserId();
   if(!userId)return;
   const{data:rows,error}=await sb.from('transactions').select('*').eq('user_id',userId).order('transaction_date',{ascending:true});
-  console.log("SYNC ROWS:", rows);
+  alert(
+  "User ID: " + userId +
+  "\nRows: " + (rows ? rows.length : 0) +
+  "\nData: " + JSON.stringify(rows)
+);
   if(error){console.error('Error fetching Android transactions:',error);return;}
   const data=getData();
   const existingIds=new Set(data.filter(e=>e.supaId).map(e=>e.supaId));
