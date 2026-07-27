@@ -3834,8 +3834,6 @@ async function resolveSupabaseUserId(){
   if(!CU)return null;
   const{data,error}=await sb.from('users').select('id').eq('username',CU).maybeSingle();
   if(error||!data){console.error('Could not resolve Supabase user id for',CU,error);return null;}
-
-    alert("Resolved User ID = " + userId);
   
   return data.id;
   
@@ -3893,9 +3891,6 @@ function refreshVisibleTabsAfterSync(){
 
 async function syncAndroidTransactions(){
   const userId = await resolveSupabaseUserId();
-
-  alert("Resolved User ID = " + userId);
-
   if(!userId) return;
 
   const { data: rows, error } = await sb
@@ -3904,28 +3899,31 @@ async function syncAndroidTransactions(){
     .eq('user_id', userId)
     .order('transaction_date', { ascending: true });
 
-  alert("Rows found = " + (rows ? rows.length : 0));
-
   if(error){
-    console.error(error);
+    console.error('Error fetching Android transactions:', error);
     return;
   }
 
-  // ...rest of your code...
-}
-  const data=getData();
-  const existingIds=new Set(data.filter(e=>e.supaId).map(e=>e.supaId));
-  let added=0;
-  (rows||[]).forEach(txn=>{
-    if(existingIds.has(txn.id))return;
+  const data = getData();
+  const existingIds = new Set(
+    data.filter(e => e.supaId).map(e => e.supaId)
+  );
+
+  let added = 0;
+
+  (rows || []).forEach(txn => {
+    if(existingIds.has(txn.id)) return;
+
     data.push(androidTxnToEntry(txn));
     added++;
   });
-  if(added>0){
+
+  if(added > 0){
     saveData(data);
     refreshVisibleTabsAfterSync();
-    showToast(`📲 ${added} new transaction${added>1?'s':''} synced from your phone`);
+    showToast(`📲 ${added} new transaction${added > 1 ? 's' : ''} synced from your phone`);
   }
+
   subscribeAndroidRealtime(userId);
 }
 
