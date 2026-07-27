@@ -3830,11 +3830,14 @@ console.log("Supabase Connected");
 // add-expense flow. Each imported entry is tagged with supaId so re-syncing never duplicates it.
 
 async function resolveSupabaseUserId(){
-  alert("Resolved User ID = " + userId);
   if(!CU)return null;
   const{data,error}=await sb.from('users').select('id').eq('username',CU).maybeSingle();
   if(error||!data){console.error('Could not resolve Supabase user id for',CU,error);return null;}
+
+    alert("Resolved User ID = " + userId);
+  
   return data.id;
+  
 }
 
 function mapPayApp(paymentApp,paymentMode){
