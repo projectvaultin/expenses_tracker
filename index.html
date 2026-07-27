@@ -1354,6 +1354,7 @@ async function doLogin(){
 
     CU=u;
     localStorage.setItem('exp_session',u);
+    localStorage.setItem("exp_user_id", user.id);
     startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
@@ -2168,21 +2169,116 @@ function handleReceiptPhoto(e){
   };
   reader.readAsDataURL(f);
 }
-function saveExpense(){
-  const amt=parseFloat(document.getElementById('amount-input').value);
-  if(!selMonth){showToast('Pick a month first','#ffb300');return;}
-  if(!selCat){showToast('Pick a category','#ffb300');return;}
-  if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
+async function saveExpense(){
+
+  const amt = parseFloat(document.getElementById('amount-input').value);
+
+  if(!selMonth){
+    showToast('Pick a month first','#ffb300');
+    return;
+  }
+
+  if(!selCat){
+    showToast('Pick a category','#ffb300');
+    return;
+  }
+
+  if(!amt || amt<=0){
+    showToast('Enter a valid amount','#ffb300');
+    return;
+  }
+
   const dateVal=document.getElementById('expense-date').value;
   const payMode=getPayModeLabel();
+
   const tagsRaw=document.getElementById('expense-tags').value;
   const tags=tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
-  const data=getData();
-  data.push({month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode,tags,receipt:pendingReceipt});
-  saveData(data);document.getElementById('amount-input').value='';document.getElementById('expense-tags').value='';selCat=null;pendingReceipt=null;
-  renderAddForm();showToast((selEntryType==='income'?'💰 ':'💸 ')+fmt(amt)+' saved!');
-  haptic('success');
-  maybeCelebrateSavingsMilestone();
+
+  const userId = Number(localStorage.getItem("exp_user_id"));
+
+  if(!userId){
+      showToast("User session missing. Please login again.","#e53935");
+      return;
+  }
+
+  try{
+
+      const { error } = await sb
+      .from("transactions")
+      .insert({
+
+          user_id: userId,
+
+          amount: amt,
+
+          type: (selEntryType==="income")
+                  ? "CREDIT"
+                  : "DEBIT",
+
+          category: selCat,
+
+          payment_app: "Manual Entry",
+
+          payment_mode: payMode,
+
+          message: tags.join(", "),
+
+          transaction_date:
+              dateVal
+              ? new Date(dateVal).toISOString()
+              : new Date().toISOString()
+
+      });
+
+      if(error){
+          console.error(error);
+          showToast("Failed to save to cloud","#e53935");
+          return;
+      }
+
+      // existing local cache
+      const data=getData();
+
+      data.push({
+          month:selMonth,
+          category:selCat,
+          amount:amt,
+          type:selEntryType||'expense',
+          year:new Date().getFullYear(),
+          ts:Date.now(),
+          date:dateVal,
+          payMode,
+          tags,
+          receipt:pendingReceipt
+      });
+
+      saveData(data);
+
+      document.getElementById('amount-input').value='';
+      document.getElementById('expense-tags').value='';
+      selCat=null;
+      pendingReceipt=null;
+
+      renderAddForm();
+
+      showToast(
+          (selEntryType==='income'?'💰 ':'💸 ')
+          +fmt(amt)
+          +' saved!'
+      );
+
+      haptic('success');
+
+      maybeCelebrateSavingsMilestone();
+
+  }catch(e){
+
+      console.error(e);
+
+      showToast("Unexpected error","#e53935");
+
+  }
+
 }
 
 // ── HISTORY ──
@@ -3756,21 +3852,32 @@ function mapAndroidCategory(cat){
 }
 
 function androidTxnToEntry(txn){
-  const raw=txn.transaction_date||txn.created_at;
-  const dt=new Date(String(raw).replace(' ','T'));
-  const validDt=isNaN(dt.getTime())?new Date():dt;
-  return{
-    month:MONTHS[validDt.getMonth()],
-    year:validDt.getFullYear(),
-    date:String(raw).split(' ')[0],
-    category:mapAndroidCategory(txn.category),
-    amount:parseFloat(txn.amount)||0,
-    type:txn.type==='CREDIT'?'income':'expense',
-    ts:validDt.getTime(),
-    payMode:mapPayApp(txn.payment_app,txn.payment_mode),
-    tags:['Auto-synced'],
-    receipt:null,
-    supaId:txn.id
+  const raw = txn.transaction_date || txn.created_at;
+  const dt = new Date(String(raw).replace(' ','T'));
+  const validDt = isNaN(dt.getTime()) ? new Date() : dt;
+
+  return {
+    month: MONTHS[validDt.getMonth()],
+    year: validDt.getFullYear(),
+    date: String(raw).split(' ')[0],
+
+    category: mapAndroidCategory(txn.category),
+
+    amount: parseFloat(txn.amount) || 0,
+
+    type: txn.type === 'CREDIT' ? 'income' : 'expense',
+
+    ts: validDt.getTime(),
+
+    payMode: mapPayApp(txn.payment_app, txn.payment_mode),
+
+    tags: txn.message
+      ? txn.message.split(',').map(t => t.trim()).filter(Boolean)
+      : ['Auto-synced'],
+
+    receipt: null,
+
+    supaId: txn.id
   };
 }
 
