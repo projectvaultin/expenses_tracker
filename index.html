@@ -1354,6 +1354,7 @@ async function doLogin(){
 
     CU=u;
     localStorage.setItem('exp_session',u);
+    alert("About to call startApp");
     localStorage.setItem("exp_user_id", user.id);
     startApp(users[u]);
   } catch(e){
