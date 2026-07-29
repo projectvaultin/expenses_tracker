@@ -2260,7 +2260,7 @@ async function saveExpense(){
           payMode,
           tags,
           receipt:pendingReceipt,
-          supaId:inserted.id
+          supaId:String(inserted.id)
       });
 
       saveData(data);
@@ -3890,7 +3890,7 @@ function androidTxnToEntry(txn){
 
     receipt: null,
 
-    supaId: txn.id
+    supaId: String(txn.id)
   };
 }
 
@@ -3921,13 +3921,13 @@ async function syncAndroidTransactions(){
 
   const data = getData();
   const existingIds = new Set(
-    data.filter(e => e.supaId).map(e => e.supaId)
+    data.filter(e => e.supaId).map(e => String(e.supaId))
   );
 
   let added = 0;
 
   (rows || []).forEach(txn => {
-    if(existingIds.has(txn.id)) return;
+    if(existingIds.has(String(txn.id))) return;
 
     data.push(androidTxnToEntry(txn));
     added++;
@@ -3951,7 +3951,7 @@ function subscribeAndroidRealtime(userId){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'transactions',filter:`user_id=eq.${userId}`},(payload)=>{
       const txn=payload.new;
       const data=getData();
-      if(data.some(e=>e.supaId===txn.id))return;
+      if(data.some(e=>String(e.supaId)===String(txn.id)))return;
       data.push(androidTxnToEntry(txn));
       saveData(data);
       refreshVisibleTabsAfterSync();
