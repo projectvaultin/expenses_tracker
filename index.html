@@ -1354,7 +1354,6 @@ async function doLogin(){
 
     CU=u;
     localStorage.setItem('exp_session',u);
-    alert("About to call startApp");
     localStorage.setItem("exp_user_id", user.id);
     startApp(users[u]);
   } catch(e){
@@ -2195,7 +2194,7 @@ async function saveExpense(){
   const tagsRaw=document.getElementById('expense-tags').value;
   const tags=tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
 
-  const userId = Number(localStorage.getItem("exp_user_id"));
+  const userId = await resolveSupabaseUserId();
 
   if(!userId){
       showToast("User session missing. Please login again.","#e53935");
@@ -2204,7 +2203,7 @@ async function saveExpense(){
 
   try{
 
-      const { error } = await sb
+      const { data: inserted, error } = await sb
       .from("transactions")
       .insert({
 
@@ -2229,7 +2228,9 @@ async function saveExpense(){
               ? new Date(dateVal).toISOString()
               : new Date().toISOString()
 
-      });
+      })
+      .select()
+      .single();
 
       if(error){
           console.error(error);
@@ -2250,7 +2251,8 @@ async function saveExpense(){
           date:dateVal,
           payMode,
           tags,
-          receipt:pendingReceipt
+          receipt:pendingReceipt,
+          supaId:inserted.id
       });
 
       saveData(data);
