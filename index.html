@@ -380,6 +380,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="drawer-av" id="drawer-av"></div>
       <div style="font-size:15px;font-weight:700;color:var(--text)" id="drawer-name"></div>
       <div style="font-size:12px;color:var(--muted)" id="drawer-username"></div>
+      <div style="font-size:11px;color:var(--muted);opacity:0.75;margin-top:2px" id="drawer-userid">Account ID: checking…</div>
     </div>
     <div class="drawer-item" onclick="closeDrawer();showMonthPicker()"><span class="di-icon">📅</span> Filter by Month</div>
     <div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4])"><span class="di-icon">⚙️</span> Manage Account</div>
@@ -1753,6 +1754,12 @@ function startApp(profile){
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
   syncDrawerProfile(profile);
+  resolveSupabaseUserId().then(id=>{
+    const el=document.getElementById('drawer-userid');
+    if(!el)return;
+    if(id) el.textContent='Account ID: '+id;
+    else el.textContent='Account ID: NOT RESOLVED (sync will fail — check RLS on users table)';
+  });
   selMonth=MONTHS[new Date().getMonth()];
   document.getElementById('expense-date').value=new Date().toISOString().split('T')[0];
   // Populate reminder day select
