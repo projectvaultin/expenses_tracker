@@ -1791,6 +1791,7 @@ function startApp(profile){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   syncAndroidTransactions();
+  syncDebts();
 }
 
 // ── TABS ──
@@ -2510,7 +2511,7 @@ function selectDebtType(t){
   document.getElementById('dtype-debt').classList.toggle('sel',t==='debt');
   document.getElementById('dtype-profit').classList.toggle('sel',t==='profit');
 }
-function saveDebt(){
+async function saveDebt(){
   const name=document.getElementById('debt-name').value.trim();
   const amt=parseFloat(document.getElementById('debt-amount').value);
   const dueDate=document.getElementById('debt-due-date').value;
@@ -2519,8 +2520,10 @@ function saveDebt(){
   if(!name){showToast('Enter a name','#ffb300');return;}
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!selDebtType){showToast('Select type','#ffb300');return;}
+  const ts=Date.now();
+  const newDebt={name,amount:amt,type:selDebtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null};
   const debts=getDebts();
-  debts.push({name,amount:amt,type:selDebtType,ts:Date.now(),cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null});
+  debts.push(newDebt);
   saveDebts(debts);
   document.getElementById('debt-name').value='';
   document.getElementById('debt-amount').value='';
@@ -2532,8 +2535,20 @@ function saveDebt(){
   document.getElementById('dtype-profit').classList.remove('sel');
   renderDebtPage();renderHome();
   showToast('Entry saved!');
+
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const{data:inserted,error}=await sb.from('debts').insert({
+    user_id:userId,name,amount:amt,type:selDebtType,cleared:false,
+    due_date:dueDate||null,interest_rate:interestRate||null,
+    installments:installments||null,repaid:0,repay_log:[],entry_ts:ts
+  }).select().single();
+  if(error){console.error('Failed to sync debt to cloud:',error);return;}
+  const d2=getDebts();
+  const target=d2.find(x=>x.ts===ts&&x.name===name);
+  if(target){target.supaId=String(inserted.id);saveDebts(d2);}
 }
-function toggleClear(i){
+async function toggleClear(i){
   const debts=getDebts();
   const d=debts[i];
   const wasCleared=d.cleared;
@@ -2549,6 +2564,10 @@ function toggleClear(i){
   }
   saveDebts(debts);renderDebtPage();renderHome();
   showToast(d.cleared?'✅ Marked as cleared':'↩️ Marked as active');
+  if(d.supaId){
+    const{error}=await sb.from('debts').update({cleared:d.cleared,repaid:d.repaid||0}).eq('id',d.supaId);
+    if(error)console.error('Failed to sync cleared-status to cloud:',error);
+  }
 }
 function renderDebtPage(){
   const debts=getDebts();
@@ -2623,9 +2642,15 @@ function renderDebtPage(){
   });
   document.getElementById('debt-list').innerHTML=html;
 }
-function delDebt(i){
+async function delDebt(i){
   if(confirm('Delete this entry?')){
-    const d=getDebts();d.splice(i,1);saveDebts(d);renderDebtPage();renderHome();showToast('Deleted','#ff6584');
+    const d=getDebts();
+    const removed=d[i];
+    d.splice(i,1);saveDebts(d);renderDebtPage();renderHome();showToast('Deleted','#ff6584');
+    if(removed&&removed.supaId){
+      const{error}=await sb.from('debts').delete().eq('id',removed.supaId);
+      if(error)console.error('Failed to delete debt from cloud:',error);
+    }
   }
 }
 
@@ -3659,7 +3684,7 @@ function logDebtCashflow(d,amt){
   saveData(data);
 }
 // ── PATCH addRepayment to validate partial payments, show celebration, and log cashflow ──
-function addRepayment(i){
+async function addRepayment(i){
   const inp=document.getElementById('repay-inp-'+i);
   if(!inp)return;
   const amt=parseFloat(inp.value);
@@ -3685,6 +3710,10 @@ function addRepayment(i){
   } else {
     showToast(`↩ Returned ${fmt(amt)} · Remaining ${fmt(d.amount-repaid)}`,'#6c63ff');
     saveDebts(debts);renderDebtPage();renderHome();
+  }
+  if(d.supaId){
+    const{error}=await sb.from('debts').update({repaid:d.repaid,repay_log:d.repayLog,cleared:d.cleared}).eq('id',d.supaId);
+    if(error)console.error('Failed to sync repayment to cloud:',error);
   }
 }
 
@@ -3977,6 +4006,72 @@ function subscribeAndroidRealtime(userId){
       saveData(data);
       refreshVisibleTabsAfterSync();
       showToast('📲 New transaction synced from your phone!');
+    })
+    .subscribe();
+}
+
+// ── DEBTS SYNC ──
+function debtRowToLocal(row){
+  return {
+    name:row.name,amount:row.amount,type:row.type,ts:row.entry_ts,
+    cleared:row.cleared,dueDate:row.due_date,interestRate:row.interest_rate,
+    installments:row.installments,repaid:row.repaid||0,repayLog:row.repay_log||[],
+    supaId:String(row.id)
+  };
+}
+async function syncDebts(){
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const{data:rows,error}=await sb.from('debts').select('*').eq('user_id',userId).order('entry_ts',{ascending:true});
+  if(error){console.error('Error fetching debts:',error);return;}
+  const debts=getDebts();
+  const existingIds=new Set(debts.filter(d=>d.supaId).map(d=>String(d.supaId)));
+  let added=0;
+  (rows||[]).forEach(row=>{
+    if(existingIds.has(String(row.id)))return;
+    debts.push(debtRowToLocal(row));
+    added++;
+  });
+  // Also pick up remote edits (cleared/repaid/repayLog) on entries we already have locally
+  const byId={};
+  (rows||[]).forEach(row=>{byId[String(row.id)]=row;});
+  debts.forEach(d=>{
+    if(!d.supaId)return;
+    const row=byId[String(d.supaId)];
+    if(!row)return;
+    d.cleared=row.cleared;d.repaid=row.repaid||0;d.repayLog=row.repay_log||[];
+  });
+  saveDebts(debts);
+  if(added>0){renderDebtPage();renderHome();showToast(`💸 ${added} debt${added>1?'s':''} synced`);}
+  subscribeDebtsRealtime(userId);
+}
+let _debtsRealtimeChannel=null;
+function subscribeDebtsRealtime(userId){
+  if(_debtsRealtimeChannel){sb.removeChannel(_debtsRealtimeChannel);}
+  _debtsRealtimeChannel=sb.channel('debts-'+userId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
+      const row=payload.new;
+      const debts=getDebts();
+      if(debts.some(d=>String(d.supaId)===String(row.id)))return;
+      debts.push(debtRowToLocal(row));
+      saveDebts(debts);renderDebtPage();renderHome();
+      showToast('💸 New debt entry synced!');
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
+      const row=payload.new;
+      const debts=getDebts();
+      const d=debts.find(x=>String(x.supaId)===String(row.id));
+      if(!d)return;
+      d.cleared=row.cleared;d.repaid=row.repaid||0;d.repayLog=row.repay_log||[];
+      saveDebts(debts);renderDebtPage();renderHome();
+    })
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
+      const row=payload.old;
+      const debts=getDebts();
+      const idx=debts.findIndex(x=>String(x.supaId)===String(row.id));
+      if(idx===-1)return;
+      debts.splice(idx,1);
+      saveDebts(debts);renderDebtPage();renderHome();
     })
     .subscribe();
 }
