@@ -3027,22 +3027,34 @@ async function saveProfile(){
   if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
   // Sync profile to Supabase
+// Sync profile to Supabase
 try{
   const userId = await resolveSupabaseUserId();
 
+  console.log("Resolved User ID:", userId);
+  console.log("Avatar Value:", users[CU].avatar);
+  console.log("Avatar Length:", users[CU].avatar ? users[CU].avatar.length : 0);
+
   if(userId){
-    await sb
+    const { data, error } = await sb
       .from('users')
       .update({
-        name: name,
-        email: email,
-        mobile: mobile || null,
+        name: users[CU].name,
+        email: users[CU].email,
+        mobile: users[CU].mobile,
         avatar: users[CU].avatar || null
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
+
+    console.log("Profile Update Result:", data);
+
+    if(error){
+      console.error("Profile Update Error:", error);
+    }
   }
 }catch(err){
-  console.error("Profile sync failed:", err);
+  console.error("Profile Sync Failed:", err);
 }
   // Update topbar
   const av=document.getElementById('tb-av');
