@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Expenses Tracker">
-<meta name="theme-color" content="#0f1117">
+<meta name="theme-color" content="#0f1117f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1228,10 +1228,88 @@ function getRolloverAmount(){
   return leftover>0?leftover:0;
 }
 function getCatBudgets(){return JSON.parse(localStorage.getItem(uKey('catBudgets'))||'{}');}
-function setCatBudget(cat,val){
+  async function uploadCategoryBudget(category, amount){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const { data: existing } = await sb
+    .from("category_budgets")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("category", category)
+    .maybeSingle();
+
+  if(existing){
+    await sb
+      .from("category_budgets")
+      .update({
+        monthly_budget: amount
+      })
+      .eq("id", existing.id);
+  }else{
+    await sb
+      .from("category_budgets")
+      .insert({
+        user_id: userId,
+        category: category,
+        monthly_budget: amount
+      });
+  }
+}
+
+async function deleteCategoryBudget(category){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  await sb
+    .from("category_budgets")
+    .delete()
+    .eq("user_id", userId)
+    .eq("category", category);
+}
+  async function syncCategoryBudgets(){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const { data, error } = await sb
+    .from("category_budgets")
+    .select("*")
+    .eq("user_id", userId);
+
+  if(error){
+    console.error("Budget sync failed:", error);
+    return;
+  }
+
+  const budgets = {};
+
+  (data || []).forEach(row=>{
+    budgets[row.category] = Number(row.monthly_budget);
+  });
+
+  localStorage.setItem(
+    uKey("catBudgets"),
+    JSON.stringify(budgets)
+  );
+}
+async function setCatBudget(cat,val){
   const b=getCatBudgets();
   const v=parseFloat(val);
-  if(!v||v<=0)delete b[cat];else b[cat]=v;
+
+  if(!v || v<=0){
+    delete b[cat];
+    deleteCategoryBudget(cat).catch(console.error);
+  }else{
+    b[cat]=v;
+    uploadCategoryBudget(cat,v).catch(console.error);
+  }
+
   localStorage.setItem(uKey('catBudgets'),JSON.stringify(b));
   renderHome();
 }
@@ -1429,6 +1507,7 @@ saveUsers(users);
     localStorage.setItem('exp_session',u);
     localStorage.setItem("exp_user_id", user.id);
     await syncCategories();
+await syncCategoryBudgets();
 startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
