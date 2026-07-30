@@ -3026,6 +3026,10 @@ async function saveProfile(){
   if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
   if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
+  console.log("pendingAv =", pendingAv);
+  console.log("pendingAv =", pendingAv);
+console.log("users[CU].avatar =", users[CU].avatar);
+console.log("users[CU].avatar =", users[CU].avatar);
   // Sync profile to Supabase
 // Sync profile to Supabase
 try{
