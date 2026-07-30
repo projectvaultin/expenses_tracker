@@ -2520,8 +2520,9 @@ async function saveDebt(){
   if(!name){showToast('Enter a name','#ffb300');return;}
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!selDebtType){showToast('Select type','#ffb300');return;}
+  const debtType=selDebtType;
   const ts=Date.now();
-  const newDebt={name,amount:amt,type:selDebtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null};
+  const newDebt={name,amount:amt,type:debtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null};
   const debts=getDebts();
   debts.push(newDebt);
   saveDebts(debts);
@@ -2539,7 +2540,7 @@ async function saveDebt(){
   const userId=await resolveSupabaseUserId();
   if(!userId)return;
   const{data:inserted,error}=await sb.from('debts').insert({
-    user_id:userId,name,amount:amt,type:selDebtType,cleared:false,
+    user_id:userId,name,amount:amt,type:debtType,cleared:false,
     due_date:dueDate||null,interest_rate:interestRate||null,
     installments:installments||null,repaid:0,repay_log:[],entry_ts:ts
   }).select().single();
