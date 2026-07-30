@@ -2402,12 +2402,21 @@ function delEntry(i){
   if(!removed)return;
   d.splice(i,1);saveData(d);renderHistory();renderHome();
   haptic('delete');
+  let undone=false;
   showUndoToast('Entry deleted',()=>{
+    undone=true;
     const d2=getData();
     d2.splice(i,0,removed);
     saveData(d2);renderHistory();renderHome();
     showToast('✅ Restored');
   });
+  if(removed.supaId){
+    setTimeout(async()=>{
+      if(undone)return;
+      const {error}=await sb.from('transactions').delete().eq('id',removed.supaId);
+      if(error)console.error('Failed to delete from cloud:',error);
+    },5200);
+  }
 }
 // ── EDIT ENTRY ──
 function openEditEntry(i){
@@ -2434,7 +2443,7 @@ function closeEditEntry(){
   document.getElementById('edit-entry-modal').classList.remove('open');
   editIndex=null;
 }
-function saveEditEntry(){
+async function saveEditEntry(){
   if(editIndex===null)return;
   const amt=parseFloat(document.getElementById('edit-amount-input').value);
   const dateVal=document.getElementById('edit-date-input').value;
@@ -2450,6 +2459,18 @@ function saveEditEntry(){
   closeEditEntry();
   renderHistory();renderHome();
   showToast('✏️ Entry updated!');
+
+  if(e.supaId){
+    const {error}=await sb.from('transactions').update({
+      category:e.category,
+      amount:e.amount,
+      transaction_date:dateVal?new Date(dateVal).toISOString():new Date().toISOString()
+    }).eq('id',e.supaId);
+    if(error){
+      console.error('Failed to sync edit to cloud:',error);
+      showToast('⚠️ Edit saved, but cloud sync failed','#e53935');
+    }
+  }
 }
 
 // ── DEBT / PROFIT ──
