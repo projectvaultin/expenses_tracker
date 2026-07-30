@@ -3017,6 +3017,24 @@ function saveProfile(){
   if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
   if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
+  // Sync profile to Supabase
+try{
+  const userId = await resolveSupabaseUserId();
+
+  if(userId){
+    await sb
+      .from('users')
+      .update({
+        name: name,
+        email: email,
+        mobile: mobile || null,
+        avatar: users[CU].avatar || null
+      })
+      .eq('id', userId);
+  }
+}catch(err){
+  console.error("Profile sync failed:", err);
+}
   // Update topbar
   const av=document.getElementById('tb-av');
   if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
