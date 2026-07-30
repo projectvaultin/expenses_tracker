@@ -1138,12 +1138,74 @@ function getAdminMessages(){return JSON.parse(localStorage.getItem('exp_admin_me
 function saveAdminMessages(m){localStorage.setItem('exp_admin_messages',JSON.stringify(m));}
 function getData(){return JSON.parse(localStorage.getItem(uKey('data'))||'[]');}
 function saveData(d){localStorage.setItem(uKey('data'),JSON.stringify(d));}
+  async function syncCategories(){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const { data, error } = await sb
+    .from("categories")
+    .select("*")
+    .eq("user_id", userId);
+
+  if(error){
+    console.error("Categories sync failed:", error);
+    return;
+  }
+
+  const cats = [...new Set([
+    ...DEFAULT_CATS,
+    ...(data || []).map(x => x.name)
+  ])];
+
+  localStorage.setItem(uKey("cats"), JSON.stringify(cats));
+}
+
+async function uploadCategories(){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const cats = JSON.parse(localStorage.getItem(uKey("cats")) || "[]");
+
+  for(const cat of cats){
+    const { data: exists } = await sb
+      .from("categories")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("name", cat)
+      .maybeSingle();
+
+    if(!exists){
+      await sb
+        .from("categories")
+        .insert({
+          user_id: userId,
+          name: cat
+        });
+    }
+  }
+}
+
+async function saveCatsCloud(cats){
+  saveCats(cats);
+  await uploadCategories();
+}
 function getCats(){
   const c=JSON.parse(localStorage.getItem(uKey('cats'))||JSON.stringify(DEFAULT_CATS));
   if(CU&&!c.includes('Salary')){c.unshift('Salary');saveCats(c);}
   return c;
 }
-function saveCats(c){localStorage.setItem(uKey('cats'),JSON.stringify(c));}
+function saveCats(c){
+  localStorage.setItem(uKey('cats'),JSON.stringify(c));
+
+  // Upload categories to Supabase (don't block the UI)
+  uploadCategories().catch(err=>{
+    console.error("Category upload failed:", err);
+  });
+}
 function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]');}
 function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
 function getBudgetLimit(){return parseFloat(localStorage.getItem(uKey('budget'))||'0')||0;}
@@ -1366,7 +1428,8 @@ saveUsers(users);
     CU=u;
     localStorage.setItem('exp_session',u);
     localStorage.setItem("exp_user_id", user.id);
-    startApp(users[u]);
+    await syncCategories();
+startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
     errEl.textContent='Something went wrong: '+(e.message||e);
