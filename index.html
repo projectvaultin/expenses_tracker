@@ -3009,7 +3009,7 @@ function handleProfileAvatar(e){
   r.onload=ev=>openCropModal(ev.target.result);
   r.readAsDataURL(f);
 }
-function saveProfile(){
+async function saveProfile(){
   const name=document.getElementById('edit-name').value.trim();
   const email=document.getElementById('edit-email').value.trim().toLowerCase();
   const mobile=document.getElementById('edit-mobile').value.trim();
