@@ -1313,6 +1313,68 @@ async function setCatBudget(cat,val){
   localStorage.setItem(uKey('catBudgets'),JSON.stringify(b));
   renderHome();
 }
+  async function uploadUserSettings(){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const monthlyBudget = getBudgetLimit();
+  const rollover = getRolloverEnabled();
+
+  const { data: existing } = await sb
+    .from("user_settings")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if(existing){
+    await sb
+      .from("user_settings")
+      .update({
+        monthly_budget: monthlyBudget,
+        rollover: rollover
+      })
+      .eq("id", existing.id);
+  }else{
+    await sb
+      .from("user_settings")
+      .insert({
+        user_id: userId,
+        monthly_budget: monthlyBudget,
+        rollover: rollover
+      });
+  }
+}
+
+async function syncUserSettings(){
+  if(!CU) return;
+
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+
+  const { data, error } = await sb
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if(error || !data) return;
+
+  localStorage.setItem(
+    uKey("budget"),
+    String(data.monthly_budget || 0)
+  );
+
+  localStorage.setItem(
+    uKey("rollover"),
+    data.rollover ? "on" : "off"
+  );
+}
+
+async function saveUserSettingsCloud(){
+  await uploadUserSettings();
+}
 function saveBudgetLimit(){
   const v=parseFloat(document.getElementById('budget-limit-input').value);
   if(!v||v<=0){localStorage.removeItem(uKey('budget'));showToast('Budget limit cleared','#ffb300');}
