@@ -1333,21 +1333,30 @@ async function doLogin(){
     // This device's localStorage may have no local record for this account —
     // e.g. it was created on a different device. Build one from the verified
     // Supabase row instead of crashing on users[u] being undefined.
-    if(!users[u]){
-      users[u] = {
-        name: user.name,
-        password: user.password_hash,
-        avatar: user.avatar || null,
-        email: user.email,
-        mobile: user.mobile || null,
-        isAdmin: !!user.is_admin,
-        require2FA: !!user.require2FA,
-        createdAt: Date.now(),
-        lastStatementSent: null,
-        onboarded: true
-      };
-      saveUsers(users);
-    }
+   if(!users[u]){
+  users[u] = {};
+}
+
+// Always refresh local profile from Supabase
+users[u].name = user.name;
+users[u].password = user.password_hash;
+users[u].avatar = user.avatar || null;
+users[u].email = user.email;
+users[u].mobile = user.mobile || null;
+users[u].isAdmin = !!user.is_admin;
+users[u].require2FA = !!user.require2FA;
+
+if(!users[u].createdAt){
+  users[u].createdAt = Date.now();
+}
+if(users[u].lastStatementSent === undefined){
+  users[u].lastStatementSent = null;
+}
+if(users[u].onboarded === undefined){
+  users[u].onboarded = true;
+}
+
+saveUsers(users);
 
     if(users[u].require2FA && users[u].email){
       await start2FAChallenge(u);
