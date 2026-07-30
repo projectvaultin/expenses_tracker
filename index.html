@@ -2543,7 +2543,7 @@ async function saveDebt(){
     due_date:dueDate||null,interest_rate:interestRate||null,
     installments:installments||null,repaid:0,repay_log:[],entry_ts:ts
   }).select().single();
-  if(error){console.error('Failed to sync debt to cloud:',error);return;}
+  if(error){console.error('Failed to sync debt to cloud:',error);showToast('⚠️ Cloud sync failed: '+(error.message||'unknown error'),'#e53935');return;}
   const d2=getDebts();
   const target=d2.find(x=>x.ts===ts&&x.name===name);
   if(target){target.supaId=String(inserted.id);saveDebts(d2);}
@@ -4021,9 +4021,9 @@ function debtRowToLocal(row){
 }
 async function syncDebts(){
   const userId=await resolveSupabaseUserId();
-  if(!userId)return;
+  if(!userId){showToast('⚠️ Debt sync skipped: user id not resolved','#e53935');return;}
   const{data:rows,error}=await sb.from('debts').select('*').eq('user_id',userId).order('entry_ts',{ascending:true});
-  if(error){console.error('Error fetching debts:',error);return;}
+  if(error){console.error('Error fetching debts:',error);showToast('⚠️ Debt sync failed: '+(error.message||'unknown error'),'#e53935');return;}
   const debts=getDebts();
   const existingIds=new Set(debts.filter(d=>d.supaId).map(d=>String(d.supaId)));
   let added=0;
