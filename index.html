@@ -2215,6 +2215,7 @@ adminSections.forEach(id=>{
     if(id) el.textContent='Account ID: '+id;
     else el.textContent='Account ID: NOT RESOLVED (sync will fail — check RLS on users table)';
   });
+  checkForAppUpdates();
   selMonth=MONTHS[new Date().getMonth()];
   document.getElementById('expense-date').value=new Date().toISOString().split('T')[0];
   // Populate reminder day select
@@ -3537,6 +3538,30 @@ function handleProfileAvatar(e){
     showToast("Support ticket submitted successfully!","#00c853");
 
     loadSupportTickets();
+}
+  async function checkForAppUpdates(){
+
+    try{
+
+        const { data, error } = await sb
+        .from("app_updates")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending:false })
+        .limit(1)
+        .single();
+
+        if(error){
+            console.log("No updates found");
+            return;
+        }
+
+        console.log("Latest Update:", data);
+
+    }catch(err){
+        console.error("Update Check Error:", err);
+    }
+
 }
 async function saveProfile(){
   const name=document.getElementById('edit-name').value.trim();
