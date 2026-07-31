@@ -2202,14 +2202,7 @@ function startApp(profile){
     "admin-update-section",
     "admin-database-section"
 ];
-
-adminSections.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){
-        el.style.display = isAdmin() ? "block" : "none";
-    }
-});
-  resolveSupabaseUserId().then(id=>{
+olveSupabaseUserId().then(id=>{
     const el=document.getElementById('drawer-userid');
     if(!el)return;
     if(id) el.textContent='Account ID: '+id;
