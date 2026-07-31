@@ -1839,18 +1839,40 @@ async function toggleRequire2FA(on){
   const{error}=await sb.from('users').update({require2FA:on}).eq('id',userId);
   if(error)console.error('Failed to sync 2FA preference to cloud:',error);
 }
-function ensureAdminAccount(){
-  const users=getUsers();
-  if(!users[ADMIN_USERNAME]){
-    users[ADMIN_USERNAME]={name:'Admin',password:ADMIN_PASSWORD,avatar:null,email:null,mobile:null,isAdmin:true,createdAt:Date.now()};
-    saveUsers(users);
-  }
-}
-const ADMIN_USERNAME='admin';
-const ADMIN_PASSWORD=btoa('admin@2025');
+async function ensureAdminAccount(){
 
-function isAdmin(){
-    return CU === ADMIN_USERNAME;
+    const { data: admin } = await sb
+        .from("users")
+        .select("id")
+        .eq("username","admin")
+        .maybeSingle();
+
+    if(admin){
+        return;
+    }
+
+    const adminPasswordHash = await hashPassword("admin@2025");
+
+    const { error } = await sb
+        .from("users")
+        .insert([{
+            username: "admin",
+            name: "Administrator",
+            password_hash: adminPasswordHash,
+            email: "",
+            mobile: "",
+            avatar: null,
+            cover_photo: null,
+            is_admin: true,
+            require2FA: false
+        }]);
+
+    if(error){
+        console.error("Failed to create admin account:", error);
+    }else{
+        console.log("✅ Admin account created automatically.");
+    }
+
 }
 
 async function doSignup(){
