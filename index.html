@@ -398,8 +398,17 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div style="font-size:11px;color:var(--muted);opacity:0.75;margin-top:2px" id="drawer-synccount">Cloud sync: checking…</div>
     </div>
     <div class="drawer-item" onclick="closeDrawer();showMonthPicker()"><span class="di-icon">📅</span> Filter by Month</div>
-    <div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4])"><span class="di-icon">⚙️</span> Manage Account</div>
-    <div class="drawer-item" onclick="openSwitchAccountModal()"><span class="di-icon">🔀</span> Switch Account</div>
+   <div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4])">
+    <span class="di-icon">⚙️</span> Manage Account
+</div>
+
+<div class="drawer-item" onclick="closeDrawer();switchTab('support')">
+    <span class="di-icon">💬</span> Customer Support
+</div>
+
+<div class="drawer-item" onclick="openSwitchAccountModal()">
+    <span class="di-icon">🔀</span> Switch Account
+</div>
     <div class="drawer-item" onclick="toggleTheme()"><span class="di-icon" id="drawer-theme-icon">🌙</span> <span id="drawer-theme-label">Switch to Light Theme</span></div>
     <div class="drawer-item" onclick="toggleTextSize()"><span class="di-icon">🔠</span> <span id="drawer-textsize-label">Switch to Large Text</span></div>
     <div class="drawer-item" onclick="toggleContrastMode()"><span class="di-icon">🔲</span> <span id="drawer-contrast-label">Turn On High Contrast</span></div>
@@ -808,11 +817,77 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <!-- Contact Admin / Customer Service (all users) -->
     <div class="card">
-      <div class="card-title">💬 Contact Admin</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Facing an issue or have feedback? Send a message to the admin.</div>
-      <textarea class="ti" id="admin-msg-inp" placeholder="Type your message..." style="width:100%;min-height:70px;resize:none;line-height:1.6;margin-bottom:8px"></textarea>
-      <button class="add-btn" style="width:100%;padding:12px" onclick="sendAdminMessage()">📨 Send Message</button>
-    </div>
+  <div class="card-title">🎫 Customer Support Center</div>
+
+  <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+    Need help? Report bugs, request new features, or contact ProjectVault support.
+    Every message becomes a support ticket that you can track.
+  </div>
+
+  <div class="fl">
+    <div class="fl-label">Category</div>
+    <select class="ti" id="support-category">
+      <option value="Bug Report">🐞 Bug Report</option>
+      <option value="Feature Request">✨ Feature Request</option>
+      <option value="Account Issue">👤 Account Issue</option>
+      <option value="Payment Issue">💳 Payment Issue</option>
+      <option value="Sync Problem">☁️ Sync Problem</option>
+      <option value="Security">🔐 Security</option>
+      <option value="General Question">❓ General Question</option>
+      <option value="Other">📌 Other</option>
+    </select>
+  </div>
+
+  <div class="fl">
+    <div class="fl-label">Priority</div>
+    <select class="ti" id="support-priority">
+      <option value="Low">🟢 Low</option>
+      <option value="Medium">🟡 Medium</option>
+      <option value="High">🔴 High</option>
+      <option value="Critical">🚨 Critical</option>
+    </select>
+  </div>
+
+  <div class="fl">
+    <div class="fl-label">Subject</div>
+    <input
+      type="text"
+      class="ai"
+      id="support-subject"
+      maxlength="100"
+      placeholder="Short title of your issue">
+  </div>
+
+  <div class="fl">
+    <div class="fl-label">Describe your issue</div>
+    <textarea
+      class="ti"
+      id="support-message"
+      style="width:100%;min-height:120px;resize:vertical"
+      placeholder="Explain your problem in detail..."></textarea>
+  </div>
+
+  <button
+      class="add-btn"
+      style="width:100%;padding:12px"
+      onclick="sendSupportMessage()">
+      📤 Submit Support Ticket
+  </button>
+
+  <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)">
+
+  <div class="card-title" style="margin-bottom:10px">
+      📜 My Support Tickets
+  </div>
+
+  <div
+      id="support-ticket-list"
+      style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:12px;color:var(--muted)">
+          No support tickets yet.
+      </div>
+  </div>
+</div>
     <!-- Members list (Admin Only) -->
     <div class="card" id="admin-members-section" style="display:none">
       <div class="card-title">👥 Manage Users <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
@@ -3176,17 +3251,41 @@ function deleteCat(i){
 }
 
 // ── CONTACT ADMIN / CUSTOMER SERVICE ──
-function sendAdminMessage(){
-  const inp=document.getElementById('admin-msg-inp');
-  const text=inp.value.trim();
-  if(!text){showToast('Type a message first','#ffb300');return;}
-  if(!CU){showToast('Please log in first','#ffb300');return;}
-  const msgs=getAdminMessages();
-  const users=getUsers();
-  msgs.push({from:CU,fromName:(users[CU]&&users[CU].name)||CU,text,ts:Date.now(),read:false});
-  saveAdminMessages(msgs);
-  inp.value='';
-  showToast('📨 Message sent to admin!','#00d084');
+async function sendAdminMessage(){
+
+  const msg = document.getElementById("admin-msg-inp").value.trim();
+
+  if(!msg){
+    showToast("Please enter a message.");
+    return;
+  }
+
+  const userId = await resolveSupabaseUserId();
+
+  if(!userId){
+    showToast("Unable to identify your account.");
+    return;
+  }
+
+  const { error } = await sb
+    .from("support_messages")
+    .insert({
+      user_id: userId,
+      username: CU,
+      message: msg,
+      status: "Open"
+    });
+
+  if(error){
+    console.error(error);
+    showToast("Failed to send message.");
+    return;
+  }
+
+  document.getElementById("admin-msg-inp").value = "";
+
+  showToast("Message sent successfully ✅");
+
 }
 function deleteAdminMessage(i){
   const msgs=getAdminMessages();
@@ -3366,6 +3465,61 @@ function handleProfileAvatar(e){
   const r=new FileReader();
   r.onload=ev=>openCropModal(ev.target.result);
   r.readAsDataURL(f);
+}
+  async function sendSupportMessage(){
+
+    const category = document.getElementById("support-category").value;
+    const priority = document.getElementById("support-priority").value;
+    const subject = document.getElementById("support-subject").value.trim();
+    const message = document.getElementById("support-message").value.trim();
+
+    if(subject===""){
+        showToast("Please enter a subject","#ff9800");
+        return;
+    }
+
+    if(message===""){
+        showToast("Please describe your issue","#ff9800");
+        return;
+    }
+
+    const userId = await resolveSupabaseUserId();
+
+    if(!userId){
+        showToast("Unable to identify your account","#f44336");
+        return;
+    }
+
+    const ticketId =
+        "PV-" +
+        Date.now().toString().slice(-8);
+
+    const {error}=await sb
+    .from("support_messages")
+    .insert([{
+        ticket_id:ticketId,
+        user_id:userId,
+        username:CU,
+        category:category,
+        priority:priority,
+        subject:subject,
+        message:message,
+        status:"Open",
+        created_at:new Date().toISOString()
+    }]);
+
+    if(error){
+        console.error(error);
+        showToast("Failed to submit ticket","#f44336");
+        return;
+    }
+
+    document.getElementById("support-subject").value="";
+    document.getElementById("support-message").value="";
+
+    showToast("Support ticket submitted successfully!","#00c853");
+
+    loadSupportTickets();
 }
 async function saveProfile(){
   const name=document.getElementById('edit-name').value.trim();
