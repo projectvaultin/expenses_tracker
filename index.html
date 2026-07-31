@@ -1679,7 +1679,7 @@ function cancel2FA(){
   document.getElementById('login2fa-modal').classList.remove('open');
   _login2FAUser='';_login2FACode='';
 }
-function toggleRequire2FA(on){
+async function toggleRequire2FA(on){
   if(!CU)return;
   const users=getUsers();
   if(!users[CU])return;
@@ -1687,6 +1687,10 @@ function toggleRequire2FA(on){
   users[CU].require2FA=on;
   saveUsers(users);
   showToast(on?'🔒 Two-factor login enabled':'Two-factor login disabled');
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const{error}=await sb.from('users').update({require2FA:on}).eq('id',userId);
+  if(error)console.error('Failed to sync 2FA preference to cloud:',error);
 }
 function ensureAdminAccount(){
   const users=getUsers();
