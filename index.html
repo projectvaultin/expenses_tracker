@@ -1594,6 +1594,7 @@ users[u].email = user.email;
 users[u].mobile = user.mobile || null;
 users[u].isAdmin = !!user.is_admin;
 users[u].require2FA = !!user.require2FA;
+users[u].coverPhoto = user.cover_photo || null;
 
 if(!users[u].createdAt){
   users[u].createdAt = Date.now();
@@ -3296,12 +3297,13 @@ try{
   if(userId){
     const { data, error } = await sb
       .from('users')
-      .update({
-        name: users[CU].name,
-        email: users[CU].email,
-        mobile: users[CU].mobile,
-        avatar: users[CU].avatar || null
-      })
+    .update({
+  name: users[CU].name,
+  email: users[CU].email,
+  mobile: users[CU].mobile,
+  avatar: users[CU].avatar || null,
+  cover_photo: users[CU].coverPhoto || null
+})
       .eq('id', userId)
       .select();
 
