@@ -3380,9 +3380,35 @@ function checkUpdateNotice(){
   document.getElementById('update-version-text').textContent=`Version ${notice.version} — Tap to see what's new`;
 }
 function showUpdateModal(){
-  const notice=getUpdateNotice();if(!notice)return;
-  document.getElementById('update-modal-content').textContent=`Version ${notice.version}\n\n${notice.notes}`;
-  document.getElementById('update-modal').classList.add('open');
+
+    if(!window.latestUpdate) return;
+
+    const update = window.latestUpdate;
+
+    document.getElementById("update-modal-content").innerHTML = `
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">
+            🚀 ${update.title}
+        </div>
+
+        <div style="font-size:13px;color:var(--accent);margin-bottom:12px">
+            Version ${update.version}
+        </div>
+
+        <div style="line-height:1.8;white-space:pre-wrap">
+            ${update.description}
+        </div>
+    `;
+
+    document.getElementById("update-modal").classList.add("open");
+
+    localStorage.setItem("last_seen_update", String(update.id));
+
+    const banner=document.getElementById("update-banner");
+
+    if(banner){
+        banner.style.display="none";
+    }
+
 }
 function dismissUpdate(){
   const notice=getUpdateNotice();
@@ -3527,22 +3553,43 @@ function handleProfileAvatar(e){
     try{
 
         const { data, error } = await sb
-        .from("app_updates")
-        .select("*")
-        .eq("active", true)
-        .order("created_at", { ascending:false })
-        .limit(1)
-        .single();
+            .from("app_updates")
+            .select("*")
+            .eq("active", true)
+            .order("created_at",{ascending:false})
+            .limit(1)
+            .single();
 
-        if(error){
+        if(error || !data){
             console.log("No updates found");
             return;
         }
 
-        console.log("Latest Update:", data);
+        console.log("Latest Update:",data);
+
+        const lastSeen = localStorage.getItem("last_seen_update");
+
+        if(lastSeen === String(data.id)){
+            return;
+        }
+
+        const banner=document.getElementById("update-banner");
+
+        if(banner){
+
+            banner.style.display="flex";
+
+            document.getElementById("update-version-text").textContent=
+                `${data.version} • ${data.title}`;
+
+        }
+
+        window.latestUpdate=data;
 
     }catch(err){
-        console.error("Update Check Error:", err);
+
+        console.error("Update Check Error:",err);
+
     }
 
 }
