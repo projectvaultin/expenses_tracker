@@ -288,20 +288,28 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 </head>
 <body>
 <!-- SPLASH INTRO SCREEN -->
-<div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;">
-  <img src="icon-192.png" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);"/>
-  <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f0f0f5;margin-top:18px;opacity:0;animation:splashFadeIn .6s ease .3s forwards;">Expenses<span style="color:#6c63ff;"> Tracker</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0;animation:splashFadeIn .6s ease .5s forwards;">
+<div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#181c2b 0%,#0f1117 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;overflow:hidden;">
+  <div id="splash-orb" style="position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.22) 0%,rgba(108,99,255,0) 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:splashOrbPulse 3.2s ease-in-out infinite;pointer-events:none;"></div>
+  <img src="icon-192.png" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);position:relative;"/>
+  <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f0f0f5;margin-top:18px;opacity:0;animation:splashFadeIn .6s ease .3s forwards;position:relative;">Expenses<span style="color:#6c63ff;"> Tracker</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0;animation:splashFadeIn .6s ease .5s forwards;position:relative;">
     <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto"/>
     <span style="font-size:11px;color:#7a7d99;letter-spacing:.4px;">by ProjectVault</span>
   </div>
-  <div style="width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:32px;overflow:hidden;">
-    <div id="splash-bar" style="width:0%;height:100%;background:#6c63ff;border-radius:3px;"></div>
+  <div id="splash-greeting" style="font-size:15px;font-weight:700;color:#f0f0f5;margin-top:26px;opacity:0;animation:splashFadeIn .6s ease .7s forwards;position:relative;text-align:center;"></div>
+  <div id="splash-motivation" style="font-size:12px;color:#7a7d99;margin-top:6px;max-width:260px;text-align:center;line-height:1.6;opacity:0;animation:splashFadeIn .6s ease .85s forwards;position:relative;"></div>
+  <div style="width:140px;height:3px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:28px;overflow:hidden;position:relative;">
+    <div id="splash-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#6c63ff,#00d084);border-radius:3px;"></div>
   </div>
+  <div id="splash-status" style="font-size:11px;color:#7a7d99;margin-top:10px;letter-spacing:.3px;opacity:0;animation:splashFadeIn .6s ease 1s forwards;position:relative;"></div>
+  <div id="splash-version" style="font-size:10px;color:#54576e;margin-top:18px;letter-spacing:.5px;position:absolute;bottom:22px;"></div>
 </div>
 <style>
 @keyframes splashPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes splashFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes splashOrbPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes splashRevealAnim{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.splash-reveal{animation:splashRevealAnim .6s cubic-bezier(.4,0,.2,1);}
 </style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
@@ -776,6 +784,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700">🕒 Recent Logins (this device)</div>
       <div id="login-activity-list" style="font-size:12px;color:var(--muted);line-height:1.9"></div>
     </div>
+    <!-- Admin Dashboard / Statistics (Admin Only) -->
+    <div class="card" id="admin-stats-section" style="display:none">
+      <div class="card-title">📊 Application Statistics <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6" id="admin-stats-source">Loading…</div>
+      <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+      <button class="pill-btn" style="margin-top:12px" onclick="renderAdminStats()">🔄 Refresh</button>
+    </div>
     <!-- Telegram Bot Integration -->
     <div class="card tg-card" id="admin-tg-section" style="display:none">
       <div class="tg-title">✈️ Telegram Bot — Connected</div>
@@ -800,8 +815,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <!-- Members list (Admin Only) -->
     <div class="card" id="admin-members-section" style="display:none">
-      <div class="card-title">👥 Members <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Shows accounts created on this device/browser only — this app has no shared server yet.</div>
+      <div class="card-title">👥 Manage Users <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6" id="admin-members-note">Loading account source…</div>
       <div id="admin-members-summary" style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px"></div>
       <div id="admin-members-list"></div>
     </div>
@@ -809,6 +824,21 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card" id="admin-messages-section" style="display:none">
       <div class="card-title">📨 Customer Messages <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
       <div id="admin-messages-list"></div>
+    </div>
+    <!-- Error Logs (Admin Only) -->
+    <div class="card" id="admin-errorlogs-section" style="display:none">
+      <div class="card-title">🐞 Error Logs <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Runtime errors captured on <b style="color:var(--text)">this device</b> — useful for debugging what's actually going wrong, since this is a client-only app with no central server log.</div>
+      <div id="admin-errorlogs-list"></div>
+      <button class="pill-btn" style="margin-top:10px" onclick="clearErrorLogs()">🗑 Clear Logs</button>
+    </div>
+    <!-- Announcements (Admin Only) — broadcast, independent of version release notes -->
+    <div class="card" id="admin-announcement-section" style="display:none">
+      <div class="card-title">📣 Send Announcement <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">A quick broadcast to all users — for things like scheduled maintenance or a heads-up, separate from version release notes below.</div>
+      <textarea class="ti" id="announcement-text-inp" placeholder="e.g. Scheduled maintenance tonight 11pm–12am IST" style="width:100%;min-height:70px;resize:none;line-height:1.6;margin-bottom:8px"></textarea>
+      <button class="add-btn" style="width:100%;padding:12px" onclick="pushAnnouncement()">📣 Publish Announcement</button>
+      <div id="admin-announcement-sync-note" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5"></div>
     </div>
     <!-- App Update Management (Admin Only) -->
     <div class="card" id="admin-update-section" style="display:none">
@@ -818,7 +848,18 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <textarea class="ti" id="update-notes-inp" placeholder="What's new in this update..." style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
       <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pushUpdateNotice()">📢 Publish Update Notice</button>
     </div>
+    <!-- Database Management (Admin Only) -->
+    <div class="card" id="admin-database-section" style="display:none">
+      <div class="card-title">🗄️ Manage Database <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Export a full backup of every table the app can read. Large accounts may take a few seconds.</div>
+      <button class="exp-btn" onclick="exportFullDatabaseBackup()">
+        <span style="font-size:20px">☁️</span>
+        <div><div>Export Full Database Backup</div><div style="font-size:11px;color:var(--muted);margin-top:2px">All users, transactions, debts &amp; reminders → one .json file</div></div>
+      </button>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">If your Supabase Row-Level Security policies restrict reads to each user's own rows, this export will only contain what the admin account itself can see — grant the admin account broader read access in Supabase if you need a truly complete backup.</div>
+    </div>
   </div>
+
 
   <!-- TABS -->
   <nav class="tabs" role="tablist" aria-label="Main navigation">
@@ -1081,6 +1122,31 @@ const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff98
 const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Salary:'💰',Other:'📦'};
 const DEFAULT_CATS=['Salary','Rent','Travel','Food','Medical','Debt','Savings','Other'];
 const APP_VERSION='3.0';
+
+// ── ERROR LOGS (Admin Panel) — captures runtime errors on this device so an admin can review
+// what's actually going wrong for users, instead of relying on people accurately describing bugs.
+// This is necessarily per-device (a static client-only app has no server to centralize logs on),
+// so it's most useful combined with the "Contact Admin" messages feature.
+const ERROR_LOG_KEY='exp_error_logs';
+const ERROR_LOG_MAX=50;
+function getErrorLogs(){try{return JSON.parse(localStorage.getItem(ERROR_LOG_KEY)||'[]');}catch(e){return [];}}
+function pushErrorLog(entry){
+  try{
+    const logs=getErrorLogs();
+    logs.unshift({...entry,ts:Date.now(),user:CU||null});
+    if(logs.length>ERROR_LOG_MAX)logs.length=ERROR_LOG_MAX;
+    localStorage.setItem(ERROR_LOG_KEY,JSON.stringify(logs));
+  }catch(e){/* localStorage full or unavailable — nothing more we can do */}
+}
+function clearErrorLogs(){localStorage.removeItem(ERROR_LOG_KEY);if(typeof renderErrorLogs==='function')renderErrorLogs();}
+window.addEventListener('error',function(e){
+  pushErrorLog({message:e.message||'Unknown error',source:e.filename?`${e.filename}:${e.lineno||'?'}`:'unknown',stack:(e.error&&e.error.stack)?String(e.error.stack).slice(0,500):null});
+});
+window.addEventListener('unhandledrejection',function(e){
+  const reason=e.reason;
+  pushErrorLog({message:'Unhandled promise rejection: '+(reason&&reason.message?reason.message:String(reason)),source:'promise',stack:(reason&&reason.stack)?String(reason.stack).slice(0,500):null});
+});
+
 
 // ── THEME (Light/Dark) ── Saved globally on this device, independent of which account is logged in ──
 function getTheme(){return localStorage.getItem('exp_theme')||'dark';}
@@ -2076,6 +2142,11 @@ function startApp(profile){
   const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-announcement-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
+  if(isAdmin){renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   setTimeout(checkAndSendMonthlyStatement,1500);
   setTimeout(checkAndSendWeeklyDigest,1700);
   setTimeout(checkAndSendAnnualSummary,1900);
@@ -3083,7 +3154,11 @@ function renderManage(){
   document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-members-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-messages-section').style.display=isAdmin?'block':'none';
-  if(isAdmin){renderMembers();renderAdminMessages();}
+  document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-announcement-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
+  if(isAdmin){renderMembers();renderAdminMessages();renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   checkUpdateNotice();
 }
@@ -4282,12 +4357,81 @@ if('serviceWorker' in navigator){
   const splash=document.getElementById('splash-screen');
   const bar=document.getElementById('splash-bar');
   if(!splash)return;
+
+  // Dynamic time-of-day greeting, personalized with the saved user's name when we have one.
+  const greetEl=document.getElementById('splash-greeting');
+  if(greetEl){
+    const hr=new Date().getHours();
+    const timeGreeting=hr<5?'Still up late':hr<12?'Good morning':hr<17?'Good afternoon':hr<21?'Good evening':'Good night';
+    let firstName='';
+    try{
+      const session=localStorage.getItem('exp_session');
+      if(session){
+        const users=JSON.parse(localStorage.getItem('exp_users')||'{}');
+        const full=(users[session]&&users[session].name)||session;
+        firstName=(full||'').split(' ')[0];
+      }
+    }catch(e){/* first-load or storage unavailable — fall back to a generic greeting */}
+    greetEl.textContent=firstName?`${timeGreeting}, ${firstName} 👋`:`${timeGreeting} 👋`;
+  }
+
+  // A small rotating set of finance-y motivational lines — one at random per launch.
+  const motivEl=document.getElementById('splash-motivation');
+  if(motivEl){
+    const lines=[
+      'Every rupee tracked is a rupee understood.',
+      'Small habits, tracked daily, build real wealth.',
+      'Your future self will thank you for logging this.',
+      'Clarity today, control tomorrow.',
+      'Progress, not perfection — one entry at a time.'
+    ];
+    motivEl.textContent=lines[Math.floor(Math.random()*lines.length)];
+  }
+
+  // Cloud sync progress — staged status text that tracks the loading bar, giving an honest
+  // sense of what's happening (auth check → local data → cloud sync) rather than a fake percentage.
+  const statusEl=document.getElementById('splash-status');
+  if(statusEl){
+    const hasSession=!!localStorage.getItem('exp_session');
+    const stages=hasSession
+      ? ['Waking up your vault…','Checking your session…','Syncing with the cloud…','Almost there…']
+      : ['Waking up your vault…','Preparing a fresh start…','Almost there…'];
+    let stageIdx=0;
+    statusEl.textContent=stages[0];
+    const stageTimer=setInterval(()=>{
+      stageIdx=(stageIdx+1)%stages.length;
+      statusEl.textContent=stages[stageIdx];
+    },SPLASH_DURATION_MS/stages.length);
+    splash._splashStageTimer=stageTimer;
+  }
+
+  // Version footer
+  const verEl=document.getElementById('splash-version');
+  if(verEl){
+    try{verEl.textContent=`v${typeof APP_VERSION!=='undefined'?APP_VERSION:'1.0'}`;}catch(e){verEl.textContent='';}
+  }
+
   requestAnimationFrame(()=>{
     bar.style.transition=`width ${SPLASH_DURATION_MS}ms linear`;
     bar.style.width='100%';
   });
   const dismiss=()=>{
+    if(splash._splashStageTimer)clearInterval(splash._splashStageTimer);
     splash.style.opacity='0';
+    // Whatever screen is underneath (lock screen for returning users, auth screen for new
+    // ones, or the dashboard itself) gets a gentle fade+rise so the handoff feels like one
+    // continuous motion rather than the splash disappearing to reveal a static screen.
+    const lockScreen=document.getElementById('lock-screen');
+    const authScreen=document.getElementById('auth-screen');
+    const appScreen=document.getElementById('app-screen');
+    const revealTarget=
+      (lockScreen&&lockScreen.style.display==='flex')?lockScreen:
+      (authScreen&&authScreen.style.display==='flex')?authScreen:
+      appScreen;
+    if(revealTarget){
+      revealTarget.classList.add('splash-reveal');
+      setTimeout(()=>revealTarget.classList.remove('splash-reveal'),650);
+    }
     setTimeout(()=>{splash.style.display='none';},500);
   };
   const timer=setTimeout(dismiss,SPLASH_DURATION_MS);
