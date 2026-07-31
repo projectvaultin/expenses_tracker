@@ -267,9 +267,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .repay-inp:focus{border-color:var(--green);}
 .repay-btn{padding:8px 14px;background:var(--green);border:none;border-radius:10px;color:#052e1c;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;}
 .remaining-badge{font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,179,0,.2);color:var(--amber);font-weight:700;}
-/* Telegram section */
-.tg-card{border:1px solid rgba(0,136,204,.3);}
-.tg-title{color:#2ca5e0;font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:7px;}
 /* Reminder rows */
 .rem-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
 .rem-row:last-child{border-bottom:none;}
@@ -800,17 +797,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div id="admin-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
       <button class="pill-btn" style="margin-top:12px" onclick="renderAdminStats()">🔄 Refresh</button>
     </div>
-    <!-- Telegram Bot Integration -->
-    <div class="card tg-card" id="admin-tg-section" style="display:none">
-      <div class="tg-title">✈️ Telegram Bot — Connected</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.65">Your <b style="color:var(--text)">expense_bot.py</b> Telegram bot is fully integrated. Commands available in Telegram:</div>
-      <div style="font-size:13px;line-height:2;color:var(--text)">
-        <span style="color:#2ca5e0;font-weight:700">/start</span> — Begin tracking, pick month<br>
-        <span style="color:#2ca5e0;font-weight:700">/addcat GymFee</span> — Add a new category<br>
-        <span style="color:#2ca5e0;font-weight:700">/delcat GymFee</span> — Remove a category<br>
-        <span style="color:#2ca5e0;font-weight:700">/listcats</span> — See all your categories<br>
-        <span style="color:#2ca5e0;font-weight:700">Type amount</span> — After picking month + cat, just type the number
-      </div>
       <div style="margin-top:12px;padding:10px 12px;background:rgba(0,136,204,.07);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6">
         💡 <b style="color:var(--text)">Setup:</b> Run <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">pip install python-telegram-bot openpyxl</code> then <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">python expense_bot.py</code>. Expenses from the bot go to <b style="color:var(--text)">expenses.xlsx</b> on your server. This web app stores data locally in your browser.
       </div>
@@ -2248,7 +2234,6 @@ function startApp(profile){
 if(supportCard){
     supportCard.style.display = isAdmin ? "none" : "block";
 }
-  document.getElementById('admin-tg-section').style.display='none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
@@ -3259,7 +3244,10 @@ function renderManage(){
   }
   // Show admin sections
   const isAdmin=profile&&(profile.isAdmin||CU===ADMIN_USERNAME);
-  document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
+  const supportCardMng = document.getElementById("support-user-card");
+  if(supportCardMng){
+    supportCardMng.style.display = isAdmin ? "none" : "block";
+  }
   document.getElementById('admin-members-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-messages-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
