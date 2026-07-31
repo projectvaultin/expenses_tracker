@@ -815,8 +815,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         💡 <b style="color:var(--text)">Setup:</b> Run <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">pip install python-telegram-bot openpyxl</code> then <code style="background:var(--surface2);padding:2px 6px;border-radius:6px;font-size:11px">python expense_bot.py</code>. Expenses from the bot go to <b style="color:var(--text)">expenses.xlsx</b> on your server. This web app stores data locally in your browser.
       </div>
     </div>
-    <!-- Contact Admin / Customer Service (all users) -->
-    <div class="card">
+   <div class="card" id="support-user-card">
+  <div class="card-title">💬 Contact Admin</div>
   <div class="card-title">🎫 Customer Support Center</div>
 
   <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
@@ -2243,7 +2243,12 @@ function startApp(profile){
   maybeShowNotifPrompt();
   // Show/hide admin sections
   const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
-  document.getElementById('admin-tg-section').style.display=isAdmin?'block':'none';
+  const supportCard = document.getElementById("support-user-card");
+
+if(supportCard){
+    supportCard.style.display = isAdmin ? "none" : "block";
+}
+  document.getElementById('admin-tg-section').style.display='none';
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
