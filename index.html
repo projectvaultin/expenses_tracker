@@ -1849,6 +1849,10 @@ function ensureAdminAccount(){
 const ADMIN_USERNAME='admin';
 const ADMIN_PASSWORD=btoa('admin@2025');
 
+function isAdmin(){
+    return CU === ADMIN_USERNAME;
+}
+
 async function doSignup(){
   const name=document.getElementById('sn').value.trim();
   const u=document.getElementById('su').value.trim().toLowerCase();
@@ -2188,6 +2192,23 @@ function startApp(profile){
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
   syncDrawerProfile(profile);
+  const adminSections = [
+    "admin-stats-section",
+    "admin-tg-section",
+    "admin-members-section",
+    "admin-messages-section",
+    "admin-errorlogs-section",
+    "admin-announcement-section",
+    "admin-update-section",
+    "admin-database-section"
+];
+
+adminSections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+        el.style.display = isAdmin() ? "block" : "none";
+    }
+});
   resolveSupabaseUserId().then(id=>{
     const el=document.getElementById('drawer-userid');
     if(!el)return;
