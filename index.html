@@ -1391,6 +1391,21 @@ async function syncUserSettings(){
     uKey("rollover"),
     data.rollover ? "on" : "off"
   );
+  if(data.theme){
+  localStorage.setItem("exp_theme", data.theme);
+}
+
+if(data.text_size){
+  localStorage.setItem("exp_textsize", data.text_size);
+}
+
+localStorage.setItem(
+  "exp_contrast",
+  data.high_contrast ? "on" : "off"
+);
+
+applyTextSize(getTextSize());
+applyTheme(getTheme());
 }
 async function saveAppearanceSettingsCloud(){
   await uploadUserSettings();
