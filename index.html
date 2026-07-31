@@ -1633,9 +1633,10 @@ saveUsers(users);
     CU=u;
     localStorage.setItem('exp_session',u);
     localStorage.setItem("exp_user_id", user.id);
-   await syncCategories();
+  await syncCategories();
 await syncCategoryBudgets();
 await syncUserSettings();
+await syncReminders();
 
 startApp(users[u]);
 startApp(users[u]);
@@ -3632,6 +3633,52 @@ async function sendTestStatementNow(){
 // ── MONTHLY REMINDERS ──
 function getReminders(){return JSON.parse(localStorage.getItem(uKey('reminders'))||'[]');}
 function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(r));}
+  async function uploadReminder(r){
+  if(!CU) return;
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+  const { error } = await sb.from('reminders').upsert({
+    id: r.id,
+    user_id: userId,
+    name: r.name,
+    amount: r.amount,
+    day: r.day,
+    month: r.month,
+    type: r.type,
+    frequency: r.frequency,
+    active: r.active !== false,
+    paid: r.paid || {}
+  });
+  if(error) console.error('Reminder upload failed:', error);
+}
+
+async function deleteReminderCloud(id){
+  if(!CU) return;
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+  const { error } = await sb.from('reminders').delete().eq('id', id).eq('user_id', userId);
+  if(error) console.error('Reminder delete failed:', error);
+}
+
+async function syncReminders(){
+  if(!CU) return;
+  const userId = await resolveSupabaseUserId();
+  if(!userId) return;
+  const { data, error } = await sb.from('reminders').select('*').eq('user_id', userId);
+  if(error){ console.error('Reminders sync failed:', error); return; }
+  const rems = (data||[]).map(row=>({
+    id: row.id,
+    name: row.name,
+    amount: Number(row.amount),
+    day: row.day,
+    month: row.month,
+    active: row.active,
+    paid: row.paid || {},
+    type: row.type,
+    frequency: row.frequency
+  }));
+  saveReminders(rems);
+}
 function monthKeyNow(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1);}
 function selectRemType(t){
   selRemType=t;
@@ -3699,7 +3746,7 @@ function addReminder(){
   if(day===undefined||day===null||isNaN(day)){showToast('Select when this repeats','#ffb300');return;}
   const rems=getReminders();
   rems.push({id:Date.now(),name:name||(type==='income'?'Salary':name),amount,day,month,active:true,paid:{},type,frequency:freq});
-  saveReminders(rems);
+  saveReminders(rems);uploadReminder(rems[rems.length-1]).catch(console.error);
   document.getElementById('rem-name').value='';
   document.getElementById('rem-amount').value='';
   document.getElementById('rem-day').value='';
@@ -3710,7 +3757,7 @@ function addReminder(){
 }
 function deleteReminder(id){
   const rems=getReminders().filter(r=>r.id!==id);
-  saveReminders(rems);renderReminders();showToast('Recurring expense removed','#ff6584');
+ saveReminders(rems);deleteReminderCloud(id).catch(console.error);renderReminders();showToast('Recurring expense removed','#ff6584');
 }
 // Mark this month's cycle of a recurring expense/income as paid/received — logs a real entry
 function markReminderPaid(id){
@@ -3739,6 +3786,7 @@ function markReminderPaid(id){
   saveData(data);
   r.paid[mk]=entry.ts;
   saveReminders(rems);
+  uploadReminder(r).catch(console.error);
   renderReminders();renderHome();renderHistory();
   showToast(isIncome?'✅ '+r.name+' credited for this month!':'✅ '+r.name+' marked paid for this month!');
 }
@@ -3756,6 +3804,7 @@ function unmarkReminderPaid(id){
   }
   delete r.paid[mk];
   saveReminders(rems);
+  uploadReminder(r).catch(console.error);
   renderReminders();renderHome();renderHistory();
   showToast('↩️ Marked as unpaid','#ffb300');
 }
@@ -3790,6 +3839,7 @@ function toggleReminderActive(id){
   if(!r)return;
   r.active=r.active===false?true:false;
   saveReminders(rems);
+  uploadReminder(r).catch(console.error);
   renderReminders();
   showToast(r.active?'▶️ Reminder resumed':'⏸️ Reminder paused','#ffb300');
 }
