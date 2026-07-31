@@ -3509,10 +3509,11 @@ function handleProfileAvatar(e){
     }]);
 
     if(error){
-        console.error(error);
-        showToast("Failed to submit ticket","#f44336");
-        return;
-    }
+    console.error("Support Ticket Error:", error);
+    alert(JSON.stringify(error));
+    showToast("Failed to submit ticket");
+    return;
+}
 
     document.getElementById("support-subject").value="";
     document.getElementById("support-message").value="";
