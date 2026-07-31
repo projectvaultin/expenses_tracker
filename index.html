@@ -1487,13 +1487,30 @@ function applyCrop(){
   ctx.beginPath();ctx.arc(sw/2,sh/2,sw/2,0,Math.PI*2);ctx.clip();
   const scale=img._baseScale*(parseFloat(document.getElementById('crop-zoom').value)||1);
   ctx.drawImage(img,cropOffX,cropOffY,img.naturalWidth*scale,img.naturalHeight*scale);
-  pendingAv=canvas.toDataURL('image/jpeg',.85);
+ pendingAv = canvas.toDataURL('image/jpeg', .85);
+
+console.log("=== APPLY CROP ===");
+console.log("pendingAv length:", pendingAv.length);
   document.getElementById('av-box').innerHTML=`<img src="${pendingAv}"/>`;
   closeCropModal();
   if(CU){
     const av=document.getElementById('tb-av');
     av.innerHTML=`<img src="${pendingAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    const users=getUsers();if(users[CU]){users[CU].avatar=pendingAv;saveUsers(users);syncDrawerProfile(users[CU]);}
+    const users = getUsers();
+
+if(users[CU]){
+    users[CU].avatar = pendingAv;
+
+    console.log("Saved avatar length:", users[CU].avatar.length);
+
+    saveUsers(users);
+
+    const checkUsers = getUsers();
+
+    console.log("Reloaded avatar length:", checkUsers[CU].avatar ? checkUsers[CU].avatar.length : null);
+
+    syncDrawerProfile(users[CU]);
+}
   }
 }
 (function(){
