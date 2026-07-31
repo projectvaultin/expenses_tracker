@@ -3490,14 +3490,9 @@ function handleProfileAvatar(e){
         return;
     }
 
-    const ticketId =
-        "PV-" +
-        Date.now().toString().slice(-8);
-
     const {error}=await sb
     .from("support_messages")
     .insert([{
-        ticket_id:ticketId,
         user_id:userId,
         username:CU,
         category:category,
