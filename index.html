@@ -1478,7 +1478,6 @@ function applyCropTransform(){
 function closeCropModal(){document.getElementById('crop-modal').classList.remove('open');}
 function applyCrop(){
   const stage=document.getElementById('crop-stage');
-  ...
   const img=document.getElementById('crop-img');
   if(!img._baseScale||!img.naturalWidth){showToast('Photo is still loading, try again in a moment','#ffb300');return;}
   const sw=stage.offsetWidth,sh=stage.offsetHeight;
