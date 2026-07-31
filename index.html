@@ -3298,6 +3298,9 @@ try{
     const { data, error } = await sb
       .from('users')
     .update({
+      console.log("pendingCover =", pendingCover);
+console.log("coverPhoto =", users[CU].coverPhoto);
+console.log("coverPhoto length =", users[CU].coverPhoto ? users[CU].coverPhoto.length : 0);
   name: users[CU].name,
   email: users[CU].email,
   mobile: users[CU].mobile,
