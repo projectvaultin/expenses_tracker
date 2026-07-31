@@ -1079,9 +1079,12 @@ const APP_VERSION='3.0';
 // ── THEME (Light/Dark) ── Saved globally on this device, independent of which account is logged in ──
 function getTheme(){return localStorage.getItem('exp_theme')||'dark';}
 function getContrastMode(){return localStorage.getItem('exp_contrast')==='on';}
-function toggleContrastMode(){
+async function toggleContrastMode(){
   localStorage.setItem('exp_contrast',getContrastMode()?'off':'on');
+
   applyTheme(getTheme());
+
+  await saveAppearanceSettingsCloud();
 }
 function applyTheme(t){
   const effective=getContrastMode()?'contrast':t;
@@ -1102,10 +1105,13 @@ function applyTheme(t){
   const metaTheme=document.querySelector('meta[name="theme-color"]');
   if(metaTheme)metaTheme.setAttribute('content',effective==='contrast'?'#000000':t==='light'?'#f4f5fa':'#0f1117');
 }
-function toggleTheme(){
+async function toggleTheme(){
   const next=getTheme()==='light'?'dark':'light';
+
   localStorage.setItem('exp_theme',next);
   applyTheme(next);
+
+  await saveAppearanceSettingsCloud();
 }
 applyTheme(getTheme()); // apply immediately on script load, before login, so it's consistent from the first paint
 
@@ -1116,10 +1122,13 @@ function applyTextSize(sz){
   const label=document.getElementById('drawer-textsize-label');
   if(label)label.textContent=sz==='large'?'Switch to Normal Text':'Switch to Large Text';
 }
-function toggleTextSize(){
+async function toggleTextSize(){
   const next=getTextSize()==='large'?'normal':'large';
+
   localStorage.setItem('exp_textsize',next);
   applyTextSize(next);
+
+  await saveAppearanceSettingsCloud();
 }
 applyTextSize(getTextSize());
 
@@ -1324,6 +1333,9 @@ async function setCatBudget(cat,val){
 
   const monthlyBudget = getBudgetLimit();
   const rollover = getRolloverEnabled();
+    const theme = getTheme();
+const textSize = getTextSize();
+const highContrast = getContrastMode();
 
   const { data: existing } = await sb
     .from("user_settings")
@@ -1335,18 +1347,24 @@ async function setCatBudget(cat,val){
     await sb
       .from("user_settings")
       .update({
-        monthly_budget: monthlyBudget,
-        rollover: rollover
-      })
+  monthly_budget: monthlyBudget,
+  rollover: rollover,
+  theme: theme,
+  text_size: textSize,
+  high_contrast: highContrast
+})
       .eq("id", existing.id);
   }else{
     await sb
       .from("user_settings")
-      .insert({
-        user_id: userId,
-        monthly_budget: monthlyBudget,
-        rollover: rollover
-      });
+     .insert({
+  user_id: userId,
+  monthly_budget: monthlyBudget,
+  rollover: rollover,
+  theme: theme,
+  text_size: textSize,
+  high_contrast: highContrast
+})
   }
 }
 
@@ -1374,7 +1392,9 @@ async function syncUserSettings(){
     data.rollover ? "on" : "off"
   );
 }
-
+async function saveAppearanceSettingsCloud(){
+  await uploadUserSettings();
+}
 async function saveUserSettingsCloud(){
   await uploadUserSettings();
 }
