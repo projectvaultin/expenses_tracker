@@ -1580,8 +1580,11 @@ saveUsers(users);
     CU=u;
     localStorage.setItem('exp_session',u);
     localStorage.setItem("exp_user_id", user.id);
-    await syncCategories();
+   await syncCategories();
 await syncCategoryBudgets();
+await syncUserSettings();
+
+startApp(users[u]);
 startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
