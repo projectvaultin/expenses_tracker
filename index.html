@@ -1874,6 +1874,7 @@ async function ensureAdminAccount(){
     }
 
 }
+  const ADMIN_USERNAME='admin'; const ADMIN_PASSWORD=btoa('admin@2025'); function isAdmin(){ return CU === ADMIN_USERNAME; }
 
 async function doSignup(){
   const name=document.getElementById('sn').value.trim();
