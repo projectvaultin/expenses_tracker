@@ -1210,8 +1210,11 @@ function getDebts(){return JSON.parse(localStorage.getItem(uKey('debts'))||'[]')
 function saveDebts(d){localStorage.setItem(uKey('debts'),JSON.stringify(d));}
 function getBudgetLimit(){return parseFloat(localStorage.getItem(uKey('budget'))||'0')||0;}
 function getRolloverEnabled(){return localStorage.getItem(uKey('rollover'))==='on';}
-function setBudgetRollover(on){
+async function setBudgetRollover(on){
   localStorage.setItem(uKey('rollover'),on?'on':'off');
+
+  await saveUserSettingsCloud();
+
   renderHome();
 }
 // Rollover amount = last month's leftover budget (only counted if rollover is enabled and last month wasn't over budget)
@@ -1375,10 +1378,19 @@ async function syncUserSettings(){
 async function saveUserSettingsCloud(){
   await uploadUserSettings();
 }
-function saveBudgetLimit(){
+async function saveBudgetLimit(){
   const v=parseFloat(document.getElementById('budget-limit-input').value);
-  if(!v||v<=0){localStorage.removeItem(uKey('budget'));showToast('Budget limit cleared','#ffb300');}
-  else{localStorage.setItem(uKey('budget'),String(v));showToast('🎯 Budget saved!');}
+
+  if(!v || v<=0){
+    localStorage.removeItem(uKey('budget'));
+    showToast('Budget limit cleared','#ffb300');
+  }else{
+    localStorage.setItem(uKey('budget'),String(v));
+    showToast('🎯 Budget saved!');
+  }
+
+  await saveUserSettingsCloud();
+
   renderHome();
 }
 // Global update store (shared across all users)
