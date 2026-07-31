@@ -2192,7 +2192,7 @@ function startApp(profile){
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
   syncDrawerProfile(profile);
-resolveSupabaseUserId().then(id=>{
+  resolveSupabaseUserId().then(id=>{
     const el=document.getElementById('drawer-userid');
     if(!el)return;
     if(id) el.textContent='Account ID: '+id;
