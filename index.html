@@ -663,6 +663,15 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <span style="color:var(--muted);font-size:16px">›</span>
     </div>
+    <!-- Announcement banner (admin broadcasts, separate from version update notices) -->
+    <div class="update-banner" id="announcement-banner" style="display:none;background:linear-gradient(135deg,rgba(255,101,132,.18),rgba(255,179,0,.12));border-color:rgba(255,101,132,.4);animation:none;" onclick="dismissAnnouncement()">
+      <span style="font-size:18px">📣</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#ff6584">Announcement</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
+      </div>
+      <span style="color:var(--muted);font-size:16px">✕</span>
+    </div>
     <!-- PROFILE EDIT -->
     <div class="card" style="padding:0;overflow:hidden;">
       <div id="cover-photo-box" onclick="document.getElementById('cover-photo-file').click()" style="height:100px;background:linear-gradient(135deg,rgba(108,99,255,.25),rgba(0,208,132,.15));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">
@@ -2219,6 +2228,7 @@ function startApp(profile){
   setTimeout(checkDueAlerts,600);
   setInterval(checkDueAlerts,3600000);
   setTimeout(checkUpdateNotice,1000);
+  setTimeout(checkAnnouncement,1100);
   // Notification permission MUST be requested from a real tap/click — browsers silently ignore
   // requests triggered by a timer with no user gesture, which was the bug here (permission stayed
   // stuck at "default" forever, so native reminder popups never appeared). Show a real button instead.
@@ -2261,7 +2271,7 @@ function switchTab(name,el){
 }
 
 // ── HELPERS ──
-function emoji(c){return EMOJIS[c]||'💰';}
+function emoji(c){return EMOJIS[c]||'📦';}
 function color(c){
   const cc=getCatColors();
   if(cc[c])return cc[c];
@@ -2695,7 +2705,21 @@ async function saveExpense(){
 
       if(error){
           console.error(error);
-          showToast("Failed to save to cloud","#e53935");
+          pushErrorLog({message:'Transaction cloud save failed: '+(error.message||JSON.stringify(error)),source:'saveExpense'});
+          // Don't lose the user's entry just because the cloud write failed — save it locally
+          // (unsynced) so it still shows up correctly, and let them know sync will retry later.
+          const localData=getData();
+          localData.push({
+              month:selMonth,category:selCat,amount:amt,type:selEntryType||'expense',
+              year:new Date().getFullYear(),ts:Date.now(),date:dateVal,payMode,tags,
+              receipt:pendingReceipt,supaId:null
+          });
+          saveData(localData);
+          document.getElementById('amount-input').value='';
+          document.getElementById('expense-tags').value='';
+          selCat=null;pendingReceipt=null;
+          renderAddForm();
+          showToast("Saved on this device — cloud sync failed (see Error Logs)","#ffb300");
           return;
       }
 
@@ -3253,6 +3277,7 @@ function renderManage(){
   if(isAdmin){renderMembers();renderAdminMessages();renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
   checkUpdateNotice();
+  checkAnnouncement();
 }
 function addCategory(){
   const inp=document.getElementById('new-cat-input'),val=inp.value.trim();
@@ -3304,45 +3329,77 @@ async function sendAdminMessage(){
   showToast("Message sent successfully ✅");
 
 }
-function deleteAdminMessage(i){
-  const msgs=getAdminMessages();
-  msgs.splice(i,1);
-  saveAdminMessages(msgs);
+async function deleteAdminMessage(id){
+  try{
+    const{error}=await sb.from('support_messages').delete().eq('id',id);
+    if(error)throw error;
+  }catch(e){console.error('Failed to delete message:',e);showToast('Failed to delete message','#e53935');return;}
   renderAdminMessages();
 }
-function markMessageRead(i){
-  const msgs=getAdminMessages();
-  if(msgs[i]){msgs[i].read=true;saveAdminMessages(msgs);renderAdminMessages();}
+async function markMessageRead(id){
+  try{
+    const{error}=await sb.from('support_messages').update({status:'Resolved'}).eq('id',id);
+    if(error)throw error;
+  }catch(e){console.error('Failed to update message status:',e);showToast('Failed to update message','#e53935');return;}
+  renderAdminMessages();
 }
-function renderAdminMessages(){
+async function renderAdminMessages(){
   const el=document.getElementById('admin-messages-list');
   if(!el)return;
-  const msgs=getAdminMessages();
-  const withIdx=msgs.map((m,i)=>({...m,_i:i})).sort((a,b)=>b.ts-a.ts);
-  if(!withIdx.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No messages yet.</div>';return;}
-  el.innerHTML=withIdx.map(m=>{
-    const dt=new Date(m.ts).toLocaleString('en-IN');
-    return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;${m.read?'opacity:.6':''}">
+  el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">Loading messages…</div>';
+  let msgs=[];
+  try{
+    const{data,error}=await sb.from('support_messages').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    msgs=data||[];
+  }catch(e){
+    console.error('Failed to load support messages:',e);
+    el.innerHTML='<div style="color:var(--red);font-size:13px;padding:6px 0">Could not load messages from the cloud. Check the console / Error Logs for details.</div>';
+    pushErrorLog({message:'Failed to load support_messages: '+(e&&e.message?e.message:String(e)),source:'renderAdminMessages'});
+    return;
+  }
+  if(!msgs.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No messages yet.</div>';return;}
+  el.innerHTML=msgs.map(m=>{
+    const dt=m.created_at?new Date(m.created_at).toLocaleString('en-IN'):'';
+    const resolved=m.status==='Resolved';
+    return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;${resolved?'opacity:.6':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:13px;font-weight:700">${m.fromName} <span style="font-size:11px;color:var(--muted);font-weight:400">@${m.from}</span></span>
+        <span style="font-size:13px;font-weight:700">${(m.username||'Unknown').replace(/</g,'&lt;')}</span>
         <span style="font-size:10px;color:var(--muted)">${dt}</span>
       </div>
-      <div style="font-size:13px;line-height:1.6;margin-bottom:8px">${m.text.replace(/</g,'&lt;')}</div>
+      <div style="font-size:13px;line-height:1.6;margin-bottom:8px">${(m.message||'').replace(/</g,'&lt;')}</div>
       <div style="display:flex;gap:8px">
-        ${!m.read?`<button class="pill-btn" style="font-size:11px" onclick="markMessageRead(${m._i})">✓ Mark read</button>`:''}
-        <button class="pill-btn" style="font-size:11px" onclick="deleteAdminMessage(${m._i})">🗑 Delete</button>
+        ${!resolved?`<button class="pill-btn" style="font-size:11px" onclick="markMessageRead(${m.id})">✓ Mark resolved</button>`:'<span style="font-size:11px;color:var(--green)">✓ Resolved</span>'}
+        <button class="pill-btn" style="font-size:11px" onclick="deleteAdminMessage(${m.id})">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
 }
 
-// ── ADMIN: MEMBERS LIST ──
-function renderMembers(){
+// ── ADMIN: MEMBERS LIST / USER MANAGEMENT ──
+async function renderMembers(){
   const summaryEl=document.getElementById('admin-members-summary');
   const listEl=document.getElementById('admin-members-list');
+  const noteEl=document.getElementById('admin-members-note');
   if(!summaryEl||!listEl)return;
-  const users=getUsers();
-  const entries=Object.entries(users);
+  const localUsers=getUsers();
+  let entries=Object.entries(localUsers);
+  let source='local';
+  // Try to pull the real, full user registry from Supabase so admin actions apply platform-wide,
+  // not just to accounts that happen to have been created on this specific browser/device.
+  try{
+    const{data,error}=await sb.from('users').select('*');
+    if(!error&&Array.isArray(data)&&data.length){
+      source='cloud';
+      entries=data.map(row=>[row.username,{
+        name:row.name||row.username,isAdmin:!!row.is_admin,createdAt:row.created_at?new Date(row.created_at).getTime():0,
+        email:row.email||null,mobile:row.mobile||null,_cloudId:row.id
+      }]);
+    }
+  }catch(e){/* fall back to local-only view below */}
+  if(noteEl)noteEl.textContent=source==='cloud'
+    ?'Showing all registered users across every device (live from Supabase).'
+    :'Cloud user list unavailable right now — showing accounts created on this device/browser only.';
   const nonAdminCount=entries.filter(([u,p])=>!p.isAdmin).length;
   let totalIncomeAll=0,totalExpenseAll=0;
   entries.forEach(([u])=>{
@@ -3352,23 +3409,169 @@ function renderMembers(){
       totalExpenseAll+=d.filter(e=>e.type!=='income').reduce((s,e)=>s+e.amount,0);
     }catch(e){}
   });
-  summaryEl.innerHTML=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)<br><span style="color:var(--green)">${fmt(totalIncomeAll)} income</span> · <span style="color:var(--red)">${fmt(totalExpenseAll)} expenses</span> combined across all accounts`;
+  summaryEl.innerHTML=`${entries.length} total account${entries.length===1?'':'s'} · ${nonAdminCount} member${nonAdminCount===1?'':'s'} (excl. admin)<br><span style="color:var(--green)">${fmt(totalIncomeAll)} income</span> · <span style="color:var(--red)">${fmt(totalExpenseAll)} expenses</span> tracked on this device across known accounts`;
   if(!entries.length){listEl.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No members yet.</div>';return;}
   const sorted=entries.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   listEl.innerHTML=sorted.map(([u,p])=>{
-    // Read each user's own expense/debt count directly (not just the currently logged-in user)
     let entryCount=0,debtCount=0;
     try{entryCount=JSON.parse(localStorage.getItem('exp_'+u+'_data')||'[]').length;}catch(e){}
     try{debtCount=JSON.parse(localStorage.getItem('exp_'+u+'_debts')||'[]').length;}catch(e){}
     const joined=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'—';
-    return `<div class="entry-row">
+    const isSelf=u===CU;
+    return `<div class="entry-row" style="flex-wrap:wrap">
       <div class="entry-icon" style="background:${p.isAdmin?'rgba(108,99,255,.2)':'rgba(0,208,132,.15)'}">${p.isAdmin?'👑':(p.name||u).charAt(0).toUpperCase()}</div>
       <div class="entry-info">
         <div class="entry-cat">${p.name||u} ${p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':''}</div>
         <div class="entry-meta">@${u} · ${entryCount} entries · ${debtCount} debt records · joined ${joined}</div>
       </div>
+      ${isSelf?'':`<div style="display:flex;gap:6px;width:100%;margin-top:8px">
+        <button class="pill-btn" style="font-size:11px" onclick="toggleAdminRole('${u}')">${p.isAdmin?'⬇ Remove Admin':'⬆ Make Admin'}</button>
+        <button class="pill-btn" style="font-size:11px;color:var(--red)" onclick="deleteUserAccount('${u}')">🗑 Delete Account</button>
+      </div>`}
     </div>`;
   }).join('');
+}
+async function toggleAdminRole(u){
+  const users=getUsers();
+  if(!users[u])return;
+  const next=!users[u].isAdmin;
+  users[u].isAdmin=next;
+  saveUsers(users);
+  try{await sb.from('users').update({is_admin:next}).eq('username',u);}catch(e){console.error('Could not sync admin role to cloud:',e);}
+  showToast(next?`👑 ${u} is now an admin`:`${u} is no longer an admin`);
+  renderMembers();
+}
+async function deleteUserAccount(u){
+  if(!confirm(`Permanently delete @${u}'s account? This removes their profile and cannot be undone. Their historical transactions/debts already synced to Supabase are not automatically erased.`))return;
+  const users=getUsers();
+  delete users[u];
+  saveUsers(users);
+  try{localStorage.removeItem('exp_'+u+'_data');localStorage.removeItem('exp_'+u+'_debts');localStorage.removeItem('exp_'+u+'_cats');}catch(e){}
+  try{const{error}=await sb.from('users').delete().eq('username',u);if(error)throw error;}
+  catch(e){console.error('Could not delete user from cloud:',e);showToast('Deleted locally — cloud deletion failed, check Error Logs','#ffb300');pushErrorLog({message:'Failed to delete user from Supabase: '+(e&&e.message?e.message:String(e)),source:'deleteUserAccount'});renderMembers();return;}
+  showToast(`🗑 @${u} deleted`,'#ff6584');
+  renderMembers();
+}
+
+// ── ADMIN: APPLICATION STATISTICS ──
+async function renderAdminStats(){
+  const srcEl=document.getElementById('admin-stats-source');
+  const gridEl=document.getElementById('admin-stats-grid');
+  if(!srcEl||!gridEl)return;
+  srcEl.textContent='Loading…';
+  const stat=(label,value,color)=>`<div style="background:var(--surface2);border-radius:12px;padding:12px"><div style="font-size:20px;font-weight:800;color:${color||'var(--text)'}">${value}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${label}</div></div>`;
+  let userCount=Object.keys(getUsers()).length;
+  let txnCount=null,debtCount=null,msgCount=null,cloudOk=false;
+  try{
+    const [uRes,tRes,dRes,mRes]=await Promise.all([
+      sb.from('users').select('*',{count:'exact',head:true}),
+      sb.from('transactions').select('*',{count:'exact',head:true}),
+      sb.from('debts').select('*',{count:'exact',head:true}),
+      sb.from('support_messages').select('*',{count:'exact',head:true})
+    ]);
+    if(typeof uRes.count==='number'){userCount=uRes.count;cloudOk=true;}
+    if(typeof tRes.count==='number')txnCount=tRes.count;
+    if(typeof dRes.count==='number')debtCount=dRes.count;
+    if(typeof mRes.count==='number')msgCount=mRes.count;
+  }catch(e){console.error('Admin stats cloud fetch failed:',e);}
+  srcEl.textContent=cloudOk?'Live counts from Supabase.':'Cloud counts unavailable — showing what this device can see.';
+  gridEl.innerHTML=
+    stat('Total Users',userCount,'var(--accent)')+
+    stat('Transactions',txnCount!==null?txnCount:'—','var(--green)')+
+    stat('Debt Records',debtCount!==null?debtCount:'—','var(--red)')+
+    stat('Support Messages',msgCount!==null?msgCount:'—','#ffb300')+
+    stat('Error Logs (device)',getErrorLogs().length,'#ff6584')+
+    stat('App Version',APP_VERSION,'var(--text)');
+}
+
+// ── ADMIN: ERROR LOGS ──
+function renderErrorLogs(){
+  const el=document.getElementById('admin-errorlogs-list');
+  if(!el)return;
+  const logs=getErrorLogs();
+  if(!logs.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No errors captured on this device. 🎉</div>';return;}
+  el.innerHTML=logs.map(l=>{
+    const dt=new Date(l.ts).toLocaleString('en-IN');
+    return `<div style="background:var(--surface2);border-radius:12px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12px;font-weight:700;color:var(--red)">${(l.message||'Error').replace(/</g,'&lt;')}</span><span style="font-size:10px;color:var(--muted);white-space:nowrap">${dt}</span></div>
+      ${l.source?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${String(l.source).replace(/</g,'&lt;')}${l.user?' · @'+l.user:''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── ADMIN: ANNOUNCEMENTS (broadcast banner, independent of version release notes) ──
+// Prefers a shared Supabase table so the announcement reaches every device; if the table doesn't
+// exist yet or the query fails, falls back to this-device-only storage so the feature still works.
+// To get full cross-device delivery, create this table once in Supabase:
+//   create table announcements (id bigint generated by default as identity primary key,
+//     text text not null, created_at timestamptz default now());
+async function getAnnouncement(){
+  try{
+    const{data,error}=await sb.from('announcements').select('*').order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(!error&&data)return {text:data.text,id:String(data.id),ts:data.created_at?new Date(data.created_at).getTime():Date.now(),cloud:true};
+  }catch(e){/* table may not exist yet — fall back below */}
+  const local=JSON.parse(localStorage.getItem('exp_announcement')||'null');
+  return local;
+}
+async function pushAnnouncement(){
+  const text=document.getElementById('announcement-text-inp').value.trim();
+  if(!text){showToast('Type an announcement first','#ffb300');return;}
+  let cloudOk=false;
+  try{
+    const{error}=await sb.from('announcements').insert({text});
+    if(!error)cloudOk=true;
+  }catch(e){/* fall back to local-only below */}
+  localStorage.setItem('exp_announcement',JSON.stringify({text,id:'local-'+Date.now(),ts:Date.now(),cloud:cloudOk}));
+  document.getElementById('announcement-text-inp').value='';
+  showToast(cloudOk?'📣 Announcement published to all users!':'📣 Saved on this device (cloud table not set up — see code comment)','#00d084');
+  updateAnnouncementSyncNote();
+  checkAnnouncement();
+}
+async function updateAnnouncementSyncNote(){
+  const el=document.getElementById('admin-announcement-sync-note');
+  if(!el)return;
+  const notice=await getAnnouncement();
+  if(!notice){el.textContent='';return;}
+  el.textContent=notice.cloud
+    ?`✅ Last announcement synced to all devices via Supabase (${new Date(notice.ts).toLocaleString('en-IN')}).`
+    :`⚠️ Last announcement is saved on this device only — create the "announcements" table in Supabase (see comment above pushAnnouncement in the code) to broadcast to everyone.`;
+}
+async function checkAnnouncement(){
+  const notice=await getAnnouncement();
+  const banner=document.getElementById('announcement-banner');
+  if(!banner)return;
+  if(!notice){banner.style.display='none';return;}
+  const dismissedId=localStorage.getItem('exp_announcement_dismissed');
+  if(dismissedId===notice.id){banner.style.display='none';return;}
+  document.getElementById('announcement-text').textContent=notice.text;
+  banner.style.display='flex';
+}
+async function dismissAnnouncement(){
+  const notice=await getAnnouncement();
+  if(notice)localStorage.setItem('exp_announcement_dismissed',notice.id);
+  document.getElementById('announcement-banner').style.display='none';
+}
+
+// ── ADMIN: DATABASE MANAGEMENT ──
+async function exportFullDatabaseBackup(){
+  showToast('Preparing backup…');
+  const backup={exportedAt:new Date().toISOString(),appVersion:APP_VERSION,tables:{}};
+  const tables=['users','transactions','debts','reminders','support_messages','announcements'];
+  for(const t of tables){
+    try{
+      const{data,error}=await sb.from(t).select('*');
+      backup.tables[t]=error?{error:error.message}:data;
+    }catch(e){
+      backup.tables[t]={error:String(e&&e.message?e.message:e)};
+    }
+  }
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`projectvault-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+  showToast('☁️ Backup downloaded!','#00d084');
 }
 
 // ── UPDATE NOTIFICATION ──
