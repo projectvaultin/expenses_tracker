@@ -416,6 +416,22 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <!-- HOME -->
   <div id="page-home" class="page active">
+    <div class="update-banner" id="update-banner" style="display:none" onclick="showUpdateModal()">
+      <span class="update-dot"></span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--green)">🆕 New Update Available!</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="update-version-text">Version 2.1 — Tap to see what's new</div>
+      </div>
+      <span style="color:var(--muted);font-size:16px">›</span>
+    </div>
+    <div class="update-banner" id="announcement-banner" style="display:none;background:linear-gradient(135deg,rgba(255,101,132,.18),rgba(255,179,0,.12));border-color:rgba(255,101,132,.4);animation:none;" onclick="dismissAnnouncement()">
+      <span style="font-size:18px">📣</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#ff6584">Announcement</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
+      </div>
+      <span style="color:var(--muted);font-size:16px">✕</span>
+    </div>
     <div class="card" id="notif-prompt-card" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,208,132,.08));">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:22px">🔔</span>
@@ -654,24 +670,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <!-- MANAGE -->
   <div id="page-manage" class="page">
-    <!-- Update banner (shown when update available) -->
-    <div class="update-banner" id="update-banner" style="display:none" onclick="showUpdateModal()">
-      <span class="update-dot"></span>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:700;color:var(--green)">🆕 New Update Available!</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="update-version-text">Version 2.1 — Tap to see what's new</div>
-      </div>
-      <span style="color:var(--muted);font-size:16px">›</span>
-    </div>
-    <!-- Announcement banner (admin broadcasts, separate from version update notices) -->
-    <div class="update-banner" id="announcement-banner" style="display:none;background:linear-gradient(135deg,rgba(255,101,132,.18),rgba(255,179,0,.12));border-color:rgba(255,101,132,.4);animation:none;" onclick="dismissAnnouncement()">
-      <span style="font-size:18px">📣</span>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:700;color:#ff6584">Announcement</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
-      </div>
-      <span style="color:var(--muted);font-size:16px">✕</span>
-    </div>
     <!-- PROFILE EDIT -->
     <div class="card" style="padding:0;overflow:hidden;">
       <div id="cover-photo-box" onclick="document.getElementById('cover-photo-file').click()" style="height:100px;background:linear-gradient(135deg,rgba(108,99,255,.25),rgba(0,208,132,.15));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">
@@ -2392,6 +2390,8 @@ function renderUpcomingWeek(){
 }
 function renderHome(){
   maybeShowNotifPrompt();
+  checkForAppUpdates();
+  checkAnnouncement();
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
   const income=filtered.filter(e=>e.type==='income');
