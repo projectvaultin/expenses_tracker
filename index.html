@@ -910,6 +910,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card" id="admin-update-section" style="display:none">
       <div class="card-title">📢 Push App Update Notice <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Notify all users of a new version. They'll see a banner next time they open the app.</div>
+      <input type="text" class="ti" id="update-title-inp" placeholder="Title e.g. Faster sync & new charts" style="width:100%;margin-bottom:8px"/>
       <input type="text" class="ti" id="update-version-inp" placeholder="Version e.g. 2.1" style="width:100%;margin-bottom:8px"/>
       <textarea class="ti" id="update-notes-inp" placeholder="What's new in this update..." style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
       <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pushUpdateNotice()">📢 Publish Update Notice</button>
@@ -1567,10 +1568,6 @@ async function saveBudgetLimit(){
   renderHome();
 }
 // Global update store (shared across all users)
-function getUpdateNotice(){return JSON.parse(localStorage.getItem('exp_update_notice')||'null');}
-function saveUpdateNotice(n){localStorage.setItem('exp_update_notice',JSON.stringify(n));}
-function getDismissedUpdate(){return localStorage.getItem('exp_dismissed_update_'+CU)||'';}
-function setDismissedUpdate(v){localStorage.setItem('exp_dismissed_update_'+CU,v);}
 
 // ── AUTH ──
 function switchAuthTab(t){
@@ -2227,7 +2224,7 @@ function startApp(profile){
   }
   setTimeout(checkDueAlerts,600);
   setInterval(checkDueAlerts,3600000);
-  setTimeout(checkUpdateNotice,1000);
+  setTimeout(checkForAppUpdates,1000);
   setTimeout(checkAnnouncement,1100);
   // Notification permission MUST be requested from a real tap/click — browsers silently ignore
   // requests triggered by a timer with no user gesture, which was the bug here (permission stayed
@@ -3276,8 +3273,9 @@ function renderManage(){
   document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
   if(isAdmin){renderMembers();renderAdminMessages();renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
-  checkUpdateNotice();
+  checkForAppUpdates();
   checkAnnouncement();
+  loadSupportTickets();
 }
 function addCategory(){
   const inp=document.getElementById('new-cat-input'),val=inp.value.trim();
@@ -3330,17 +3328,38 @@ async function sendAdminMessage(){
 
 }
 async function deleteAdminMessage(id){
+  if(!confirm('Delete this ticket permanently?'))return;
   try{
     const{error}=await sb.from('support_messages').delete().eq('id',id);
     if(error)throw error;
   }catch(e){console.error('Failed to delete message:',e);showToast('Failed to delete message','#e53935');return;}
   renderAdminMessages();
 }
-async function markMessageRead(id){
+async function setTicketStatus(id,status){
   try{
-    const{error}=await sb.from('support_messages').update({status:'Resolved'}).eq('id',id);
+    const{error}=await sb.from('support_messages').update({status}).eq('id',id);
     if(error)throw error;
-  }catch(e){console.error('Failed to update message status:',e);showToast('Failed to update message','#e53935');return;}
+  }catch(e){console.error('Failed to update message status:',e);showToast('Failed to update status','#e53935');return;}
+  showToast(`Marked as ${status}`);
+  renderAdminMessages();
+}
+// Kept for backwards compatibility with any old bindings — now just resolves the ticket.
+async function markMessageRead(id){ await setTicketStatus(id,'Resolved'); }
+async function sendTicketReply(id){
+  const ta=document.getElementById('reply-inp-'+id);
+  if(!ta)return;
+  const text=ta.value.trim();
+  if(!text){showToast('Type a reply first','#ffb300');return;}
+  try{
+    const{error}=await sb.from('support_messages').update({admin_reply:text,status:'In Progress'}).eq('id',id);
+    if(error)throw error;
+  }catch(e){
+    console.error('Failed to send reply:',e);
+    pushErrorLog({message:'Failed to save admin_reply — the "admin_reply" column may not exist yet on support_messages. '+(e&&e.message?e.message:String(e)),source:'sendTicketReply'});
+    showToast('Failed to send reply — see Error Logs','#e53935');
+    return;
+  }
+  showToast('💬 Reply sent to user');
   renderAdminMessages();
 }
 async function renderAdminMessages(){
@@ -3359,18 +3378,29 @@ async function renderAdminMessages(){
     return;
   }
   if(!msgs.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px 0">No messages yet.</div>';return;}
+  const statusColor={Open:'#ffb300','In Progress':'#2196f3',Resolved:'#00d084'};
   el.innerHTML=msgs.map(m=>{
     const dt=m.created_at?new Date(m.created_at).toLocaleString('en-IN'):'';
-    const resolved=m.status==='Resolved';
-    return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;${resolved?'opacity:.6':''}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    const status=m.status||'Open';
+    const sc=statusColor[status]||'#7a7d99';
+    const subjectLine=m.subject?`<div style="font-size:13px;font-weight:700;margin-bottom:2px">${m.subject.replace(/</g,'&lt;')}</div>`:'';
+    const meta=[m.category,m.priority?m.priority+' priority':null].filter(Boolean).join(' · ');
+    return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px">
         <span style="font-size:13px;font-weight:700">${(m.username||'Unknown').replace(/</g,'&lt;')}</span>
-        <span style="font-size:10px;color:var(--muted)">${dt}</span>
+        <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;white-space:nowrap">${status}</span>
       </div>
-      <div style="font-size:13px;line-height:1.6;margin-bottom:8px">${(m.message||'').replace(/</g,'&lt;')}</div>
-      <div style="display:flex;gap:8px">
-        ${!resolved?`<button class="pill-btn" style="font-size:11px" onclick="markMessageRead(${m.id})">✓ Mark resolved</button>`:'<span style="font-size:11px;color:var(--green)">✓ Resolved</span>'}
-        <button class="pill-btn" style="font-size:11px" onclick="deleteAdminMessage(${m.id})">🗑 Delete</button>
+      ${subjectLine}
+      ${meta?`<div style="font-size:11px;color:var(--muted);margin-bottom:6px">${meta}</div>`:''}
+      <div style="font-size:13px;line-height:1.6;margin-bottom:4px">${(m.message||'').replace(/</g,'&lt;')}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${dt}</div>
+      ${m.admin_reply?`<div style="padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:8px"><b style="color:var(--accent)">Your reply:</b> ${String(m.admin_reply).replace(/</g,'&lt;')}</div>`:''}
+      <textarea id="reply-inp-${m.id}" class="ti" placeholder="Write a reply to the user..." style="width:100%;min-height:50px;resize:none;line-height:1.5;font-size:12px;margin-bottom:6px">${m.admin_reply?'':''}</textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="pill-btn" style="font-size:11px" onclick="sendTicketReply(${m.id})">💬 Send Reply</button>
+        ${status!=='In Progress'?`<button class="pill-btn" style="font-size:11px" onclick="setTicketStatus(${m.id},'In Progress')">🔄 In Progress</button>`:''}
+        ${status!=='Resolved'?`<button class="pill-btn" style="font-size:11px" onclick="setTicketStatus(${m.id},'Resolved')">✓ Resolve</button>`:`<button class="pill-btn" style="font-size:11px" onclick="setTicketStatus(${m.id},'Open')">↩ Reopen</button>`}
+        <button class="pill-btn" style="font-size:11px;color:var(--red)" onclick="deleteAdminMessage(${m.id})">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -3575,24 +3605,33 @@ async function exportFullDatabaseBackup(){
 }
 
 // ── UPDATE NOTIFICATION ──
-function pushUpdateNotice(){
+// ── UPDATE NOTIFICATION ──
+// This writes to the same Supabase `app_updates` table that checkForAppUpdates() reads from —
+// previously the publish form saved to localStorage only while the actual banner logic read from
+// Supabase, so a published update never reached anyone, including the admin's other devices.
+async function pushUpdateNotice(){
+  const title=document.getElementById('update-title-inp').value.trim();
   const ver=document.getElementById('update-version-inp').value.trim();
   const notes=document.getElementById('update-notes-inp').value.trim();
   if(!ver||!notes){showToast('Fill version and notes','#ffb300');return;}
-  saveUpdateNotice({version:ver,notes,publishedAt:Date.now()});
+  try{
+    // Retire older updates so the newest one is unambiguously "the" active update.
+    await sb.from('app_updates').update({active:false}).eq('active',true);
+    const{error}=await sb.from('app_updates').insert({
+      title:title||`Version ${ver}`,version:ver,description:notes,active:true
+    });
+    if(error)throw error;
+  }catch(e){
+    console.error('Failed to publish update notice:',e);
+    pushErrorLog({message:'Failed to publish update to app_updates: '+(e&&e.message?e.message:String(e)),source:'pushUpdateNotice'});
+    showToast('Failed to publish — check Error Logs','#e53935');
+    return;
+  }
+  document.getElementById('update-title-inp').value='';
   document.getElementById('update-version-inp').value='';
   document.getElementById('update-notes-inp').value='';
-  showToast('📢 Update notice published!');
-  checkUpdateNotice();
-}
-function checkUpdateNotice(){
-  const notice=getUpdateNotice();
-  const banner=document.getElementById('update-banner');
-  if(!notice){banner.style.display='none';return;}
-  const dismissed=getDismissedUpdate();
-  if(dismissed===notice.version){banner.style.display='none';return;}
-  banner.style.display='flex';
-  document.getElementById('update-version-text').textContent=`Version ${notice.version} — Tap to see what's new`;
+  showToast('📢 Update notice published to all users!');
+  checkForAppUpdates();
 }
 function showUpdateModal(){
 
@@ -3626,8 +3665,7 @@ function showUpdateModal(){
 
 }
 function dismissUpdate(){
-  const notice=getUpdateNotice();
-  if(notice)setDismissedUpdate(notice.version);
+  if(window.latestUpdate)localStorage.setItem('last_seen_update',String(window.latestUpdate.id));
   document.getElementById('update-modal').classList.remove('open');
   document.getElementById('update-banner').style.display='none';
   showToast('✅ Marked as read');
@@ -3762,6 +3800,39 @@ function handleProfileAvatar(e){
     showToast("Support ticket submitted successfully!","#00c853");
 
     loadSupportTickets();
+}
+// Renders the current user's own tickets — this function was being called after every submission
+// but never actually existed, so tickets silently vanished from the user's own view even though
+// they were reaching the database fine.
+async function loadSupportTickets(){
+  const el=document.getElementById('support-ticket-list');
+  if(!el)return;
+  const userId=await resolveSupabaseUserId();
+  if(!userId){el.innerHTML='<div style="font-size:12px;color:var(--muted)">Log in to see your tickets.</div>';return;}
+  el.innerHTML='<div style="font-size:12px;color:var(--muted)">Loading your tickets…</div>';
+  try{
+    const{data,error}=await sb.from('support_messages').select('*').eq('user_id',userId).order('created_at',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){el.innerHTML='<div style="font-size:12px;color:var(--muted)">No support tickets yet.</div>';return;}
+    const statusColor={Open:'#ffb300','In Progress':'#2196f3',Resolved:'#00d084'};
+    el.innerHTML=data.map(t=>{
+      const dt=t.created_at?new Date(t.created_at).toLocaleString('en-IN'):'';
+      const sc=statusColor[t.status]||'#7a7d99';
+      return `<div style="background:var(--surface2);border-radius:12px;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700">${(t.subject||'(no subject)').replace(/</g,'&lt;')}</span>
+          <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;white-space:nowrap">${t.status||'Open'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${t.category||''}${t.priority?' · '+t.priority+' priority':''} · ${dt}</div>
+        <div style="font-size:13px;line-height:1.6">${(t.message||'').replace(/</g,'&lt;')}</div>
+        ${t.admin_reply?`<div style="margin-top:8px;padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6"><b style="color:var(--accent)">Admin reply:</b> ${String(t.admin_reply).replace(/</g,'&lt;')}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){
+    console.error('Failed to load support tickets:',e);
+    el.innerHTML='<div style="font-size:12px;color:var(--red)">Could not load your tickets right now.</div>';
+    pushErrorLog({message:'Failed to load user support tickets: '+(e&&e.message?e.message:String(e)),source:'loadSupportTickets'});
+  }
 }
   async function checkForAppUpdates(){
 
