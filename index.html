@@ -101,7 +101,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 /* TABS */
 .tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--tabs-bg);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 14px;cursor:pointer;transition:color .2s;color:var(--muted);}
+.tab{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 14px;cursor:pointer;transition:color .2s;color:var(--muted);}
+.tab-badge{position:absolute;top:6px;right:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:#ff6584;box-shadow:0 0 0 2px var(--bg,#0f1117);}
 .tab.active{color:var(--accent);}
 .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .tab-label{font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
@@ -946,6 +947,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="tab" onclick="switchTab('manage',this)" role="tab" aria-selected="false" aria-label="Manage account">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span id="manage-reply-badge" class="tab-badge" style="display:none"></span>
       <span class="tab-label">Manage</span>
     </div>
   </nav>
@@ -2392,6 +2394,7 @@ function renderHome(){
   maybeShowNotifPrompt();
   checkForAppUpdates();
   checkAnnouncement();
+  checkUnreadReplies();
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
   const income=filtered.filter(e=>e.type==='income');
@@ -3804,6 +3807,21 @@ function handleProfileAvatar(e){
 // Renders the current user's own tickets — this function was being called after every submission
 // but never actually existed, so tickets silently vanished from the user's own view even though
 // they were reaching the database fine.
+function getSeenReplies(){try{return JSON.parse(localStorage.getItem('exp_seen_replies_'+CU)||'[]');}catch(e){return [];}}
+function saveSeenReplies(arr){localStorage.setItem('exp_seen_replies_'+CU,JSON.stringify(arr));}
+async function checkUnreadReplies(){
+  const badge=document.getElementById('manage-reply-badge');
+  if(!badge)return;
+  const userId=await resolveSupabaseUserId();
+  if(!userId){badge.style.display='none';return;}
+  try{
+    const{data,error}=await sb.from('support_messages').select('id,admin_reply').eq('user_id',userId).not('admin_reply','is',null);
+    if(error)throw error;
+    const seen=getSeenReplies();
+    const unread=(data||[]).filter(t=>!seen.includes(t.id));
+    badge.style.display=unread.length?'block':'none';
+  }catch(e){badge.style.display='none';}
+}
 async function loadSupportTickets(){
   const el=document.getElementById('support-ticket-list');
   if(!el)return;
@@ -3814,6 +3832,11 @@ async function loadSupportTickets(){
     const{data,error}=await sb.from('support_messages').select('*').eq('user_id',userId).order('created_at',{ascending:false});
     if(error)throw error;
     if(!data||!data.length){el.innerHTML='<div style="font-size:12px;color:var(--muted)">No support tickets yet.</div>';return;}
+    // Viewing this list marks any admin replies on it as seen — clears the Manage tab badge.
+    const seen=getSeenReplies();
+    const repliedIds=data.filter(t=>t.admin_reply).map(t=>t.id);
+    saveSeenReplies([...new Set([...seen,...repliedIds])]);
+    checkUnreadReplies();
     const statusColor={Open:'#ffb300','In Progress':'#2196f3',Resolved:'#00d084'};
     el.innerHTML=data.map(t=>{
       const dt=t.created_at?new Date(t.created_at).toLocaleString('en-IN'):'';
