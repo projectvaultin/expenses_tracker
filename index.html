@@ -1909,8 +1909,6 @@ if (existingEmail) {
   err.textContent = "An account already uses this email.";
   return;
 }
-  if(users[u]){err.textContent='Username already taken.';return;}
-  if(Object.values(users).some(x=>x.email&&x.email===email)){err.textContent='An account already uses this email.';return;}
   const hashedPassword = await hashPassword(p);
 
 // Save user in Supabase
