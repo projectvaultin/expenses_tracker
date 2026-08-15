@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Expenses Tracker">
-<meta name="theme-color" content="#0f1117">
+<meta name="theme-color" content="#0f1117f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -21,11 +21,6 @@ html{transition:background-color .25s ease;}
 html[data-textsize="large"] body{zoom:1.15;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;-webkit-font-smoothing:antialiased;transition:background-color .25s ease,color .25s ease;}
-button,input,select,textarea{font:inherit;}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[role='button']:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}}
-.tabs{padding-bottom:env(safe-area-inset-bottom);}
-.page{padding-bottom:calc(90px + env(safe-area-inset-bottom));}
 h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM Sans',sans-serif;}
 /* THEME TOGGLE */
 .theme-toggle{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s;flex-shrink:0;}
@@ -289,7 +284,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body data-projectvault-version="3.2">
+<body>
 <!-- SPLASH INTRO SCREEN -->
 <div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#181c2b 0%,#0f1117 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;overflow:hidden;">
   <div id="splash-orb" style="position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.22) 0%,rgba(108,99,255,0) 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:splashOrbPulse 3.2s ease-in-out infinite;pointer-events:none;"></div>
@@ -313,48 +308,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 @keyframes splashOrbPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
 @keyframes splashRevealAnim{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .splash-reveal{animation:splashRevealAnim .6s cubic-bezier(.4,0,.2,1);}
-
-/* ============================================================
-   ProjectVault Expenses Tracker v3.2 — UI/UX hardening
-   Safe additive layer; existing application CSS remains intact.
-   ============================================================ */
-:focus-visible {
-  outline: 2px solid var(--accent, #6c63ff);
-  outline-offset: 2px;
-}
-button, input, select, textarea {
-  -webkit-tap-highlight-color: transparent;
-}
-button:disabled {
-  cursor: not-allowed;
-  opacity: .65;
-}
-.pv-loading {
-  pointer-events: none !important;
-  opacity: .72 !important;
-}
-.pv-error {
-  animation: pvShake .28s ease-in-out;
-}
-@keyframes pvShake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: .001ms !important;
-  }
-}
-@media (max-width: 480px) {
-  input, select, textarea, button {
-    font-size: 16px;
-  }
-}
-
 </style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
@@ -1235,7 +1188,7 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff9800','#4caf50','#9c27b0','#f44336','#2196f3','#ff5722'];
 const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Salary:'💰',Other:'📦'};
 const DEFAULT_CATS=['Salary','Rent','Travel','Food','Medical','Debt','Savings','Other'];
-const APP_VERSION='3.1';
+const APP_VERSION='3.0';
 
 // ── ERROR LOGS (Admin Panel) — captures runtime errors on this device so an admin can review
 // what's actually going wrong for users, instead of relying on people accurately describing bugs.
@@ -1671,6 +1624,8 @@ function applyCrop(){
   ctx.drawImage(img,cropOffX,cropOffY,img.naturalWidth*scale,img.naturalHeight*scale);
  pendingAv = canvas.toDataURL('image/jpeg', .85);
 
+console.log("=== APPLY CROP ===");
+console.log("pendingAv length:", pendingAv.length);
   document.getElementById('av-box').innerHTML=`<img src="${pendingAv}"/>`;
   closeCropModal();
   if(CU){
@@ -1819,6 +1774,7 @@ await syncUserSettings();
 await syncReminders();
 
 startApp(users[u]);
+startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
     errEl.textContent='Something went wrong: '+(e.message||e);
@@ -1906,7 +1862,7 @@ async function ensureAdminAccount(){
     }
 
 }
-  const ADMIN_USERNAME='admin'; function isAdmin(){ return CU === ADMIN_USERNAME; }
+  const ADMIN_USERNAME='admin'; const ADMIN_PASSWORD=btoa('admin@2025'); function isAdmin(){ return CU === ADMIN_USERNAME; }
 
 async function doSignup(){
   const name=document.getElementById('sn').value.trim();
@@ -3743,10 +3699,8 @@ function exportCSV(){
   let csv='Month,Category,Amount,Type,Date,PayMode,Year\n';
   getData().forEach(e=>{csv+=`${e.month},${e.category},${e.amount},${e.type||''},${e.date||''},${e.payMode||''},${e.year||''}\n`;});
   const a=document.createElement('a');
-  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.href=url;a.download='expenses_'+CU+'.csv';a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  showToast('CSV Downloaded!');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='expenses_'+CU+'.csv';a.click();showToast('CSV Downloaded!');
 }
 function confirmClear(){
   if(confirm('Delete ALL expenses? Cannot be undone.')){saveData([]);renderHome();showToast('Cleared','#ff6584');}
@@ -3754,12 +3708,10 @@ function confirmClear(){
 function exportAccount(){
   if(!CU){showToast('Not logged in','#ffb300');return;}
   const users=getUsers();
-  const payload={version:2,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts(),reminders:getReminders()};
+  const payload={version:1,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts()};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;
-  a.download='expenses_backup_'+CU+'_v2.json';a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  showToast('✅ Backup downloaded!');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='expenses_backup_'+CU+'.json';a.click();showToast('✅ Backup downloaded!');
 }
 function importAccount(e){
   const f=e.target.files[0];if(!f)return;
@@ -3772,8 +3724,7 @@ function importAccount(e){
       localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data));
       localStorage.setItem('exp_'+p.username+'_cats',JSON.stringify(p.cats||[]));
       localStorage.setItem('exp_'+p.username+'_debts',JSON.stringify(p.debts||[]));
-      localStorage.setItem('exp_'+p.username+'_reminders',JSON.stringify(p.reminders||[]));
-      showToast('✅ Backup imported locally. Log in again to refresh cloud data.');
+      showToast('✅ Account imported! Login with: '+p.username);
     }catch(err){showToast('Error reading file','#ff6584');}
   };
   r.readAsText(f);e.target.value='';
@@ -3966,13 +3917,23 @@ async function saveProfile(){
   if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
   if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
-
+  console.log("pendingAv =", pendingAv);
+  console.log("pendingAv =", pendingAv);
+console.log("users[CU].avatar =", users[CU].avatar);
+console.log("users[CU].avatar =", users[CU].avatar);
   // Sync profile to Supabase
 // Sync profile to Supabase
 try{
   const userId = await resolveSupabaseUserId();
 
+  console.log("Resolved User ID:", userId);
+  console.log("Avatar Value:", users[CU].avatar);
+  console.log("Avatar Length:", users[CU].avatar ? users[CU].avatar.length : 0);
+
   if(userId){
+      console.log("pendingCover =", pendingCover);
+console.log("coverPhoto =", users[CU].coverPhoto);
+console.log("coverPhoto length =", users[CU].coverPhoto ? users[CU].coverPhoto.length : 0);
     const { data, error } = await sb
       .from('users')
     .update({
@@ -4898,17 +4859,6 @@ function setupPasswordToggles(){
   });
 }
 setupPasswordToggles();
-// Keyboard-friendly authentication: Enter submits the visible auth form.
-['lu','lp','sn','su','se','sm','sp','lock-pw'].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el)el.addEventListener('keydown',e=>{
-    if(e.key!=='Enter')return;
-    e.preventDefault();
-    if(id==='lock-pw')doUnlock();
-    else if(['sn','su','se','sm','sp'].includes(id))doSignup();
-    else doLogin();
-  });
-});
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
@@ -5225,74 +5175,6 @@ function subscribeDebtsRealtime(userId){
     })
     .subscribe();
 }
-</script>
-<script>
-
-/* ============================================================
-   ProjectVault v3.2 — defensive browser UX helpers
-   These helpers are intentionally non-invasive.
-   ============================================================ */
-(function () {
-  "use strict";
-
-  // Prevent accidental double-clicks on submit/action buttons.
-  document.addEventListener("click", function (event) {
-    const button = event.target.closest("button[type='submit'], button[data-submit], .submit-btn");
-    if (!button || button.disabled || button.dataset.pvBusy === "1") return;
-
-    // Do not lock buttons that are explicitly marked as navigation/toggles.
-    if (button.dataset.pvNoLock === "1") return;
-
-    button.dataset.pvBusy = "1";
-    button.classList.add("pv-loading");
-
-    // Existing handlers should have time to complete. We deliberately
-    // release the guard rather than trying to replace application logic.
-    window.setTimeout(function () {
-      button.dataset.pvBusy = "0";
-      button.classList.remove("pv-loading");
-    }, 2500);
-  }, true);
-
-  // Make Enter work naturally for single-field login/signup forms without
-  // guessing application function names.
-  document.addEventListener("keydown", function (event) {
-    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
-
-    const el = document.activeElement;
-    if (!el || !["INPUT", "SELECT"].includes(el.tagName)) return;
-
-    const form = el.closest("form");
-    if (!form) return;
-
-    const submit = form.querySelector("button[type='submit'], input[type='submit']");
-    if (submit && !submit.disabled) {
-      event.preventDefault();
-      submit.click();
-    }
-  });
-
-  // Clear browser focus from hidden/inactive dialogs when they are hidden.
-  const observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      if (mutation.type !== "attributes" || mutation.attributeName !== "style") return;
-      const node = mutation.target;
-      if (!(node instanceof HTMLElement)) return;
-      const hidden = getComputedStyle(node).display === "none" ||
-                     getComputedStyle(node).visibility === "hidden";
-      if (hidden && node.contains(document.activeElement)) {
-        document.activeElement.blur();
-      }
-    });
-  });
-
-  observer.observe(document.documentElement, {
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["style"]
-  });
-})();
-
 </script>
 </body>
 </html>
