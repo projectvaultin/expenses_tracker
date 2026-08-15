@@ -64,123 +64,32 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   .hamburger-btn span{width:13px;}
 }
 /* AUTH */
-/* AUTH */
-#auth-screen{
-  min-height:100vh;
-  min-height:100dvh;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:24px 20px 32px;
-  position:relative;
-  overflow:hidden;
-}
-
-#auth-screen::before{
-  content:'';
-  position:absolute;
-  width:420px;
-  height:420px;
-  border-radius:50%;
-  background:radial-gradient(
-    circle,
-    rgba(108,99,255,.16) 0%,
-    rgba(108,99,255,.06) 35%,
-    transparent 72%
-  );
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-58%);
-  pointer-events:none;
-  z-index:0;
-}
-
-#auth-screen::after{
-  content:'';
-  position:absolute;
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  background:radial-gradient(
-    circle,
-    rgba(108,99,255,.08) 0%,
-    transparent 70%
-  );
-  top:8%;
-  right:-120px;
-  pointer-events:none;
-  z-index:0;
-}
-
-.auth-logo-wrap{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin-bottom:8px;
-  position:relative;
-  z-index:1;
-}
-
-.auth-logo-icon{
-  width:64px;
-  height:64px;
-  border-radius:18px;
-  margin-bottom:12px;
-  box-shadow:
-    0 8px 28px rgba(108,99,255,.35),
-    0 0 0 1px rgba(255,255,255,.06);
-  object-fit:cover;
-}
-
-.auth-logo{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(22px,7vw,30px);
-  font-weight:800;
-  margin-bottom:0;
-  letter-spacing:-.6px;
-  white-space:nowrap;
-}
-
-.auth-logo span{
-  color:var(--accent);
-}
-
-.auth-sub{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:26px;
-  text-align:center;
-  position:relative;
-  z-index:1;
-}
-
-.auth-card{
-  width:100%;
-  max-width:380px;
-  background:color-mix(in srgb,var(--surface) 96%,transparent);
-  border:1px solid var(--border);
-  border-radius:22px;
-  padding:24px 22px;
-  box-shadow:
-    0 18px 50px rgba(0,0,0,.18),
-    0 1px 2px rgba(0,0,0,.08);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  position:relative;
-  z-index:1;
-}
-
-html[data-theme="light"] .auth-card{
-  box-shadow:
-    0 18px 45px rgba(20,21,29,.08),
-    0 2px 6px rgba(20,21,29,.04);
-}
-
-html[data-theme="contrast"] .auth-card{
-  box-shadow:none;
-  backdrop-filter:none;
-auth-tabs{displayound:var(--accent);color:#fff;}
+#auth-screen{min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;position:relative;}
+.auth-logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:6px;}
+.auth-logo-icon{width:56px;height:56px;border-radius:16px;margin-bottom:10px;box-shadow:0 6px 20px rgba(108,99,255,.35);}
+.auth-logo{font-family:'Syne',sans-serif;font-size:clamp(21px,7vw,30px);font-weight:800;margin-bottom:0;letter-spacing:-.5px;white-space:nowrap;}
+.auth-logo span{color:var(--accent);}
+.auth-sub{color:var(--muted);font-size:14px;margin-bottom:32px;}
+.auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:26px 22px;}
+.auth-tabs{display:flex;gap:0;margin-bottom:22px;background:var(--surface2);border-radius:12px;padding:4px;}
+.auth-tab{flex:1;text-align:center;padding:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);border-radius:10px;cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:var(--accent);color:#fff;}
+.fl{margin-bottom:13px;}
+.fl-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.ai{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+.ai:focus{border-color:var(--accent);}
+.ai::placeholder{color:var(--placeholder);}
+.auth-btn{width:100%;padding:14px;margin-top:6px;background:var(--accent);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .2s,transform .15s;}
+.auth-btn:active{opacity:.85;transform:scale(.98);}
+.auth-err{font-size:12px;color:var(--red);margin-top:9px;text-align:center;min-height:16px;}
+.av-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px;}
+.av-box{width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;overflow:hidden;transition:border-color .2s;}
+.av-box:hover{border-color:var(--accent);}
+.av-box img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.av-hint{font-size:11px;color:var(--muted);margin-top:5px;}
+/* Biometric btn */
+.bio-btn{width:100%;padding:13px;margin-top:8px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+.bio-btn:active{background:var(--accent);color:#fff;}
 /* APP */
 #app-screen{display:none;}
 .topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -202,48 +111,7 @@ auth-tabs{displayound:var(--accent);color:#fff;}
 .tab.active{color:var(--accent);}
 .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .tab-label{font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
-.auth-tabs{
-  display:flex;
-  gap:4px;
-  margin-bottom:22px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:13px;
-  padding:4px;
-}
-
-.auth-tab{
-  flex:1;
-  text-align:center;
-  padding:10px 8px;
-  font-family:'DM Sans',sans-serif;
-  font-size:13px;
-  font-weight:700;
-  color:var(--muted);
-  border-radius:10px;
-  cursor:pointer;
-  transition:
-    background-color .2s ease,
-    color .2s ease,
-    transform .15s ease,
-    box-shadow .2s ease;
-  user-select:none;
-}
-
-.auth-tab:hover{
-  color:var(--text);
-}
-
-.auth-tab:active{
-  transform:scale(.98);
-}
-
-.auth-tab.active{
-  background:var(--accent);
-  color:#fff;
-  box-shadow:0 4px 12px rgba(108,99,255,.22);
-}
-  /* PAGES */
+/* PAGES */
 .page{display:none;padding:14px 14px 90px;}
 .page.active{display:block;}
 /* CARDS */
@@ -421,7 +289,7 @@ auth-tabs{displayound:var(--accent);color:#fff;}
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body data-projectvault-version="3.2">
 <!-- SPLASH INTRO SCREEN -->
 <div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#181c2b 0%,#0f1117 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;overflow:hidden;">
   <div id="splash-orb" style="position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.22) 0%,rgba(108,99,255,0) 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:splashOrbPulse 3.2s ease-in-out infinite;pointer-events:none;"></div>
@@ -445,6 +313,48 @@ auth-tabs{displayound:var(--accent);color:#fff;}
 @keyframes splashOrbPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
 @keyframes splashRevealAnim{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .splash-reveal{animation:splashRevealAnim .6s cubic-bezier(.4,0,.2,1);}
+
+/* ============================================================
+   ProjectVault Expenses Tracker v3.2 — UI/UX hardening
+   Safe additive layer; existing application CSS remains intact.
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent, #6c63ff);
+  outline-offset: 2px;
+}
+button, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
+.pv-loading {
+  pointer-events: none !important;
+  opacity: .72 !important;
+}
+.pv-error {
+  animation: pvShake .28s ease-in-out;
+}
+@keyframes pvShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
+}
+@media (max-width: 480px) {
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+}
+
 </style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
@@ -5315,6 +5225,74 @@ function subscribeDebtsRealtime(userId){
     })
     .subscribe();
 }
+</script>
+<script>
+
+/* ============================================================
+   ProjectVault v3.2 — defensive browser UX helpers
+   These helpers are intentionally non-invasive.
+   ============================================================ */
+(function () {
+  "use strict";
+
+  // Prevent accidental double-clicks on submit/action buttons.
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest("button[type='submit'], button[data-submit], .submit-btn");
+    if (!button || button.disabled || button.dataset.pvBusy === "1") return;
+
+    // Do not lock buttons that are explicitly marked as navigation/toggles.
+    if (button.dataset.pvNoLock === "1") return;
+
+    button.dataset.pvBusy = "1";
+    button.classList.add("pv-loading");
+
+    // Existing handlers should have time to complete. We deliberately
+    // release the guard rather than trying to replace application logic.
+    window.setTimeout(function () {
+      button.dataset.pvBusy = "0";
+      button.classList.remove("pv-loading");
+    }, 2500);
+  }, true);
+
+  // Make Enter work naturally for single-field login/signup forms without
+  // guessing application function names.
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+
+    const el = document.activeElement;
+    if (!el || !["INPUT", "SELECT"].includes(el.tagName)) return;
+
+    const form = el.closest("form");
+    if (!form) return;
+
+    const submit = form.querySelector("button[type='submit'], input[type='submit']");
+    if (submit && !submit.disabled) {
+      event.preventDefault();
+      submit.click();
+    }
+  });
+
+  // Clear browser focus from hidden/inactive dialogs when they are hidden.
+  const observer = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+      if (mutation.type !== "attributes" || mutation.attributeName !== "style") return;
+      const node = mutation.target;
+      if (!(node instanceof HTMLElement)) return;
+      const hidden = getComputedStyle(node).display === "none" ||
+                     getComputedStyle(node).visibility === "hidden";
+      if (hidden && node.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["style"]
+  });
+})();
+
 </script>
 </body>
 </html>
