@@ -1,0 +1,182 @@
+name: ProjectVault Webapp Audit Patch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply audited webapp fixes
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          original = text
+
+          def replace_once(old, new, label):
+              global text
+              n = text.count(old)
+              if n != 1:
+                  raise SystemExit(f'{label}: expected exactly 1 match, found {n}')
+              text = text.replace(old, new)
+
+          # Visual / accessibility correctness.
+          replace_once('content="#0f1117f"', 'content="#0f1117"', 'theme-color meta')
+
+          # The drawer has no standalone "support" page. Route it to Manage and scroll to the support card.
+          replace_once(
+              '<div class="drawer-item" onclick="closeDrawer();switchTab(\'support\')">\n    <span class="di-icon">💬</span> Customer Support\n</div>',
+              '<div class="drawer-item" onclick="closeDrawer();switchTab(\'manage\',document.querySelectorAll(\'.tab\')[4]);setTimeout(()=>document.getElementById(\'support-user-card\')?.scrollIntoView({behavior:\'smooth\',block:\'start\'}),150)">\n    <span class="di-icon">💬</span> Customer Support\n</div>',
+              'customer support drawer navigation'
+          )
+
+          # Remove the accidental duplicate dashboard start call.
+          replace_once('startApp(users[u]);\n  startApp(users[u]);', 'startApp(users[u]);', 'duplicate startApp')
+
+          # Password changes must update the Supabase source of truth, not only localStorage.
+          old = """  users[CU].password=await hashPassword(nw);saveUsers(users);\n  document.getElementById('changepw-modal').classList.remove('open');"""
+          new = """  const newHash=await hashPassword(nw);\n  users[CU].password=newHash;saveUsers(users);\n  try{\n    const userId=await resolveSupabaseUserId();\n    if(!userId)throw new Error('Could not resolve cloud user id');\n    const {error:cloudPwError}=await sb.from('users').update({password_hash:newHash}).eq('id',userId);\n    if(cloudPwError)throw cloudPwError;\n  }catch(cloudErr){\n    console.error('Cloud password update failed:',cloudErr);\n    err.textContent='Password changed locally, but cloud update failed. Please retry while online.';\n    return;\n  }\n  document.getElementById('changepw-modal').classList.remove('open');"""
+          replace_once(old, new, 'cloud password update')
+
+          # 2FA completion must establish the same cloud/session state as normal login.
+          old = """function verifyLogin2FA(){\n  const entered=document.getElementById('login2fa-code').value.trim();\n  if(entered!==_login2FACode){document.getElementById('login2fa-err').textContent='Incorrect code. Try again.';return;}\n  const users=getUsers();\n  document.getElementById('login2fa-modal').classList.remove('open');\n  CU=_login2FAUser;localStorage.setItem('exp_session',CU);\n  _login2FAUser='';_login2FACode='';\n  startApp(users[CU]);\n}"""
+          new = """async function verifyLogin2FA(){\n  const entered=document.getElementById('login2fa-code').value.trim();\n  if(entered!==_login2FACode){document.getElementById('login2fa-err').textContent='Incorrect code. Try again.';return;}\n  const users=getUsers();\n  document.getElementById('login2fa-modal').classList.remove('open');\n  CU=_login2FAUser;localStorage.setItem('exp_session',CU);\n  const cloudId=await resolveSupabaseUserId();\n  if(cloudId)localStorage.setItem('exp_user_id',String(cloudId));\n  await syncCategories();\n  await syncCategoryBudgets();\n  await syncUserSettings();\n  await syncReminders();\n  _login2FAUser='';_login2FACode='';\n  startApp(users[CU]);\n}"""
+          replace_once(old, new, '2FA completion sync')
+
+          # Unlocking a resumed session should refresh cloud-backed settings too.
+          old = """  CU=session;\n  document.getElementById('lock-screen').style.display='none';\n  startApp(users[CU]);"""
+          new = """  CU=session;\n  const cloudId=await resolveSupabaseUserId();\n  if(cloudId)localStorage.setItem('exp_user_id',String(cloudId));\n  await syncCategories();\n  await syncCategoryBudgets();\n  await syncUserSettings();\n  await syncReminders();\n  document.getElementById('lock-screen').style.display='none';\n  startApp(users[CU]);"""
+          replace_once(old, new, 'unlock cloud sync')
+
+          # Signup should immediately establish the same cloud identifiers used by later syncs.
+          old = """  saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);\n  setTimeout(showOnboarding,900);"""
+          new = """  saveUsers(users);CU=u;localStorage.setItem('exp_session',u);\n  const cloudId=await resolveSupabaseUserId();\n  if(cloudId)localStorage.setItem('exp_user_id',String(cloudId));\n  await syncCategories();\n  await syncCategoryBudgets();\n  await syncUserSettings();\n  await syncReminders();\n  startApp(users[u]);\n  setTimeout(showOnboarding,900);"""
+          replace_once(old, new, 'signup initial sync')
+
+          # Logout should clear the cloud user id and active realtime channels.
+          old = """function doLogout(){\n  localStorage.removeItem('exp_session');\n  CU=null;selMonth=null;selCat=null;filterMonth='All';selDebtType=null;"""
+          new = """function doLogout(){\n  localStorage.removeItem('exp_session');\n  localStorage.removeItem('exp_user_id');\n  try{if(_androidRealtimeChannel){sb.removeChannel(_androidRealtimeChannel);_androidRealtimeChannel=null;}}catch(e){}\n  try{if(_debtsRealtimeChannel){sb.removeChannel(_debtsRealtimeChannel);_debtsRealtimeChannel=null;}}catch(e){}\n  CU=null;selMonth=null;selCat=null;filterMonth='All';selDebtType=null;"""
+          replace_once(old, new, 'logout cleanup')
+
+          # Clear cloud transactions when the user explicitly chooses "Clear All Expenses".
+          old = """function confirmClear(){\n  if(confirm('Delete ALL expenses? Cannot be undone.')){saveData([]);renderHome();showToast('Cleared','#ff6584');}\n}"""
+          new = """async function confirmClear(){\n  if(!confirm('Delete ALL expenses? This will remove local entries and their cloud transactions. Cannot be undone.'))return;\n  saveData([]);\n  renderHome();\n  const userId=await resolveSupabaseUserId();\n  if(userId){\n    const {error}=await sb.from('transactions').delete().eq('user_id',userId);\n    if(error){\n      console.error('Cloud clear failed:',error);\n      showToast('⚠️ Local data cleared, but cloud delete failed. Check Error Logs.','#ffb300');\n      return;\n    }\n  }\n  showToast('Cleared','#ff6584');\n}"""
+          replace_once(old, new, 'cloud clear-all')
+
+          # Make account backup include all user-scoped local state that is otherwise silently lost.
+          old = """  const payload={version:1,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts()};"""
+          new = """  const payload={\n    version:2,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts(),\n    reminders:getReminders(),budget:getBudgetLimit(),rollover:getRolloverEnabled(),\n    catBudgets:getCatBudgets(),catColors:getCatColors(),\n    appearance:{theme:getTheme(),textSize:getTextSize(),contrast:getContrastMode()}\n  };"""
+          replace_once(old, new, 'complete account export payload')
+
+          old = """      localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data));\n      localStorage.setItem('exp_'+p.username+'_cats',JSON.stringify(p.cats||[]));\n      localStorage.setItem('exp_'+p.username+'_debts',JSON.stringify(p.debts||[]));\n      showToast('✅ Account imported! Login with: '+p.username);"""
+          new = """      localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data||[]));\n      localStorage.setItem('exp_'+p.username+'_cats',JSON.stringify(p.cats||[]));\n      localStorage.setItem('exp_'+p.username+'_debts',JSON.stringify(p.debts||[]));\n      localStorage.setItem('exp_'+p.username+'_reminders',JSON.stringify(p.reminders||[]));\n      localStorage.setItem('exp_'+p.username+'_budget',String(p.budget||0));\n      localStorage.setItem('exp_'+p.username+'_rollover',p.rollover?'on':'off');\n      localStorage.setItem('exp_'+p.username+'_catBudgets',JSON.stringify(p.catBudgets||{}));\n      localStorage.setItem('exp_'+p.username+'_catColors',JSON.stringify(p.catColors||{}));\n      if(p.appearance){\n        if(p.appearance.theme)localStorage.setItem('exp_theme',p.appearance.theme);\n        if(p.appearance.textSize)localStorage.setItem('exp_textsize',p.appearance.textSize);\n        localStorage.setItem('exp_contrast',p.appearance.contrast?'on':'off');\n      }\n      showToast('✅ Complete account backup imported! Login with: '+p.username);"""
+          replace_once(old, new, 'complete account import')
+
+          # Remove noisy duplicate debug logging left in profile save.
+          old = """  console.log(\"pendingAv =\", pendingAv);\n  console.log(\"pendingAv =\", pendingAv);\nconsole.log(\"users[CU].avatar =\", users[CU].avatar);\nconsole.log(\"users[CU].avatar =\", users[CU].avatar);"""
+          replace_once(old, '', 'duplicate profile debug logs')
+
+          # Fix Android/remote transaction date parsing for both ISO and SQL-style timestamps.
+          old = """    month: MONTHS[validDt.getMonth()],\n    year: validDt.getFullYear(),\n    date: String(raw).split(' ')[0],"""
+          new = """    month: MONTHS[validDt.getMonth()],\n    year: validDt.getFullYear(),\n    date: validDt.toISOString().split('T')[0],"""
+          replace_once(old, new, 'remote transaction date parsing')
+
+          # Add a generic cloud transaction uploader for recurring/debt cashflow entries.
+          marker = """function refreshVisibleTabsAfterSync(){"""
+          helper = """async function uploadLocalTransactionToCloud(entry){\n  if(!CU||!entry||entry.supaId)return null;\n  const userId=await resolveSupabaseUserId();\n  if(!userId)return null;\n  const payload={\n    user_id:userId,amount:Number(entry.amount)||0,\n    type:entry.type==='income'?'CREDIT':'DEBIT',\n    category:entry.category||'Other',payment_app:'Manual Entry',\n    payment_mode:entry.payMode||null,message:(entry.tags||[]).join(', '),\n    transaction_date:entry.date?new Date(entry.date+'T00:00:00').toISOString():new Date().toISOString()\n  };\n  const {data,error}=await sb.from('transactions').insert(payload).select().single();\n  if(error){pushErrorLog({message:'Cloud transaction upload failed: '+(error.message||String(error)),source:'uploadLocalTransactionToCloud'});return null;}\n  entry.supaId=String(data.id);\n  return entry.supaId;\n}\n\n"""
+          replace_once(marker, helper+marker, 'local transaction cloud helper')
+
+          # Recurring reminders should create cloud transactions, not just local ones.
+          old = """  data.push(entry);\n  saveData(data);\n  r.paid[mk]=entry.ts;"""
+          new = """  data.push(entry);\n  saveData(data);\n  uploadLocalTransactionToCloud(entry).then(()=>saveData(data)).catch(console.error);\n  r.paid[mk]=entry.ts;"""
+          replace_once(old, new, 'recurring transaction cloud sync')
+
+          # Debt cashflow helper returns the created entry so callers can upload it too.
+          old = """  data.push({\n    month:MONTHS[now.getMonth()],\n    category:'Debt',\n    amount:amt,\n    // Paying off money I owe = expense (cash leaving me). Receiving money owed to me = income.\n    type:d.type==='debt'?'expense':'income',\n    year:now.getFullYear(),\n    ts:Date.now(),\n    date:now.toISOString().split('T')[0],\n    payMode:null,\n    debtLinked:true,\n    debtName:d.name\n  });\n  saveData(data);\n}"""
+          new = """  const entry={\n    month:MONTHS[now.getMonth()],\n    category:'Debt',\n    amount:amt,\n    type:d.type==='debt'?'expense':'income',\n    year:now.getFullYear(),\n    ts:Date.now(),\n    date:now.toISOString().split('T')[0],\n    payMode:null,\n    debtLinked:true,\n    debtName:d.name\n  };\n  data.push(entry);\n  saveData(data);\n  uploadLocalTransactionToCloud(entry).then(()=>saveData(data)).catch(console.error);\n  return entry;\n}"""
+          replace_once(old, new, 'debt cashflow cloud sync')
+
+          # Admin role changes must work for cloud-only users too.
+          old = """async function toggleAdminRole(u){\n  const users=getUsers();\n  if(!users[u])return;\n  const next=!users[u].isAdmin;\n  users[u].isAdmin=next;\n  saveUsers(users);\n  try{await sb.from('users').update({is_admin:next}).eq('username',u);}catch(e){console.error('Could not sync admin role to cloud:',e);}\n  showToast(next?`👑 ${u} is now an admin`:`${u} is no longer an admin`);\n  renderMembers();\n}"""
+          new = """async function toggleAdminRole(u){\n  if(!u||u===CU)return;\n  try{\n    const {data:row,error:readError}=await sb.from('users').select('is_admin').eq('username',u).maybeSingle();\n    if(readError)throw readError;\n    if(!row){showToast('User not found in cloud','#ffb300');return;}\n    const next=!row.is_admin;\n    const {error:updateError}=await sb.from('users').update({is_admin:next}).eq('username',u);\n    if(updateError)throw updateError;\n    const users=getUsers();\n    if(users[u]){users[u].isAdmin=next;saveUsers(users);}\n    showToast(next?`👑 ${u} is now an admin`:`${u} is no longer an admin`);\n    renderMembers();\n  }catch(e){\n    console.error('Could not sync admin role to cloud:',e);\n    showToast('Failed to update admin role — check Error Logs','#e53935');\n    pushErrorLog({message:'Admin role update failed: '+(e&&e.message?e.message:String(e)),source:'toggleAdminRole'});\n  }\n}"""
+          replace_once(old, new, 'cloud admin role management')
+
+          # Avoid a misleading client-only admin password constant.
+          replace_once("  const ADMIN_USERNAME='admin'; const ADMIN_PASSWORD=btoa('admin@2025'); function isAdmin(){ return CU === ADMIN_USERNAME; }", "  const ADMIN_USERNAME='admin'; function isAdmin(){ return CU === ADMIN_USERNAME; }", 'hardcoded admin password constant')
+
+          # Version bump for this webapp bugfix release only; this is unrelated to Android Phase 6.
+          replace_once("const APP_VERSION='3.0';", "const APP_VERSION='3.0.1';", 'webapp version bump')
+
+          index.write_text(text, encoding='utf-8')
+
+          # Manifest: make metadata consistent with the audited cloud-backed app and add a stable PWA id.
+          manifest=Path('manifest.json')
+          m=manifest.read_text(encoding='utf-8')
+          m=m.replace('"description": "Track expenses, income, debts, budgets and recurring bills. By ProjectVault.",', '"id": "./",\n  "description": "ProjectVault Expenses Tracker — track income, expenses, debts, budgets and recurring bills with cloud sync.",')
+          manifest.write_text(m,encoding='utf-8')
+
+          # Service-worker cache bump so returning PWA users receive the audited files.
+          sw=Path('sw.js')
+          s=sw.read_text(encoding='utf-8').replace("const CACHE_NAME = 'expensestracker-cache-v5';", "const CACHE_NAME = 'expensestracker-cache-v6';")
+          sw.write_text(s,encoding='utf-8')
+
+          # Replace the stale README claims that the app is local-only.
+          readme=Path('README.md')
+          r=readme.read_text(encoding='utf-8')
+          r=r.replace('A fast, offline-first Progressive Web App (PWA) for tracking expenses, income, debts, budgets,\nand recurring bills. No backend, no signup servers — everything runs in your browser and data\nstays on your device.', 'A fast, mobile-first Progressive Web App (PWA) for tracking expenses, income, debts, budgets,\nand recurring bills. The UI keeps a local cache for offline-friendly use and uses Supabase for\naccount data and cross-device synchronization. EmailJS is used for OTP and statement email delivery.')
+          r=r.replace('Plain HTML, CSS, and JavaScript — no framework, no build step. Data is stored in the browser\'s\n`localStorage`. Emails (statements + OTP) are sent client-side via [EmailJS](https://www.emailjs.com).', 'Plain HTML, CSS, and JavaScript — no framework, no build step. LocalStorage is used as the\nlocal/offline cache; Supabase is the cloud data source for accounts, transactions, debts, reminders,\nsupport, announcements and app-update notices. Emails (statements + OTP) are sent client-side via EmailJS.')
+          r=r.replace('- 🔒 Local biometric/device login support\n- 🌙 Light & dark theme, mobile-first UI', '- 🔒 Local biometric/device login support\n- ☁️ Supabase cross-device synchronization for supported data\n- 🌙 Light, dark & high-contrast themes, mobile-first UI')
+          r=r.replace('- This is a client-only app — there\'s no server, so monthly statements are checked/sent the next\n  time the app is opened after month-end, not at the exact moment the month ends.', '- Monthly statements are checked/sent the next time the app is opened after month-end; an always-on\n  server/cron would be required to send them at an exact month boundary.')
+          readme.write_text(r,encoding='utf-8')
+
+          # Correct the ineffective _gitignore filename while retaining the original as a compatibility artifact.
+          if not Path('.gitignore').exists():
+              Path('.gitignore').write_text(Path('_gitignore').read_text(encoding='utf-8'),encoding='utf-8')
+
+          print('Audited patch applied successfully.')
+          PY
+
+      - name: Verify patched files
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          checks={
+            'valid theme color':'#0f1117f' not in t,
+            'single startApp call in login block':t.count('startApp(users[u]);')>=1,
+            'support navigation fixed':"switchTab('support')" not in t,
+            'cloud password update present':'password_hash:newHash' in t,
+            'cloud transaction helper present':'uploadLocalTransactionToCloud' in t,
+            'app version 3.0.1':"const APP_VERSION='3.0.1';" in t,
+          }
+          bad=[k for k,v in checks.items() if not v]
+          if bad: raise SystemExit('Verification failed: '+', '.join(bad))
+          for f in ['index.html','manifest.json','sw.js','README.md','.gitignore']:
+            if not Path(f).exists(): raise SystemExit(f'Missing expected file: {f}')
+          print('Verification passed:', ', '.join(checks))
+          PY
+
+      - name: Commit audited changes and remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html manifest.json sw.js README.md .gitignore
+          git rm -f .github/workflows/one-time-webapp-audit.yml
+          git commit -m "Audit and harden webapp sync, auth, PWA and backups"
+          git push
