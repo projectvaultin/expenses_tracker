@@ -5,7 +5,7 @@
 // Navigation requests are always network-first so GitHub Pages updates
 // become visible without users remaining permanently stuck on old HTML.
 
-const CACHE_NAME = 'expensestracker-cache-v6';
+const CACHE_NAME = 'expensestracker-cache-v8';
 
 const FILES_TO_CACHE = [
   './index.html',

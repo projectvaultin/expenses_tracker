@@ -1,0 +1,416 @@
+================================================================================
+PROJECTVAULT EXPENSES TRACKER — FINAL 5-PACKAGE INTEGRATION REPORT
+================================================================================
+Integration engineer: Claude (final integration pass)
+Source packages merged:
+  01 — Auth / OTP / 2FA
+  02 — Supabase RLS Security
+  03 — Android / Realtime / Account Switch
+  04 — UI/UX / Data Integrity / Code Quality
+  05 — PWA / Documentation / QA
+
+Method: all five index.html files were diffed pairwise and function-by-function
+(using a custom brace-and-regex-literal-aware JS extractor, not naive line
+diffing, since the file is a single dense-minified-style script). Package 04
+was used as the assembly base (it is baseline + its own additive changes
+everywhere except the specific functions Packages 01 and 03 also touched).
+Every function independently modified by more than one package was extracted
+from all versions, compared in full, and hand-merged. Non-JS assets (PWA
+files, docs, SQL) were compared by diff/hash and taken from whichever package
+had them unmodified from baseline, or merged where more than one touched them.
+
+A live fetch of https://github.com/projectvaultin/expenses_tracker was used to
+sanity-check baseline assumptions (see "Baseline discrepancy" under Conflicts).
+
+================================================================================
+## Package 01 — Auth / OTP / 2FA
+================================================================================
+Fixes merged:
+  - B1: doLogin() double startApp() call — fixed (deduplicated against Package
+    04's independent fix of the same bug; only one call remains).
+  - B7: double-submit / missing loading state on login — Package 04's
+    setBtnLoading()-based implementation was kept over Package 01's separate
+    _loginInFlight-flag version (functionally equivalent, but Package 04's is
+    consistent with the shared loading-state helper used everywhere else in
+    the merged file).
+  - Login 2FA: OTP expiry (10 min) + max-attempt lockout (5 attempts) — merged
+    into Package 04's countdown-timer UI (start2FAChallenge, verifyLogin2FA,
+    resendLogin2FA all rewritten to carry both).
+  - Login 2FA: missing cloud sync before startApp() on the 2FA success path
+    (categories/budgets/settings/reminders) — restored; the 2FA branch used to
+    skip these where the non-2FA branch didn't.
+  - Forgot-password: OTP expiry + max-attempt lockout — merged the same way.
+  - Forgot-password: user-enumeration fix (generic "account not found" no
+    longer distinguishable from a real account) — see Conflicts below; this
+    was actively at risk of being lost during the Package 04 merge and had to
+    be explicitly re-applied.
+  - Forgot-password: mobile-number duplicate check added to signup (was
+    previously only checked for username/email) — merged into Package 04's
+    doSignup.
+  - doChangePw(): password change now also writes to Supabase
+    (password_hash), not just localStorage — previously a changed password
+    would stop matching on next login. No other package touched this
+    function; adopted as-is.
+
+Fixes rejected: none rejected outright — see Conflicts for the two cases
+where Package 01's logic had to be explicitly preserved against a competing
+Package 04 change rather than simply "picked."
+
+Conflicts found: see Conflicts section.
+
+Security status: OTP/2FA flows now have server-independent expiry, attempt
+lockout, and enumeration resistance on the client side. The known residual
+gap — password reset ultimately trusts a client-side OTP comparison before
+writing to Supabase, and a sufficiently technical user could call the
+Supabase update directly — is UNCHANGED and documented, not fixed, in
+SECURITY_TODO_B4_SERVER_SIDE_OTP.md (carried over unmodified from Package
+01). It requires a Supabase Edge Function; that is a backend change out of
+scope for this front-end integration.
+
+================================================================================
+## Package 02 — Supabase RLS Security
+================================================================================
+RLS changes: four SQL files carried over unmodified into /supabase/:
+  001_users_table_rls.sql, 002_transactions_debts_categories_rls.sql,
+  003_admin_authorization.sql, 004_verification_queries.sql.
+
+Authorization changes: 003_admin_authorization.sql locks down admin-only
+functionality (broadcast messages, app-update notices) at the database layer,
+since the client-side gating in index.html could not be confirmed to be
+server-backed.
+
+SQL requiring manual deployment: ALL FOUR FILES. None of this SQL has been
+run against any live Supabase project — no project credentials were available
+to the audit that produced it, and none were available during this
+integration either. Every policy is a *requirement specification*, not a
+deployed fact. README_APPLY_INSTRUCTIONS.md (carried over) explains the
+required order and the schema-verification step that must happen first. This
+report does not claim these policies are live — they are not.
+
+No service-role key was added anywhere in index.html or any other file (verified
+by an explicit repo-wide grep for service_role / sk_live / private-key
+markers — see Regressions).
+
+================================================================================
+## Package 03 — Android Sync / Realtime / Account Switching
+================================================================================
+Android sync:
+  - androidTxnToEntry() date-bug fix carried over unmodified: the previous
+    `String(raw).split(' ')[0]` assumed Postgres's space-separated timestamp
+    format; Supabase's JS client actually returns ISO-8601 with a 'T'
+    separator, so the old code silently returned the entire timestamp instead
+    of a plain date. Fixed by deriving the date from local calendar fields.
+  - transaction_date / created_at / type / payment_app / payment_mode mapping
+    unchanged from baseline elsewhere in this function — no other package
+    touched it, verified via diff against baseline.
+
+Realtime: subscribeAndroidRealtime() and subscribeDebtsRealtime() merged from
+Package 03 (only package that touched them) with defense-in-depth staleness
+guards: every inbound realtime event is checked against BOTH a generation
+counter (_acctGeneration, bumped on every logout/account-switch) AND the
+current username (CU) AND the row's own user_id, before being written to
+local storage. Any one of those three going stale is sufficient to drop the
+event.
+
+Logout: doLogout() now calls teardownRealtimeSubscriptions() before clearing
+session state (previously realtime channels kept running in the background
+after logout). Also bumps _acctGeneration and clears the inactivity timer.
+No other package touched doLogout(); adopted from Package 03 as-is.
+
+Account switching / cross-account protection: verified end-to-end. The
+protection is layered:
+  1. teardownRealtimeSubscriptions() actively removes both channels on
+     logout/account-deletion, before the next account can log in.
+  2. Every realtime callback snapshots its own userId/username/generation at
+     subscribe time and re-checks all three on every event.
+  3. syncAndroidTransactions()/syncDebts() re-check `if(!CU)` both before and
+     after their Supabase await (an account switch mid-request cannot cause
+     data to be written under the wrong account).
+  4. subscribeAndroidRealtime()/subscribeDebtsRealtime() are only called with
+     the userId resolved for the CURRENTLY logged-in account, at the end of a
+     sync that already re-validated CU.
+Simulated scenario (User A: login → realtime → logout; User B: login; event
+belonging to User A arrives): the event is rejected by the generation/
+username check in the realtime handler, and even if it somehow reached the
+write path, the `if(!CU)`/CU-mismatch guards in the sync functions would
+still block it. No cross-account write path was found.
+
+================================================================================
+## Package 04 — UI/UX, Data Integrity, Code Quality
+================================================================================
+UI/UX: category-deletion modal, generic showConfirmModal()/showAlertModal()
+system (replacing native confirm()/alert()/prompt() everywhere, including in
+the merged performDeleteAccount()), OTP/2FA countdown-timer UI, cloud-status
+pill (Connected/Syncing/Offline/Failed), setBtnLoading() shared loading-state
+helper, focus-visible CSS, all carried over unmodified — Package 04 was the
+merge base, and none of these were touched by the other four packages.
+
+Category integrity: deleteCat() B6 fix carried over unmodified — a category
+with existing transactions can no longer be silently deleted; the user is
+now forced through a themed reassignment-or-block modal
+(openCatDeleteModal/selectCatReassignTarget/confirmCatReassignDelete/
+performCatDelete) instead of the old one-line delete-with-no-checks.
+
+Code quality: escHtml()/escJsAttr() escaping and console.log/debug removal
+carried over. Verified: exactly one console.log remains in the whole file,
+and it is Package 03's intentional realtime-teardown diagnostic
+(`console.log('[realtime] Subscriptions torn down (...)')`), not a leftover.
+
+================================================================================
+## Package 05 — PWA, Documentation, QA
+================================================================================
+PWA: manifest.json and sw.js are BYTE-IDENTICAL between Package 03 and
+Package 05 (both left them untouched from baseline; confirmed via diff), so
+there was no PWA conflict to resolve. Kept as-is. Service worker cache name
+was bumped from v6 to v7 in this integration (see Regressions) since the
+underlying index.html genuinely changed — this is a required, not
+"unnecessary," version bump per the service worker's own documented
+convention ("Bump CACHE_NAME whenever the website's important static files
+change").
+
+Documentation: Package 05's expanded README.md (183 lines vs. Package 03's
+62-line original) was used as the final README, with its two references to
+internal PACKAGE_0N_REPORT.txt audit artifacts removed/reworded, since those
+report files are not part of the shipped repository (see Regressions).
+
+QA: Package 05's multi-tab localStorage `storage`-event listener was merged
+in unmodified — it is a small, additive, isolated change (one new listener
+near the end of the script) that did not touch any function also modified by
+another package.
+
+================================================================================
+## Conflicts
+================================================================================
+1. doLogin() / doSignup() double-submit fix (B1/B7): Packages 01 and 04
+   independently found and fixed the same two bugs with different
+   implementations. RETAINED: Package 04's version (setBtnLoading()-based),
+   because it's consistent with the shared loading-state helper used
+   throughout the rest of the merged UI. Package 01's mobile-number duplicate
+   check (absent from Package 04's doSignup) was ported into the retained
+   version — this was a real fix that would have been silently dropped
+   otherwise.
+
+2. Forgot-password OTP (sendForgotOTP/verifyForgotOTP/resendOTP) — SECURITY
+   REGRESSION CAUGHT: Package 04's UI rewrite of these functions reintroduced
+   Package 01's user-enumeration bug ("No account found with that mobile
+   number or email" — a message that reveals whether an account exists).
+   Package 04 had clearly built its version from a pre-Package-01 baseline
+   and never saw Package 01's fix. RETAINED: Package 01's enumeration-safe
+   logic (always advance to the same OTP screen, generic messaging,
+   indistinguishable timing) as the authoritative security layer, with
+   Package 04's countdown-timer UI (initOtpCountdown/stopOtpCountdown,
+   resend-cooldown-disabled state, setBtnLoading on submit) layered on top.
+
+3. Login-2FA and forgot-password OTP validity window mismatch: Package 01's
+   security-authoritative expiry is 10 minutes (LOGIN_2FA_OTP_TTL_MS /
+   FP_OTP_TTL_MS); Package 04's visual countdown timer was hardcoded to 5
+   minutes (OTP_EXPIRY_SECONDS=300) and independently disabled the UI at that
+   point. RETAINED: the countdown now derives its displayed duration from the
+   same 10-minute constant Package 01 uses for the actual expiry check, so
+   the visible timer and the enforced expiry agree. (OTP_RESEND_COOLDOWN_SECONDS,
+   a separate 30-second "you can request another code" cooldown, is unaffected
+   and unchanged.)
+
+4. syncAndroidTransactions() / syncDebts() — dual DOM writers: Package 03
+   added `if(!CU)` cross-account guards, a realtime-health-monitor call, and
+   wrote a detailed status string directly to #drawer-synccount /
+   #drawer-debtsynccount. Package 04 independently rewrote the same two
+   functions to route their status through beginSyncOp()/endSyncOp(), which
+   itself writes to the SAME #drawer-synccount element via setCloudStatus().
+   Merged naively, the two would have fought over that element on every sync
+   (whichever wrote last would win, with no aggregation). RESOLVED: kept
+   Package 03's `if(!CU)` guards (before AND after the Supabase await —
+   cross-account safety), its subscribeAndroidRealtime()/subscribeDebtsRealtime()/
+   startSyncHealthMonitor() calls, and its detailed status text — but routed
+   that status text through endSyncOp()'s `detail` parameter instead of a
+   second direct write, so setCloudStatus() remains the single writer of
+   #drawer-synccount / #drawer-debtsynccount.
+
+5. confirmDeleteAccount() / performDeleteAccount(): Package 03 added a
+   teardownRealtimeSubscriptions() call to the (then confirm()/prompt()-based)
+   account-deletion flow. Package 04 independently replaced the entire flow
+   with a themed modal, splitting it into confirmDeleteAccount() (just opens
+   the modal) and a new performDeleteAccount() (does the actual deletion) —
+   and Package 04's performDeleteAccount() did not have Package 03's realtime
+   teardown, since Package 04 branched before Package 03's fix existed.
+   RESOLVED: kept Package 04's modal-based confirmDeleteAccount() unmodified,
+   and merged Package 03's teardownRealtimeSubscriptions()/inactivity-timer-clear
+   call into Package 04's performDeleteAccount() — otherwise a deleted account
+   would have left its realtime channels running exactly like the doLogout()
+   bug Package 03 fixed, just via a different code path.
+
+6. Splice-introduced duplicates (self-caught, not a cross-package conflict):
+   during automated assembly, performDeleteAccount(), findUserByIdentifierAsync(),
+   and deliverOTPEmail() were each briefly inserted as duplicates because the
+   assembly script initially treated them as exclusive to one package, when
+   findUserByIdentifierAsync()/deliverOTPEmail() were actually already present,
+   byte-identical to baseline, in Package 04. Caught by an automated
+   duplicate-function-name scan before packaging; the redundant re-insertions
+   were removed and the originals kept (or, for performDeleteAccount, the
+   correct merged version was kept and Package 04's stale un-merged copy
+   was removed).
+
+7. Baseline discrepancy (flagged, not resolved): Packages 01 and 05 both
+   state their baseline index.html was 5,180 lines. A live fetch of
+   github.com/projectvaultin/expenses_tracker/index.html during this
+   integration showed roughly 4,081 lines at the head of the file structure
+   (partial view). This integration proceeded on the assumption that
+   Packages 01/03/04/05's stated ~5,180-line baseline is the more recent
+   and correct one (all four packages agree with each other on structure and
+   line-count order of magnitude; only the live fetch disagreed, and a single
+   partial fetch is weaker evidence than four independent packages'
+   consistent diffs against each other). This is flagged for manual
+   verification against the actual current main-branch commit before merging
+   upstream — see Remaining Issues.
+
+================================================================================
+## Duplicates
+================================================================================
+- performDeleteAccount(): existed once in Package 04 (unmerged) and was
+  briefly duplicated during assembly; removed, replaced with the single
+  merged version (see Conflict 5/6 above).
+- findUserByIdentifierAsync(), deliverOTPEmail(): unmodified baseline
+  functions already present in Package 04; briefly duplicated during
+  assembly by mistakenly treating them as Package-01-exclusive; removed,
+  original baseline copies kept.
+- No duplicate Supabase client initialization found (single `sb = window.
+  supabase.createClient(...)` call, single script block).
+- No duplicate EmailJS initialization found (single `emailjs.init()` call,
+  guarded by EMAILJS_READY).
+- No duplicate service-worker registration found.
+- No duplicate realtime subscriptions found (subscribeAndroidRealtime/
+  subscribeDebtsRealtime each remove any existing channel before creating a
+  new one, and are only called from the single merged
+  syncAndroidTransactions()/syncDebts() functions).
+- Two locally-scoped `function step(now){...}` closures exist (inside
+  animateAmount() and animateNet() respectively) — NOT a duplicate in any
+  meaningful sense; each is scoped to its own outer function and this is a
+  pre-existing baseline pattern, not something introduced by any of the five
+  packages.
+
+================================================================================
+## Regressions
+================================================================================
+Detected and fixed during this integration:
+  - Forgot-password user-enumeration regression (see Conflict 2) — fixed by
+    retaining Package 01's logic instead of Package 04's.
+  - OTP countdown/expiry duration mismatch (see Conflict 3) — fixed by
+    deriving the countdown's displayed duration from the real TTL constants.
+  - #drawer-debtsynccount and #drawer-realtime-status DOM elements were
+    referenced by merged JS (from Package 03) but did not exist in the
+    Package-04-based HTML — added the two missing <div> lines to the drawer
+    markup (Package 03's original markup, verified byte-for-byte before
+    insertion).
+  - Three splice-introduced duplicate functions (see Duplicates) — caught by
+    an automated post-assembly scan and removed before packaging.
+  - Two documentation files referenced internal-only PACKAGE_0N_REPORT.txt
+    audit artifacts that are not part of the shipped repository (one in
+    README.md, one in a SQL comment, plus three more found on a follow-up
+    sweep) — reworded to be self-contained.
+  - Service worker cache name bumped v6 → v7, since index.html's content
+    materially changed in this integration and the service worker's own
+    header comment documents this as required practice ("Bump CACHE_NAME
+    whenever the website's important static files change") — otherwise
+    existing installs could stay pinned to a stale cached HTML shell after
+    this deploy.
+
+Pre-existing issues found but NOT introduced by this integration (verified
+identical across all five source packages, including the closest-to-baseline
+Package 05, so out of scope for this integration to silently fix):
+  - Three duplicate DOM `id` attributes: `receipt-file`, `receipt-add-btn`,
+    `profile-av-ph`.
+  - `document.getElementById('theme-toggle-app')` — no element with this id
+    exists anywhere in the markup (only `theme-toggle-lock` and
+    `theme-toggle-auth` do). Non-fatal: the reference is guarded with
+    `if(appBtn)` and no-ops harmlessly.
+  - `document.getElementById("admin-msg-inp")` (used in sendAdminMessage()) —
+    no element with this id exists in the static markup in any of the five
+    packages. Not guarded with a null check; calling sendAdminMessage() would
+    throw. Present identically in all five source packages' baselines, so
+    this predates all five audits and is flagged for separate follow-up
+    rather than fixed here (fixing it would require either adding the
+    missing input element to the admin-message UI or confirming it's
+    generated dynamically somewhere this integration didn't find).
+
+================================================================================
+## Remaining Issues
+================================================================================
+
+### Fixed
+  - B1 (double startApp() on login) — fixed, verified single call site.
+  - B7 (login/signup double-submit, missing loading state) — fixed.
+  - Login-2FA and forgot-password OTP: expiry enforcement, attempt lockout,
+    user-enumeration resistance, countdown/expiry duration consistency — all
+    fixed and verified present in the merged file.
+  - doChangePw() Supabase desync bug — fixed.
+  - Category deletion without usage/reassignment check (B6) — fixed.
+  - Android transaction date-parsing bug (space vs. 'T' separator) — fixed.
+  - Realtime channels surviving logout/account deletion — fixed.
+  - Cross-account realtime event leakage — fixed (generation counter +
+    username + row user_id triple-check).
+  - Cross-account write race in syncAndroidTransactions()/syncDebts() during
+    an in-flight Supabase request — fixed (`if(!CU)` guard before AND after
+    the await in both functions).
+  - Dual-writer conflict on #drawer-synccount / #drawer-debtsynccount — fixed
+    (setCloudStatus() is now the single writer).
+  - console.log/debug statement cleanup — verified, one intentional log
+    remains (realtime teardown diagnostic).
+  - innerHTML escaping (escHtml/escJsAttr) — present and unique, no
+    regression.
+
+### Requires Supabase manual configuration
+  - All four SQL files in /supabase/ (001–004) — NOT deployed. Must be run
+    manually against the live Supabase project, in the order documented in
+    /supabase/README_APPLY_INSTRUCTIONS.md, starting with Step 0 (verify the
+    actual live schema against the ASSUMED SCHEMA comments in each file
+    before running anything).
+  - Confirm actual RLS policy state in the Supabase dashboard afterward —
+    this integration cannot verify server-side state from a static file
+    audit.
+
+### Requires Android Phase 6 verification
+  - The Android-side notification-listener app itself (PhonePe/GPay/Paytm
+    parsing, what gets written to the `transactions` table) was outside the
+    scope of all five web-app audit packages and this integration — only the
+    web app's *consumption* of that table was auditable here. The
+    transaction_date / type / payment_app / payment_mode field mapping in
+    androidTxnToEntry() matches what Package 03's audit found the Android
+    app writes, but this was not independently re-verified against the
+    Android app's source in this integration pass.
+
+### Cannot be solved without backend architecture changes
+  - SECURITY_TODO_B4 (client-side OTP comparison before a password-hash
+    write reachable by an authenticated-enough browser client) —
+    fundamentally requires a Supabase Edge Function (or equivalent
+    server-side compute) to hold OTP verification and the password write
+    behind the service-role key. Documented, not fixed, in
+    SECURITY_TODO_B4_SERVER_SIDE_OTP.md.
+  - Whether the RLS policies in /supabase/ actually match the live schema
+    cannot be confirmed without direct database access, which this
+    integration did not have (same limitation the original Package 02 audit
+    reported).
+  - `admin-msg-inp` referenced-but-missing element (pre-existing across all
+    five packages) — needs either the admin UI markup restored or the
+    reference removed; unclear from static analysis alone which is correct
+    without knowing whether that panel was intentionally removed or lost in
+    an earlier edit.
+
+### Optional future improvements
+  - The three duplicate DOM ids (`receipt-file`, `receipt-add-btn`,
+    `profile-av-ph`) should be resolved (rename or dedupe) since duplicate
+    ids are invalid HTML and `getElementById` behavior on duplicates is
+    technically only guaranteed to return the first match.
+  - `theme-toggle-app` dead reference could be removed (or the missing
+    button added, if an app-screen theme toggle was intended).
+  - `Ecpenses_Tracker.png` (1.75 MB, misspelled filename) is present in the
+    repository root but not referenced by index.html, manifest.json, or
+    sw.js — appears to be a README/promotional screenshot from the original
+    repository rather than an app asset. Retained as-is (not app-breaking,
+    not introduced by this integration), but a real candidate for either
+    removal or being properly linked from README.md.
+  - Baseline line-count discrepancy (Conflict 7) should be checked against
+    the actual current main-branch commit before this merge is pushed
+    upstream, in case the true baseline has diverged further since these
+    five audit packages were produced.
+
+================================================================================

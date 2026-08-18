@@ -77,6 +77,37 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .auth-btn{width:100%;padding:14px;margin-top:6px;background:var(--accent);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .2s,transform .15s;}
 .auth-btn:active{opacity:.85;transform:scale(.98);}
 .auth-err{font-size:12px;color:var(--red);margin-top:9px;text-align:center;min-height:16px;}
+.auth-err.ok{color:var(--green);}
+/* Disabled / loading state for primary buttons (login, signup, save, confirm, etc.) */
+.auth-btn:disabled,.save-btn:disabled,button:disabled{opacity:.55;cursor:not-allowed;transform:none !important;}
+.btn-spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:7px;}
+/* Focus-visible outline for keyboard accessibility across inputs & buttons */
+.ai:focus-visible,.auth-btn:focus-visible,.save-btn:focus-visible,.pill-btn:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* OTP countdown / resend */
+.otp-timer-row{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;color:var(--muted);margin-top:10px;flex-wrap:wrap;}
+.otp-countdown{font-weight:700;color:var(--text);}
+.otp-countdown.expiring{color:var(--amber);}
+.otp-countdown.expired{color:var(--red);}
+.otp-resend-link{color:var(--accent);cursor:pointer;font-weight:700;}
+.otp-resend-link.disabled{color:var(--muted);cursor:not-allowed;pointer-events:none;opacity:.6;}
+/* Generic themed confirm/alert modal */
+.confirm-modal-icon{font-size:34px;text-align:center;margin-bottom:10px;}
+.confirm-modal-msg{font-size:13.5px;color:var(--muted);line-height:1.6;text-align:center;margin-bottom:18px;white-space:pre-line;}
+.confirm-modal-btns{display:flex;gap:10px;}
+.confirm-modal-btns .save-btn{margin-top:0;}
+/* Cloud sync status pill in topbar */
+.cloud-status-pill{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 11px;font-size:11px;font-weight:700;color:var(--muted);box-shadow:var(--chip-shadow);cursor:default;white-space:nowrap;}
+.cloud-status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.cloud-status-pill[data-state="connected"] .cloud-status-dot{background:var(--green);}
+.cloud-status-pill[data-state="syncing"] .cloud-status-dot{background:var(--accent);animation:pulse 1s infinite;}
+.cloud-status-pill[data-state="reconnecting"] .cloud-status-dot{background:var(--amber);animation:pulse 1s infinite;}
+.cloud-status-pill[data-state="offline"] .cloud-status-dot{background:var(--muted);}
+.cloud-status-pill[data-state="failed"] .cloud-status-dot{background:var(--red);}
+.cloud-status-pill[data-state="connected"]{color:var(--green);}
+.cloud-status-pill[data-state="syncing"]{color:var(--accent);}
+.cloud-status-pill[data-state="reconnecting"]{color:var(--amber);}
+.cloud-status-pill[data-state="failed"]{color:var(--red);}
+@media (max-width:400px){.cloud-status-pill{padding:5px 8px;font-size:10px;}}
 .av-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px;}
 .av-box{width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;overflow:hidden;transition:border-color .2s;}
 .av-box:hover{border-color:var(--accent);}
@@ -319,7 +350,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
     <div class="fl">
       <div class="fl-label">Password</div>
-      <input class="ai" id="lock-pw" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+      <input aria-label="Password" class="ai" id="lock-pw" type="password" placeholder="Enter your password" autocomplete="current-password"/>
     </div>
     <button class="auth-btn" onclick="doUnlock()">Unlock →</button>
     <div class="auth-err" id="lock-err"></div>
@@ -345,9 +376,9 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <!-- LOGIN -->
     <div id="form-login">
-      <div class="fl"><div class="fl-label">Username</div><input class="ai" id="lu" type="text" placeholder="Enter username" autocomplete="username"/></div>
-      <div class="fl"><div class="fl-label">Password</div><input class="ai" id="lp" type="password" placeholder="Enter password" autocomplete="current-password"/></div>
-      <button class="auth-btn" onclick="doLogin()">Login →</button>
+      <div class="fl"><div class="fl-label">Username</div><input aria-label="Username" class="ai" id="lu" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="lp" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Login →</button>
       <div class="auth-err" id="lerr"></div>
       <div style="text-align:center;margin-top:12px"><span style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600" onclick="showForgotPw()">Forgot Password?</span></div>
     </div>
@@ -358,12 +389,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <div class="av-hint">Tap to add profile photo</div>
         <input type="file" id="av-file" accept="image/*" style="display:none" onchange="handleAvatar(event)"/>
       </div>
-      <div class="fl"><div class="fl-label">Full Name</div><input class="ai" id="sn" type="text" placeholder="Your full name"/></div>
-      <div class="fl"><div class="fl-label">Username</div><input class="ai" id="su" type="text" placeholder="Choose username" autocomplete="username"/></div>
-      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input class="ai" id="se" type="email" placeholder="you@gmail.com" autocomplete="email"/></div>
-      <div class="fl"><div class="fl-label">Mobile Number (for your records)</div><input class="ai" id="sm" type="tel" placeholder="10-digit mobile number" maxlength="10"/></div>
-      <div class="fl"><div class="fl-label">Password</div><input class="ai" id="sp" type="password" placeholder="Min 4 characters" autocomplete="new-password"/></div>
-      <button class="auth-btn" onclick="doSignup()">Create Account →</button>
+      <div class="fl"><div class="fl-label">Full Name</div><input aria-label="Full Name" class="ai" id="sn" type="text" placeholder="Your full name" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Username</div><input aria-label="Username" class="ai" id="su" type="text" placeholder="Choose username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input aria-label="Email (Gmail) — for statements & OTP" class="ai" id="se" type="email" placeholder="you@gmail.com" autocomplete="email" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Mobile Number (for your records)</div><input aria-label="Mobile Number (for your records)" class="ai" id="sm" type="tel" placeholder="10-digit mobile number" maxlength="10" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="sp" type="password" placeholder="Min 4 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create Account →</button>
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
@@ -382,6 +413,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
     </div>
     <div class="tb-right">
+      <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
       <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
   </div>
@@ -394,6 +426,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div style="font-size:12px;color:var(--muted)" id="drawer-username"></div>
       <div style="font-size:11px;color:var(--muted);opacity:0.75;margin-top:2px" id="drawer-userid">Account ID: checking…</div>
       <div style="font-size:11px;color:var(--muted);opacity:0.75;margin-top:2px" id="drawer-synccount">Cloud sync: checking…</div>
+      <div style="font-size:11px;color:var(--muted);opacity:0.75;margin-top:2px" id="drawer-debtsynccount">Debt sync: checking…</div>
+      <div style="font-size:11px;opacity:0.85;margin-top:2px" id="drawer-realtime-status">Realtime: connecting…</div>
     </div>
     <div class="drawer-item" onclick="closeDrawer();showMonthPicker()"><span class="di-icon">📅</span> Filter by Month</div>
    <div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4])">
@@ -619,8 +653,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <div id="date-range-body" style="display:none;margin-top:12px">
         <div style="display:flex;gap:8px;margin-bottom:10px">
-          <div style="flex:1"><div class="fl-label">From</div><input type="date" class="date-inp" id="range-from" style="margin-bottom:0"/></div>
-          <div style="flex:1"><div class="fl-label">To</div><input type="date" class="date-inp" id="range-to" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="fl-label">From</div><input aria-label="From" type="date" class="date-inp" id="range-from" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="fl-label">To</div><input aria-label="To" type="date" class="date-inp" id="range-to" style="margin-bottom:0"/></div>
         </div>
         <button class="add-btn" style="width:100%;padding:10px" onclick="showDateRangeReport()">Show Report</button>
         <div id="date-range-result" style="margin-top:12px"></div>
@@ -685,10 +719,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <div class="av-hint">Tap to change profile photo</div>
         <input type="file" id="profile-av-file" accept="image/*" style="display:none" onchange="handleProfileAvatar(event)"/>
       </div>
-      <div class="fl"><div class="fl-label">Full Name</div><input class="ai" id="edit-name" type="text" placeholder="Your full name"/></div>
-      <div class="fl"><div class="fl-label">Username (cannot change)</div><input class="ai" id="edit-username" type="text" disabled style="opacity:.5;cursor:not-allowed"/></div>
-      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input class="ai" id="edit-email" type="email" placeholder="you@gmail.com"/></div>
-      <div class="fl"><div class="fl-label">Mobile Number</div><input class="ai" id="edit-mobile" type="tel" placeholder="10-digit mobile" maxlength="10"/></div>
+      <div class="fl"><div class="fl-label">Full Name</div><input aria-label="Full Name" class="ai" id="edit-name" type="text" placeholder="Your full name"/></div>
+      <div class="fl"><div class="fl-label">Username (cannot change)</div><input aria-label="Username (cannot change)" class="ai" id="edit-username" type="text" disabled style="opacity:.5;cursor:not-allowed"/></div>
+      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input aria-label="Email (Gmail) — for statements & OTP" class="ai" id="edit-email" type="email" placeholder="you@gmail.com"/></div>
+      <div class="fl"><div class="fl-label">Mobile Number</div><input aria-label="Mobile Number" class="ai" id="edit-mobile" type="tel" placeholder="10-digit mobile" maxlength="10"/></div>
       <button class="save-btn" onclick="saveProfile()">💾 Save Profile</button>
       </div>
     </div>
@@ -816,7 +850,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <div class="fl">
     <div class="fl-label">Category</div>
-    <select class="ti" id="support-category">
+    <select aria-label="Category" class="ti" id="support-category">
       <option value="Bug Report">🐞 Bug Report</option>
       <option value="Feature Request">✨ Feature Request</option>
       <option value="Account Issue">👤 Account Issue</option>
@@ -830,7 +864,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <div class="fl">
     <div class="fl-label">Priority</div>
-    <select class="ti" id="support-priority">
+    <select aria-label="Priority" class="ti" id="support-priority">
       <option value="Low">🟢 Low</option>
       <option value="Medium">🟡 Medium</option>
       <option value="High">🔴 High</option>
@@ -840,7 +874,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <div class="fl">
     <div class="fl-label">Subject</div>
-    <input
+    <input aria-label="Subject"
       type="text"
       class="ai"
       id="support-subject"
@@ -850,7 +884,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <div class="fl">
     <div class="fl-label">Describe your issue</div>
-    <textarea
+    <textarea aria-label="Describe your issue"
       class="ti"
       id="support-message"
       style="width:100%;min-height:120px;resize:vertical"
@@ -1010,9 +1044,9 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">🔑 Change Password</div>
-    <div class="fl"><div class="fl-label">Current Password</div><input class="ai" id="cp-old" type="password" placeholder="Current password"/></div>
-    <div class="fl"><div class="fl-label">New Password</div><input class="ai" id="cp-new" type="password" placeholder="Min 4 characters"/></div>
-    <div class="fl"><div class="fl-label">Confirm New Password</div><input class="ai" id="cp-conf" type="password" placeholder="Repeat new password"/></div>
+    <div class="fl"><div class="fl-label">Current Password</div><input aria-label="Current Password" class="ai" id="cp-old" type="password" placeholder="Current password"/></div>
+    <div class="fl"><div class="fl-label">New Password</div><input aria-label="New Password" class="ai" id="cp-new" type="password" placeholder="Min 4 characters"/></div>
+    <div class="fl"><div class="fl-label">Confirm New Password</div><input aria-label="Confirm New Password" class="ai" id="cp-conf" type="password" placeholder="Repeat new password"/></div>
     <button class="auth-btn" onclick="doChangePw()">Update Password</button>
     <div class="auth-err" id="cp-err"></div>
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('changepw-modal').classList.remove('open')">Cancel</button>
@@ -1035,9 +1069,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div style="font-size:36px;margin-bottom:10px">🔒</div>
     <div style="font-size:17px;font-weight:800;margin-bottom:6px">Two-Factor Verification</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">We emailed a 6-digit code to your registered email. Enter it below to finish logging in.</div>
-    <input class="ai" id="login2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:10px"/>
+    <input class="ai" id="login2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:10px" onkeydown="if(event.key==='Enter'){event.preventDefault();verifyLogin2FA();}"/>
     <div class="auth-err" id="login2fa-err"></div>
-    <button class="auth-btn" onclick="verifyLogin2FA()">Verify & Continue</button>
+    <button class="auth-btn" id="login2fa-verify-btn" onclick="verifyLogin2FA()">Verify & Continue</button>
+    <div class="otp-timer-row">
+      <span>Code expires in <span class="otp-countdown" id="login2fa-countdown">5:00</span></span>
+      <span class="otp-resend-link disabled" id="login2fa-resend-link" onclick="resendLogin2FA()">Resend code</span>
+    </div>
     <div style="margin-top:10px;font-size:12px;color:var(--muted);cursor:pointer" onclick="cancel2FA()">Cancel</div>
   </div>
 </div>
@@ -1079,7 +1117,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <!-- RECEIPT LIGHTBOX -->
 <div class="modal-overlay" id="receipt-modal" style="align-items:center" onclick="if(event.target===this)this.classList.remove('open')">
   <div style="max-width:90vw;max-height:80vh;text-align:center">
-    <img id="receipt-modal-img" src="" style="max-width:100%;max-height:70vh;border-radius:14px;border:1px solid var(--border)"/>
+    <img id="receipt-modal-img" src="" alt="Receipt" style="max-width:100%;max-height:70vh;border-radius:14px;border:1px solid var(--border)"/>
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:14px" onclick="document.getElementById('receipt-modal').classList.remove('open')">Close</button>
   </div>
 </div>
@@ -1104,26 +1142,19 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="modal-handle"></div>
     <div class="modal-title" id="fp-title">🔑 Forgot Password</div>
     <div id="fp-step1">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Forgot your username or password? Enter your registered mobile number or email — we'll email you an OTP to verify.</div>
-      <div class="fl"><div class="fl-label">Mobile Number or Email</div><input class="ai" id="fp-identifier" type="text" placeholder="10-digit mobile or you@gmail.com"/></div>
-      <button class="auth-btn" onclick="sendForgotOTP()">Send OTP →</button>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Forgot your password? Enter your registered mobile number or email — we'll send you a secure password reset link.</div>
+      <div class="fl"><div class="fl-label">Mobile Number or Email</div><input aria-label="Mobile Number or Email" class="ai" id="fp-identifier" type="text" placeholder="10-digit mobile or you@gmail.com" onkeydown="if(event.key==='Enter'){event.preventDefault();sendPasswordResetLink();}"/></div>
+      <button class="auth-btn" id="fp-send-btn" onclick="sendPasswordResetLink()">Send Reset Link →</button>
       <div class="auth-err" id="fp-err"></div>
     </div>
     <div id="fp-step2" style="display:none">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">An OTP has been emailed to your registered address. Enter it below.</div>
-      <div style="background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.3);border-radius:12px;padding:12px;margin-bottom:14px;text-align:center">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">OTP sent to</div>
-        <div style="font-size:15px;font-weight:700;color:var(--accent)" id="fp-mobile-display"></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px" id="fp-username-hint"></div>
-      </div>
-      <div class="fl"><div class="fl-label">Enter OTP</div><input class="ai" id="fp-otp" type="number" placeholder="6-digit OTP" maxlength="6" inputmode="numeric"/></div>
-      <div class="fl"><div class="fl-label">New Password</div><input class="ai" id="fp-newpw" type="password" placeholder="Min 4 characters"/></div>
-      <div class="fl"><div class="fl-label">Confirm New Password</div><input class="ai" id="fp-confpw" type="password" placeholder="Repeat new password"/></div>
-      <button class="auth-btn" onclick="verifyForgotOTP()">Reset Password →</button>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Enter a new password for your account.</div>
+      <div class="fl"><div class="fl-label">New Password</div><input aria-label="New Password" class="ai" id="fp-newpw" type="password" placeholder="Min 4 characters"/></div>
+      <div class="fl"><div class="fl-label">Confirm New Password</div><input aria-label="Confirm New Password" class="ai" id="fp-confpw" type="password" placeholder="Repeat new password"/></div>
+      <button class="auth-btn" id="fp-reset-btn" onclick="completePasswordReset()">Reset Password →</button>
       <div class="auth-err" id="fp-err2"></div>
-      <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--muted);cursor:pointer" onclick="resendOTP()">Resend OTP</span></div>
     </div>
-    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('forgotpw-modal').classList.remove('open')">Cancel</button>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeForgotPwModal()">Cancel</button>
   </div>
 </div>
 
@@ -1139,6 +1170,39 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
   </div>
 </div>
 
+<!-- CATEGORY DELETE / REASSIGN MODAL (Category Bug B6 fix) — shown only when a category is still
+     referenced by historical transactions, so those records are never silently orphaned. -->
+<div class="modal-overlay" id="cat-delete-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🗂️ Category In Use</div>
+    <div class="confirm-modal-msg" id="cat-delete-msg" style="text-align:left"></div>
+    <div class="form-label">Move those transactions to</div>
+    <div class="sgrid" id="cat-delete-reassign-grid"></div>
+    <button class="save-btn" id="cat-delete-reassign-btn" onclick="confirmCatReassignDelete()" style="background:var(--red)">Move &amp; Delete Category</button>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeCatDeleteModal()">Cancel — Keep Category</button>
+  </div>
+</div>
+
+<!-- GENERIC THEMED CONFIRM / ALERT MODAL (replaces browser confirm()/alert()/prompt() for important flows) -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="confirm-modal-icon" id="confirm-modal-icon">⚠️</div>
+    <div class="modal-title" id="confirm-modal-title" style="text-align:center">Are you sure?</div>
+    <div class="confirm-modal-msg" id="confirm-modal-msg"></div>
+    <div class="fl" id="confirm-modal-input-wrap" style="display:none">
+      <div class="fl-label" id="confirm-modal-input-label">Type to confirm</div>
+      <input class="ai" id="confirm-modal-input" type="text" autocomplete="off" aria-labelledby="confirm-modal-input-label"/>
+    </div>
+    <div class="auth-err" id="confirm-modal-err" style="display:none"></div>
+    <div class="confirm-modal-btns">
+      <button class="save-btn" id="confirm-modal-cancel-btn" style="background:var(--surface2);color:var(--muted)" onclick="closeConfirmModal()">Cancel</button>
+      <button class="save-btn" id="confirm-modal-ok-btn" style="background:var(--red)" onclick="runConfirmModal()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="undo-toast" id="undo-toast"><span id="undo-toast-msg"></span><button onclick="performUndo()">Undo</button></div>
 
@@ -1148,7 +1212,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 const EMAILJS_CONFIG={
   publicKey:'sKjj2OKNRQiQnQX6w',          // Account → General → Public Key
   serviceId:'service_xbgne6r',            // Email Services → your connected service
-  otpTemplateId:'template_5mn6y4g',       // Template for password-reset OTP
+  otpTemplateId:'template_5mn6y4g',       // Template for the optional login 2FA code (password reset now uses Supabase's own recovery email, not this)
   statementTemplateId:'template_h9qk8zy'  // Template for monthly statement
 };
 const EMAILJS_READY=typeof emailjs!=='undefined' && EMAILJS_CONFIG.publicKey!=='YOUR_PUBLIC_KEY';
@@ -1181,6 +1245,152 @@ async function sendEmailViaEmailJS(templateId, params){
     const detail=(e&&(e.text||e.message))?String(e.text||e.message):(typeof e==='string'?e:'Unknown error');
     console.error('EmailJS send failed:', e);
     return {ok:false, reason:'send_failed', detail};
+  }
+}
+
+// ── SAFE HTML RENDERING HELPERS ──
+// escHtml(): use for any user-controlled string placed as TEXT inside innerHTML (category names,
+// tags, usernames, display names, support messages, error log text, etc.) so it can never be
+// interpreted as markup/script. escJsAttr(): use for user-controlled strings interpolated inside
+// a single-quoted inline onclick="fn('...')" attribute, so a value containing a quote can't break
+// out of the JS string OR the surrounding HTML attribute (which also prevents it from breaking app
+// functionality, not just security).
+function escHtml(s){
+  return String(s===null||s===undefined?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escJsAttr(s){
+  return String(s===null||s===undefined?'':s)
+    .replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')
+    .replace(/\n/g,'\\n').replace(/</g,'\\x3C').replace(/>/g,'\\x3E');
+}
+
+// ── GENERIC THEMED CONFIRM / ALERT MODAL ──
+// Replaces raw browser confirm()/alert()/prompt() with the app's own modal system so destructive
+// actions (delete category, delete account, delete entry, etc.) look and feel consistent, work
+// with the existing theme, and don't block the JS thread the way native dialogs do.
+let _confirmModalCallback=null;
+let _confirmModalRequiredText=null;
+function showConfirmModal(opts){
+  opts=opts||{};
+  document.getElementById('confirm-modal-icon').textContent=opts.icon||'⚠️';
+  document.getElementById('confirm-modal-title').textContent=opts.title||'Are you sure?';
+  document.getElementById('confirm-modal-msg').textContent=opts.message||'';
+  const err=document.getElementById('confirm-modal-err');
+  err.style.display='none';err.textContent='';
+  const okBtn=document.getElementById('confirm-modal-ok-btn');
+  okBtn.textContent=opts.confirmText||'Confirm';
+  okBtn.style.background=opts.danger===false?'var(--accent)':'var(--red)';
+  const cancelBtn=document.getElementById('confirm-modal-cancel-btn');
+  cancelBtn.style.display=opts.hideCancel?'none':'block';
+  const inputWrap=document.getElementById('confirm-modal-input-wrap');
+  const input=document.getElementById('confirm-modal-input');
+  if(opts.requireTypedText){
+    inputWrap.style.display='block';
+    document.getElementById('confirm-modal-input-label').textContent=opts.inputLabel||`Type "${opts.requireTypedText}" to confirm`;
+    input.value='';input.placeholder=opts.requireTypedText;
+    _confirmModalRequiredText=opts.requireTypedText;
+  } else {
+    inputWrap.style.display='none';
+    _confirmModalRequiredText=null;
+  }
+  _confirmModalCallback=opts.onConfirm||null;
+  document.getElementById('confirm-modal').classList.add('open');
+  if(opts.requireTypedText)setTimeout(()=>input.focus(),150);
+}
+function showAlertModal(opts){
+  if(typeof opts==='string')opts={message:opts};
+  showConfirmModal({
+    icon:opts.icon||(opts.error?'⚠️':'✅'),
+    title:opts.title||(opts.error?'Something went wrong':'Notice'),
+    message:opts.message||'',
+    confirmText:opts.confirmText||'OK',
+    danger:false,
+    hideCancel:true,
+    onConfirm:opts.onConfirm||null
+  });
+}
+function closeConfirmModal(){
+  document.getElementById('confirm-modal').classList.remove('open');
+  _confirmModalCallback=null;_confirmModalRequiredText=null;
+}
+function runConfirmModal(){
+  if(_confirmModalRequiredText){
+    const typed=document.getElementById('confirm-modal-input').value.trim();
+    if(typed!==_confirmModalRequiredText){
+      const err=document.getElementById('confirm-modal-err');
+      err.style.display='block';
+      err.textContent=`Please type "${_confirmModalRequiredText}" exactly to confirm.`;
+      return;
+    }
+  }
+  const cb=_confirmModalCallback;
+  closeConfirmModal();
+  if(cb)cb();
+}
+document.getElementById('confirm-modal').addEventListener('click',function(e){if(e.target===this)closeConfirmModal();});
+
+// ── CLOUD SYNC STATUS ──
+// Central place that reflects real sync state in the topbar pill + drawer, instead of only ever
+// implying success. States: connected, syncing, offline, failed, reconnecting.
+const CLOUD_STATUS_LABELS={connected:'Connected',syncing:'Syncing…',offline:'Offline',failed:'Sync failed',reconnecting:'Reconnecting…'};
+let _cloudStatusState='offline';
+function setCloudStatus(state,detail){
+  if(!CLOUD_STATUS_LABELS[state])state='offline';
+  _cloudStatusState=state;
+  const pill=document.getElementById('cloud-status-pill');
+  const label=document.getElementById('cloud-status-label');
+  if(pill){pill.dataset.state=state;}
+  if(label){label.textContent=CLOUD_STATUS_LABELS[state];}
+  const drawerEl=document.getElementById('drawer-synccount');
+  if(drawerEl){
+    const time=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    drawerEl.textContent='Cloud sync: '+CLOUD_STATUS_LABELS[state]+(detail?' — '+detail:'')+' ('+time+')';
+  }
+}
+function updateOnlineStatus(){
+  if(!navigator.onLine){setCloudStatus('offline');return;}
+  // Coming back online after being offline — show a brief "reconnecting" beat before the next
+  // sync call (kicked off by the online listener below) resolves to connected/failed.
+  if(_cloudStatusState==='offline')setCloudStatus('reconnecting');
+}
+// Multiple sync calls (transactions + debts, etc.) can run concurrently at login. Track them as a
+// group so a later success never silently overwrites/hides an earlier failure — the pill only
+// reports "Connected" once every in-flight sync op has actually succeeded.
+let _pendingSyncOps=0,_syncGroupFailed=false;
+function beginSyncOp(){
+  _pendingSyncOps++;
+  if(!navigator.onLine){setCloudStatus('offline');return;}
+  setCloudStatus('syncing');
+}
+function endSyncOp(failed,detail){
+  _pendingSyncOps=Math.max(0,_pendingSyncOps-1);
+  if(failed)_syncGroupFailed=true;
+  if(_pendingSyncOps===0){
+    if(!navigator.onLine)setCloudStatus('offline');
+    else if(_syncGroupFailed)setCloudStatus('failed',detail);
+    else setCloudStatus('connected',detail);
+    _syncGroupFailed=false;
+  }
+}
+window.addEventListener('online',()=>{updateOnlineStatus();if(typeof CU!=='undefined'&&CU){syncAndroidTransactions();syncDebts();}});
+window.addEventListener('offline',updateOnlineStatus);
+
+// ── BUTTON LOADING STATE (login/signup/etc.) ──
+// Shared helper so any primary action button can show a spinner + be disabled while an async
+// call is in flight, and prevents duplicate submissions from a fast double-tap.
+function setBtnLoading(btnId,loading,loadingLabel){
+  const btn=document.getElementById(btnId);
+  if(!btn)return;
+  if(loading){
+    if(btn.disabled)return; // already loading — ignore a duplicate call
+    btn.dataset.origLabel=btn.innerHTML;
+    btn.disabled=true;
+    btn.innerHTML=`<span class="btn-spinner"></span>${loadingLabel||'Please wait…'}`;
+  } else {
+    btn.disabled=false;
+    if(btn.dataset.origLabel){btn.innerHTML=btn.dataset.origLabel;delete btn.dataset.origLabel;}
   }
 }
 
@@ -1622,27 +1832,19 @@ function applyCrop(){
   ctx.beginPath();ctx.arc(sw/2,sh/2,sw/2,0,Math.PI*2);ctx.clip();
   const scale=img._baseScale*(parseFloat(document.getElementById('crop-zoom').value)||1);
   ctx.drawImage(img,cropOffX,cropOffY,img.naturalWidth*scale,img.naturalHeight*scale);
- pendingAv = canvas.toDataURL('image/jpeg', .85);
+  pendingAv = canvas.toDataURL('image/jpeg', .85);
 
-console.log("=== APPLY CROP ===");
-console.log("pendingAv length:", pendingAv.length);
-  document.getElementById('av-box').innerHTML=`<img src="${pendingAv}"/>`;
+  document.getElementById('av-box').innerHTML=`<img src="${pendingAv}" alt="Avatar preview"/>`;
   closeCropModal();
   if(CU){
     const av=document.getElementById('tb-av');
-    av.innerHTML=`<img src="${pendingAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    av.innerHTML=`<img src="${pendingAv}" alt="Avatar preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     const users = getUsers();
 
 if(users[CU]){
     users[CU].avatar = pendingAv;
 
-    console.log("Saved avatar length:", users[CU].avatar.length);
-
     saveUsers(users);
-
-    const checkUsers = getUsers();
-
-    console.log("Reloaded avatar length:", checkUsers[CU].avatar ? checkUsers[CU].avatar.length : null);
 
     syncDrawerProfile(users[CU]);
 }
@@ -1666,50 +1868,60 @@ if(users[CU]){
   window.addEventListener('touchend',()=>cropDragging=false);
 })();
 
-// ── PASSWORD SECURITY ──
-// Passwords are now stored as a proper one-way SHA-256 hash (prefixed "sha256:") instead of the
-// old btoa() encoding, which was just Base64 — trivially reversible by anyone with access to the
-// browser's localStorage, not a real hash. verifyAndMigratePassword() checks new-style hashes
-// normally, and if it finds an old-style account, verifies against the legacy encoding ONE time
-// and transparently upgrades it to a real hash on successful login — no user action needed, no
-// forced password reset, and old accounts keep working exactly as before from the user's side.
-async function hashPassword(plain){
-  if(!window.crypto||!window.crypto.subtle){
-    console.warn('Web Crypto API unavailable in this environment — falling back to weaker encoding.');
-    return btoa(plain);
-  }
-  const enc=new TextEncoder().encode(plain);
-  const buf=await crypto.subtle.digest('SHA-256',enc);
-  return 'sha256:'+Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-async function verifyAndMigratePassword(users,uname,plain){
-  const acc=users[uname];
-  if(!acc||!acc.password)return false;
-  if(acc.password.startsWith('sha256:')){
-    return acc.password===await hashPassword(plain);
-  }
-  // Legacy account (old btoa encoding) — verify against it, then silently upgrade to a real hash.
-  if(acc.password===btoa(plain)){
-    acc.password=await hashPassword(plain);
-    saveUsers(users);
-    return true;
-  }
-}
-
+// ── AUTHENTICATION ──
+// Supabase Auth is the only password authority. The browser never stores, reads,
+// compares, or synchronizes public.users.password_hash. The local account object
+// contains profile/session metadata only.
 async function doLogin(){
+  // Duplicate-submission guard: ignore a second click/Enter while a login attempt is already
+  // in flight (e.g. slow network + impatient double-tap), instead of firing two overlapping
+  // requests.
+  const btn=document.getElementById('login-btn');
+  if(btn&&btn.disabled)return;
+
   const u=document.getElementById('lu').value.trim().toLowerCase();
   const p=document.getElementById('lp').value;
   const errEl=document.getElementById('lerr');
-  errEl.textContent='';
+  errEl.textContent='';errEl.classList.remove('ok');
 
+  if(!u){errEl.textContent='Enter your username.';return;}
+  if(!p){errEl.textContent='Enter your password.';return;}
+
+  setBtnLoading('login-btn',true,'Logging in…');
   try{
-    ensureAdminAccount();
+    // 1) Resolve username -> the email Supabase Auth actually knows about. This RPC is the
+    // only thing allowed to see that mapping from the anon key's perspective.
+    const { email: authEmail, error: rpcError } = await resolveEmailForUsername(u);
+    if (rpcError) {
+      console.error('get_auth_email_by_username failed:', rpcError);
+      errEl.textContent = "Database error. Check your connection and try again.";
+      return;
+    }
+    if (!authEmail) {
+      errEl.textContent = "Username not found.";
+      return;
+    }
 
-    // Check user in Supabase
+    // 2) Real authentication — Supabase Auth verifies the password server-side. Nothing in
+    // this file ever sees or compares a password hash for this step.
+    const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
+      email: authEmail,
+      password: p
+    });
+    if (signInError) {
+      console.error('signInWithPassword failed:', signInError);
+      errEl.textContent = /invalid login credentials/i.test(signInError.message||'')
+        ? "Wrong password."
+        : (signInError.message || "Login failed. Try again.");
+      return;
+    }
+
+    // 3) Load this account's public profile row via the auth_user_id link (not by
+    // re-trusting the username text box).
     const { data: user, error } = await sb
       .from("users")
       .select("*")
-      .eq("username", u)
+      .eq("auth_user_id", signInData.user.id)
       .maybeSingle();
 
     if (error) {
@@ -1719,14 +1931,8 @@ async function doLogin(){
     }
 
     if (!user) {
-      errEl.textContent = "Username not found.";
-      return;
-    }
-
-    const enteredHash = await hashPassword(p);
-
-    if (enteredHash !== user.password_hash) {
-      errEl.textContent = "Wrong password.";
+      errEl.textContent = "Unable to load your account profile.";
+      await sb.auth.signOut();
       return;
     }
 
@@ -1740,7 +1946,6 @@ async function doLogin(){
 
 // Always refresh local profile from Supabase
 users[u].name = user.name;
-users[u].password = user.password_hash;
 users[u].avatar = user.avatar || null;
 users[u].email = user.email;
 users[u].mobile = user.mobile || null;
@@ -1774,25 +1979,88 @@ await syncUserSettings();
 await syncReminders();
 
 startApp(users[u]);
-startApp(users[u]);
   } catch(e){
     console.error('Login failed:',e);
     errEl.textContent='Something went wrong: '+(e.message||e);
+  } finally {
+    // Always clear the loading state — including on the require2FA / startApp success paths —
+    // so the button never gets stuck disabled if the user logs out and comes back to this screen.
+    setBtnLoading('login-btn',false);
   }
 }
 // (next function starts here — start2FAChallenge...)
 
 // ── Two-Factor Login (item #25) — optional, per-account. If enabled, an OTP email is required ──
 // ── after the password before the session actually opens. ──
-let _login2FAUser='',_login2FACode='';
+// ── OTP COUNTDOWN / RESEND COOLDOWN ── shared by the login 2FA modal and the forgot-password
+// OTP modal so both get an expiry countdown, a resend cooldown, and a clear expired state,
+// without duplicating timer logic (and without ever stacking up duplicate intervals — any
+// previous timer for the same element is always cleared before a new one starts).
+const OTP_EXPIRY_SECONDS=300;      // 5 minutes
+const OTP_RESEND_COOLDOWN_SECONDS=30;
+const _otpTimers={};
+function initOtpCountdown(countdownElId,resendElId,expirySeconds,cooldownSeconds,onExpire){
+  if(_otpTimers[countdownElId]){clearInterval(_otpTimers[countdownElId]);delete _otpTimers[countdownElId];}
+  const countdownEl=document.getElementById(countdownElId);
+  const resendEl=document.getElementById(resendElId);
+  let remaining=expirySeconds,cooldownRemaining=cooldownSeconds;
+  function render(){
+    if(countdownEl){
+      if(remaining<=0){
+        countdownEl.textContent='Expired';
+        countdownEl.classList.remove('expiring');
+        countdownEl.classList.add('expired');
+      } else {
+        const m=Math.floor(remaining/60),s=remaining%60;
+        countdownEl.textContent=m+':'+String(s).padStart(2,'0');
+        countdownEl.classList.toggle('expiring',remaining<=30);
+        countdownEl.classList.remove('expired');
+      }
+    }
+    if(resendEl){
+      if(cooldownRemaining>0){
+        resendEl.textContent='Resend code ('+cooldownRemaining+'s)';
+        resendEl.classList.add('disabled');
+      } else {
+        resendEl.textContent='Resend code';
+        resendEl.classList.remove('disabled');
+      }
+    }
+  }
+  render();
+  _otpTimers[countdownElId]=setInterval(()=>{
+    if(remaining>0)remaining--;
+    if(cooldownRemaining>0)cooldownRemaining--;
+    render();
+    if(remaining<=0){
+      clearInterval(_otpTimers[countdownElId]);
+      delete _otpTimers[countdownElId];
+      if(onExpire)onExpire();
+    }
+  },1000);
+}
+function stopOtpCountdown(countdownElId){
+  if(_otpTimers[countdownElId]){clearInterval(_otpTimers[countdownElId]);delete _otpTimers[countdownElId];}
+}
+
+const LOGIN_2FA_OTP_TTL_MS=10*60*1000;
+const LOGIN_2FA_MAX_ATTEMPTS=5;
+let _login2FAUser='',_login2FACode='',_login2FAExpired=false,_login2FAExpiry=0,_login2FAAttempts=0;
 async function start2FAChallenge(username){
   const users=getUsers();
   const acc=users[username];
   _login2FAUser=username;
   _login2FACode=String(Math.floor(100000+Math.random()*900000));
+  _login2FAExpiry=Date.now()+LOGIN_2FA_OTP_TTL_MS;
+  _login2FAAttempts=0;
+  _login2FAExpired=false;
   document.getElementById('login2fa-err').textContent='';
   document.getElementById('login2fa-code').value='';
   document.getElementById('login2fa-modal').classList.add('open');
+  initOtpCountdown('login2fa-countdown','login2fa-resend-link',LOGIN_2FA_OTP_TTL_MS/1000,OTP_RESEND_COOLDOWN_SECONDS,()=>{
+    _login2FAExpired=true;
+    document.getElementById('login2fa-err').textContent='This code has expired. Tap "Resend code" to get a new one.';
+  });
   const result=await sendEmailViaEmailJS(EMAILJS_CONFIG.otpTemplateId,{
     to_email:acc.email,to_name:acc.name||username,username,otp_code:_login2FACode,
     app_name:'Expenses Tracker',brand_name:'ProjectVault',logo_url:APP_LOGO_URL
@@ -1801,18 +2069,57 @@ async function start2FAChallenge(username){
     setTimeout(()=>showToast('Login code: '+_login2FACode+' (email not configured — shown here instead)','#6c63ff'),1200);
   }
 }
-function verifyLogin2FA(){
+async function resendLogin2FA(){
+  const link=document.getElementById('login2fa-resend-link');
+  if(link&&link.classList.contains('disabled'))return;
+  if(!_login2FAUser)return;
+  // Generating a new code overwrites _login2FACode, which is itself what invalidates
+  // the previous code — there's nothing left to compare the old code against.
+  await start2FAChallenge(_login2FAUser);
+  showToast('📧 New code sent','#00d084');
+}
+async function verifyLogin2FA(){
+  const errEl=document.getElementById('login2fa-err');
+  if(!_login2FAUser||!_login2FACode){errEl.textContent='Session expired — please log in again.';return;}
+  if(_login2FAExpired||Date.now()>_login2FAExpiry){
+    errEl.textContent='This code has expired. Tap "Resend code" to get a new one.';
+    _login2FACode=''; // stale code can no longer be used even if somehow guessed
+    return;
+  }
   const entered=document.getElementById('login2fa-code').value.trim();
-  if(entered!==_login2FACode){document.getElementById('login2fa-err').textContent='Incorrect code. Try again.';return;}
+  if(!entered){errEl.textContent='Enter the 6-digit code.';return;}
+  if(entered!==_login2FACode){
+    _login2FAAttempts++;
+    if(_login2FAAttempts>=LOGIN_2FA_MAX_ATTEMPTS){
+      errEl.textContent='Too many incorrect attempts. Tap "Resend code" for a new one.';
+      _login2FACode=''; // lock this code out — must resend to get a fresh one
+    } else {
+      errEl.textContent='Incorrect code. Try again.';
+    }
+    return;
+  }
   const users=getUsers();
+  stopOtpCountdown('login2fa-countdown');
   document.getElementById('login2fa-modal').classList.remove('open');
   CU=_login2FAUser;localStorage.setItem('exp_session',CU);
-  _login2FAUser='';_login2FACode='';
+  _login2FAUser='';_login2FACode='';_login2FAExpiry=0;_login2FAAttempts=0;_login2FAExpired=false;
+  // Match the sync steps the non-2FA login path runs before startApp() — the 2FA branch
+  // previously skipped these, so 2FA users didn't get categories/budgets/settings/reminders
+  // pulled from the cloud on login the way non-2FA users did.
+  await syncCategories();
+  await syncCategoryBudgets();
+  await syncUserSettings();
+  await syncReminders();
   startApp(users[CU]);
 }
 function cancel2FA(){
+  stopOtpCountdown('login2fa-countdown');
   document.getElementById('login2fa-modal').classList.remove('open');
-  _login2FAUser='';_login2FACode='';
+  _login2FAUser='';_login2FACode='';_login2FAExpired=false;
+  // Password auth already succeeded before this modal opened (that's how Supabase Auth
+  // knows require2FA at all), so cancelling here still needs to end that session — otherwise
+  // an authenticated-but-not-app-logged-in session lingers in this browser.
+  sb.auth.signOut().catch(e=>console.error('signOut after 2FA cancel failed:',e));
 }
 async function toggleRequire2FA(on){
   if(!CU)return;
@@ -1827,56 +2134,39 @@ async function toggleRequire2FA(on){
   const{error}=await sb.from('users').update({require2FA:on}).eq('id',userId);
   if(error)console.error('Failed to sync 2FA preference to cloud:',error);
 }
-async function ensureAdminAccount(){
-
-    const { data: admin } = await sb
-        .from("users")
-        .select("id")
-        .eq("username","admin")
-        .maybeSingle();
-
-    if(admin){
-        return;
-    }
-
-    const adminPasswordHash = await hashPassword("admin@2025");
-
-    const { error } = await sb
-        .from("users")
-        .insert([{
-            username: "admin",
-            name: "Administrator",
-            password_hash: adminPasswordHash,
-            email: "",
-            mobile: "",
-            avatar: null,
-            cover_photo: null,
-            is_admin: true,
-            require2FA: false
-        }]);
-
-    if(error){
-        console.error("Failed to create admin account:", error);
-    }else{
-        console.log("✅ Admin account created automatically.");
-    }
-
-}
-  const ADMIN_USERNAME='admin'; const ADMIN_PASSWORD=btoa('admin@2025'); function isAdmin(){ return CU === ADMIN_USERNAME; }
+// ensureAdminAccount() and the hardcoded ADMIN_USERNAME/ADMIN_PASSWORD constants that used to
+// live here have been removed as part of the Supabase Auth migration. Reasons:
+//   1. The admin account already exists in Supabase (per the current DB audit) and is linked
+//      to Supabase Auth — there is nothing left for a client-side bootstrap to do.
+//   2. Inserting a new admin row (with a hardcoded password) directly from the browser using
+//      the public anon key, on every app load, is exactly the kind of client-trusted admin
+//      creation this audit flags as a release blocker. If a fresh admin account is ever needed,
+//      create it the same way any other privileged account should be created: through the
+//      Supabase dashboard or an authenticated server-side script, never from anon-key JS.
+// Admin status everywhere in this file now comes only from the authenticated profile row's
+// is_admin column (profile.isAdmin), never from a username string comparison — see the
+// isAdmin checks in startApp()/renderManage() and is_current_user_admin() enforcement in RLS.
 
 async function doSignup(){
+  const btn=document.getElementById('signup-btn');
+  if(btn&&btn.disabled)return;
+
   const name=document.getElementById('sn').value.trim();
   const u=document.getElementById('su').value.trim().toLowerCase();
   const p=document.getElementById('sp').value;
   const email=document.getElementById('se').value.trim().toLowerCase();
   const mobile=document.getElementById('sm').value.trim();
   const err=document.getElementById('serr');
+  err.textContent='';
   if(!name){err.textContent='Enter your name.';return;}
   if(!u){err.textContent='Choose a username.';return;}
   if(p.length<4){err.textContent='Password min 4 characters.';return;}
   if(!email){err.textContent='Enter your Gmail/email address — needed for statements & password recovery.';return;}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='Enter a valid email address.';return;}
   if(mobile&&!/^\d{10}$/.test(mobile)){err.textContent='Enter a valid 10-digit mobile.';return;}
+
+  setBtnLoading('signup-btn',true,'Creating account…');
+  try{
   const users=getUsers();
   // Check username in Supabase
 const { data: existingUser, error: userCheckError } = await sb
@@ -1887,6 +2177,8 @@ const { data: existingUser, error: userCheckError } = await sb
 
 if (userCheckError) {
   console.error(userCheckError);
+  err.textContent='Database error. Check your connection and try again.';
+  return;
 }
 
 if (existingUser) {
@@ -1903,52 +2195,130 @@ const { data: existingEmail, error: emailCheckError } = await sb
 
 if (emailCheckError) {
   console.error(emailCheckError);
+  err.textContent='Database error. Check your connection and try again.';
+  return;
 }
 
 if (existingEmail) {
   err.textContent = "An account already uses this email.";
   return;
 }
-  const hashedPassword = await hashPassword(p);
 
-// Save user in Supabase
-const { error: insertError } = await sb
-  .from("users")
-  .insert([
-    {
-      name: name,
-      username: u,
-      email: email,
-      mobile: mobile || null,
-      password_hash: hashedPassword,
-      avatar: pendingAv || null,
-      is_admin: false
-    }
-  ]);
+// Check mobile in Supabase (was previously unchecked — username/email were, mobile wasn't)
+if (mobile) {
+  const { data: existingMobile, error: mobileCheckError } = await sb
+    .from("users")
+    .select("id")
+    .eq("mobile", mobile)
+    .maybeSingle();
 
-if (insertError) {
-  console.error(insertError);
-  err.textContent = insertError.message;
-  return;
+  if (mobileCheckError) {
+    console.error(mobileCheckError);
+    err.textContent='Database error. Check your connection and try again.';
+    return;
+  }
+
+  if (existingMobile) {
+    err.textContent = "An account already uses this mobile number.";
+    return;
+  }
 }
 
-// Keep local copy (temporary until full migration)
-users[u] = {
-  name,
-  password: hashedPassword,
-  avatar: pendingAv || null,
-  email,
-  mobile: mobile || null,
-  isAdmin: false,
-  createdAt: Date.now(),
-  lastStatementSent: null,
-  onboarded: false
-};
-  saveUsers(users);CU=u;localStorage.setItem('exp_session',u);startApp(users[u]);
+  // Create the account through Supabase Auth — this is the only place a password is ever
+  // sent anywhere now. The public.users profile row is created server-side by the
+  // handle_new_auth_user trigger (already deployed per the DB audit), seeded from the
+  // metadata passed in `options.data` below.
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({
+    email,
+    password: p,
+    options: { data: { username: u, name, mobile: mobile || null } }
+  });
+
+  if (signUpError) {
+    console.error(signUpError);
+    err.textContent = /already registered|already exists/i.test(signUpError.message||'')
+      ? 'An account already uses this email.'
+      : (signUpError.message || 'Signup failed. Try again.');
+    return;
+  }
+
+  if (!signUpData.session) {
+    // Email confirmation is required by this Supabase project's Auth settings before a
+    // session is issued. The public.users row should still have been created by the
+    // trigger (from raw_user_meta_data), just not usable until the user confirms.
+    err.textContent = '';
+    switchAuthTab('login');
+    showAlertModal({
+      icon:'📧',
+      title:'Confirm your email',
+      message:`We\u2019ve sent a confirmation link to ${email}. Verify it, then log in with your new username and password.`
+    });
+    return;
+  }
+
+  // No confirmation required — session is live immediately. Make sure the profile row
+  // (created by the trigger) actually has username/name/mobile/avatar set correctly; do
+  // this as an explicit update rather than assuming the trigger's metadata mapping is
+  // exactly right, since that mapping lives in Supabase and this audit can't inspect it.
+  const { data: profileRow, error: profileFetchError } = await sb
+    .from('users')
+    .select('*')
+    .eq('auth_user_id', signUpData.user.id)
+    .maybeSingle();
+
+  if (profileFetchError || !profileRow) {
+    console.error('Could not load profile row created by handle_new_auth_user trigger:', profileFetchError);
+    err.textContent = 'Account created, but your profile could not be loaded. Try logging in.';
+    return;
+  }
+
+  const { error: profileUpdateError } = await sb
+    .from('users')
+    .update({ username: u, name, mobile: mobile || null, avatar: pendingAv || null })
+    .eq('auth_user_id', signUpData.user.id);
+  if (profileUpdateError) {
+    // Not fatal — the trigger may already have set these correctly, or RLS may restrict
+    // which columns self-update can touch. Log it and continue with whatever the trigger set.
+    console.error('Could not finalize profile fields after signup:', profileUpdateError);
+  }
+
+  const finalUsername = profileRow.username || u;
+  users[finalUsername] = {
+    name,
+    avatar: pendingAv || null,
+    email,
+    mobile: mobile || null,
+    isAdmin: false,
+    createdAt: Date.now(),
+    lastStatementSent: null,
+    onboarded: false
+  };
+  saveUsers(users);
+  CU=finalUsername;
+  localStorage.setItem('exp_session',CU);
+  localStorage.setItem('exp_user_id', profileRow.id);
+  startApp(users[CU]);
   setTimeout(showOnboarding,900);
+  } catch(e){
+    console.error('Signup failed:',e);
+    err.textContent='Something went wrong: '+(e.message||e);
+  } finally {
+    setBtnLoading('signup-btn',false);
+  }
 }
 function doLogout(){
+  // ── B2 fix: explicitly tear down Supabase Realtime subscriptions BEFORE clearing session
+  // state. Previously only the localStorage session key was cleared and CU was nulled — the
+  // _androidRealtimeChannel / _debtsRealtimeChannel subscriptions (and their callbacks) kept
+  // running in the background. This also bumps _acctGeneration so any in-flight callback from
+  // the outgoing account is invalidated even if teardown itself is racing an inbound event. ──
+  if(typeof teardownRealtimeSubscriptions==='function')teardownRealtimeSubscriptions('logout');
+  clearTimeout(_inactivityTimer); // prevent a stale lock-screen timer from firing under the next account
   localStorage.removeItem('exp_session');
+  // Actually end the Supabase Auth session (not just the local UI marker) — otherwise the
+  // access/refresh tokens stay valid in this browser and INIT's getSession() would happily
+  // resume it. Fire-and-forget: the UI moves on regardless of network state.
+  sb.auth.signOut().catch(e=>console.error('signOut failed:',e));
   CU=null;selMonth=null;selCat=null;filterMonth='All';selDebtType=null;
   document.getElementById('app-screen').style.display='none';
   document.getElementById('lock-screen').style.display='none';
@@ -1959,10 +2329,19 @@ function doLogout(){
 // ── Permanently delete the current account + every trace of its data from this browser ──
 function confirmDeleteAccount(){
   if(!CU)return;
-  if(!confirm('Delete your account and ALL your data permanently? This cannot be undone.'))return;
-  const typed=prompt('Type DELETE to confirm permanently erasing the account "'+CU+'":');
-  if(typed!=='DELETE'){showToast('Cancelled — account not deleted','#ffb300');return;}
-  const deletedUser=CU;
+  const targetUser=CU;
+  showConfirmModal({
+    icon:'🗑️',
+    title:'Delete your account?',
+    message:`This permanently erases the account "${targetUser}" and ALL of its data from this device. This cannot be undone.`,
+    confirmText:'Delete Account',
+    requireTypedText:'DELETE',
+    inputLabel:'Type DELETE to confirm',
+    onConfirm:()=>performDeleteAccount(targetUser)
+  });
+}
+
+function performDeleteAccount(deletedUser){
   const users=getUsers();
   delete users[deletedUser];
   saveUsers(users);
@@ -1976,13 +2355,17 @@ function confirmDeleteAccount(){
   }
   toRemove.forEach(k=>localStorage.removeItem(k));
   localStorage.removeItem('exp_session');
+  // Same reasoning as doLogout(): don't leave realtime channels subscribed under a deleted account.
+  if(typeof teardownRealtimeSubscriptions==='function')teardownRealtimeSubscriptions('account-deleted');
+  clearTimeout(_inactivityTimer);
   CU=null;
   document.getElementById('app-screen').style.display='none';
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
   switchAuthTab('login');
-  alert('Your account and all associated data have been permanently deleted from this device.');
+  showAlertModal({icon:'✅',title:'Account deleted',message:'Your account and all associated data have been permanently deleted from this device.'});
 }
+
 
 // ── LOCK SCREEN (always shown on session resume) ──
 function showLockScreen(username){
@@ -2070,12 +2453,28 @@ async function doUnlock(){
   const p=document.getElementById('lock-pw').value;
   const users=getUsers();
   const session=localStorage.getItem('exp_session');
-  if(!session||!users[session]){document.getElementById('lock-err').textContent='Session expired.';return;}
-  if(!await verifyAndMigratePassword(users,session,p)){
+  if(!session||!users[session]||!users[session].email){
+    document.getElementById('lock-err').textContent='Session expired. Please log in again.';
+    return;
+  }
+  if(!p){
+    document.getElementById('lock-err').textContent='Enter your password.';
+    return;
+  }
+
+  // Re-authenticate against Supabase Auth instead of checking any locally cached
+  // password/hash. This keeps the lock screen on the same authentication authority
+  // as normal login and password changes.
+  const { error } = await sb.auth.signInWithPassword({
+    email: users[session].email,
+    password: p
+  });
+  if(error){
     document.getElementById('lock-err').textContent='Wrong password. Try again.';
     document.getElementById('lock-pw').value='';
     return;
   }
+
   CU=session;
   document.getElementById('lock-screen').style.display='none';
   startApp(users[CU]);
@@ -2115,7 +2514,7 @@ function syncDrawerProfile(profile){
   if(!profile)return;
   const av=document.getElementById('drawer-av');
   if(av){
-    if(profile.avatar)av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    if(profile.avatar)av.innerHTML=`<img src="${profile.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     else av.textContent=(profile.name||CU||'?').charAt(0).toUpperCase();
   }
   const nameEl=document.getElementById('drawer-name');
@@ -2135,17 +2534,17 @@ function closeDrawer(){
 function openSwitchAccountModal(){
   closeDrawer();
   const users=getUsers();
-  const others=Object.keys(users).filter(u=>u!==CU&&!(users[u].isAdmin&&u===ADMIN_USERNAME));
+  const others=Object.keys(users).filter(u=>u!==CU&&!users[u].isAdmin);
   const list=document.getElementById('switch-account-list');
   if(!others.length){
     list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0">No other accounts on this device yet.<br>Log out and sign up to add one.</div>';
   } else {
     list.innerHTML=others.map(u=>{
       const p=users[u];
-      const av=p.avatar?`<img src="${p.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(p.name||u).charAt(0).toUpperCase();
-      return `<div class="manage-row" style="cursor:pointer" onclick="switchToAccount('${u}')">
+      const av=p.avatar?`<img src="${p.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:escHtml((p.name||u).charAt(0).toUpperCase());
+      return `<div class="manage-row" style="cursor:pointer" onclick="switchToAccount('${escJsAttr(u)}')">
         <div class="tb-av" style="margin-right:10px">${av}</div>
-        <div style="flex:1"><div style="font-size:14px;font-weight:600">${p.name||u}</div><div style="font-size:11px;color:var(--muted)">@${u}</div></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${escHtml(p.name||u)}</div><div style="font-size:11px;color:var(--muted)">@${escHtml(u)}</div></div>
         <span style="color:var(--muted);font-size:16px">›</span>
       </div>`;
     }).join('');
@@ -2197,7 +2596,7 @@ function startApp(profile){
   resetInactivityTimer();
   logLoginActivity();
   const av=document.getElementById('tb-av');
-  if(profile.avatar){av.innerHTML=`<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  if(profile.avatar){av.innerHTML=`<img src="${profile.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=profile.name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
   syncDrawerProfile(profile);
@@ -2229,7 +2628,7 @@ function startApp(profile){
   // stuck at "default" forever, so native reminder popups never appeared). Show a real button instead.
   maybeShowNotifPrompt();
   // Show/hide admin sections
-  const isAdmin=profile.isAdmin||CU===ADMIN_USERNAME;
+  const isAdmin=!!(profile&&profile.isAdmin);
   const supportCard = document.getElementById("support-user-card");
 
 if(supportCard){
@@ -2384,7 +2783,7 @@ function renderUpcomingWeek(){
     const last=i===upcoming.length-1;
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${last?'':'border-bottom:1px solid var(--border)'}">
       <span style="font-size:16px">${isIncome?'💰':'🔔'}</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${r.name}</div><div style="font-size:11px;color:var(--muted)">${label} · ${fmt(r.amount)}</div></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${escHtml(r.name)}</div><div style="font-size:11px;color:var(--muted)">${label} · ${fmt(r.amount)}</div></div>
     </div>`;
   }).join('');
 }
@@ -2448,7 +2847,7 @@ function renderHome(){
     const overs=Object.entries(catBudgets).filter(([cat,lim])=>(curMonthByCat[cat]||0)>lim);
     if(overs.length){
       warnCard.style.display='block';
-      document.getElementById('cat-budget-warn-list').innerHTML=overs.map(([cat,lim])=>`${emoji(cat)} ${cat}: ${fmt(curMonthByCat[cat])} of ${fmt(lim)}`).join('<br>');
+      document.getElementById('cat-budget-warn-list').innerHTML=overs.map(([cat,lim])=>`${emoji(cat)} ${escHtml(cat)}: ${fmt(curMonthByCat[cat])} of ${fmt(lim)}`).join('<br>');
     } else {
       warnCard.style.display='none';
     }
@@ -2459,7 +2858,7 @@ function renderHome(){
   if(!sorted.length)html='<div class="empty" style="padding:20px 10px"><div class="empty-icon" style="font-size:32px;margin-bottom:6px">📊</div><p>No expenses yet — add one to see your category breakdown.</p></div>';
   sorted.forEach(([cat,amt])=>{
     const pct=Math.round((amt/max)*100),c=color(cat);
-    html+=`<div class="cat-row"><div class="cat-dot" style="background:${c}"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:14px">${emoji(cat)} ${cat}</span><span style="font-size:14px;font-weight:700;color:${c}">${fmt(amt)}</span></div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div></div></div>`;
+    html+=`<div class="cat-row"><div class="cat-dot" style="background:${c}"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:14px">${emoji(cat)} ${escHtml(cat)}</span><span style="font-size:14px;font-weight:700;color:${c}">${fmt(amt)}</span></div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div></div></div>`;
   });
   document.getElementById('cat-summary').innerHTML=html;
   const recent=[...filtered].sort((a,b)=>b.ts-a.ts).slice(0,8);
@@ -2470,8 +2869,8 @@ function renderHome(){
     const c=isInc?'var(--green)':color(e.category);
     const bg=isInc?'rgba(0,208,132,.15)':color(e.category)+'22';
     const payLabel=e.payMode?`<span style="font-size:10px;margin-left:4px;color:var(--muted)">${e.payMode}</span>`:'';
-    const debtTag=e.debtLinked?`<span style="font-size:10px;margin-left:4px;color:var(--muted)">🔁 ${e.debtName||'Debt'}</span>`:'';
-    rhtml+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span>${payLabel}${debtTag}</div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}</div></div><span class="entry-amt" style="color:${c}">${isInc?'+':'−'}${fmt(e.amount)}</span></div>`;
+    const debtTag=e.debtLinked?`<span style="font-size:10px;margin-left:4px;color:var(--muted)">🔁 ${escHtml(e.debtName||'Debt')}</span>`:'';
+    rhtml+=`<div class="entry-row"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${escHtml(e.category)} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span>${payLabel}${debtTag}</div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+escHtml(e.date):''}</div></div><span class="entry-amt" style="color:${c}">${isInc?'+':'−'}${fmt(e.amount)}</span></div>`;
   });
   document.getElementById('recent-list').innerHTML=rhtml;
   updateStreak(data);
@@ -2529,7 +2928,7 @@ function renderAddForm(){
 }
 function renderCatGrid(){
   const cats=getCats();let ch='';
-  cats.forEach(c=>{ch+=`<div class="sel-btn${selCat===c?' sel':''}" onclick="selC('${c}')">${emoji(c)} ${c}</div>`;});
+  cats.forEach(c=>{ch+=`<div class="sel-btn${selCat===c?' sel':''}" onclick="selC('${escJsAttr(c)}')">${emoji(c)} ${escHtml(c)}</div>`;});
   document.getElementById('cat-grid').innerHTML=ch;
 }
 function selM(m){selMonth=m;renderAddForm();}
@@ -2630,7 +3029,7 @@ function handleReceiptPhoto(e){
       pendingReceipt=canvas.toDataURL('image/jpeg',.6);
       document.getElementById('receipt-preview-wrap').innerHTML=`
         <div style="position:relative;display:inline-block">
-          <img src="${pendingReceipt}" style="max-width:100px;max-height:100px;border-radius:10px;border:1px solid var(--border)"/>
+          <img src="${pendingReceipt}" alt="Receipt preview" style="max-width:100px;max-height:100px;border-radius:10px;border:1px solid var(--border)"/>
           <button onclick="pendingReceipt=null;renderAddForm()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:11px;cursor:pointer">✕</button>
         </div>`;
     };
@@ -2784,17 +3183,17 @@ function renderHistory(){
   }
   const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
   let html='';
-  if(!sorted.length)html=`<div class="empty"><div class="empty-icon">📭</div><p>No entries found${histSearch.trim()?' for "'+histSearch.trim()+'"':''}.</p></div>`;
+  if(!sorted.length)html=`<div class="empty"><div class="empty-icon">📭</div><p>No entries found${histSearch.trim()?' for "'+escHtml(histSearch.trim())+'"':''}.</p></div>`;
   sorted.forEach(e=>{
     const c=color(e.category),oi=data.indexOf(e);
     const isInc=e.type==='income';
     const amtColor=isInc?'var(--green)':c;
     const bg=isInc?'rgba(0,208,132,.15)':c+'22';
-    const payLabel=e.payMode?` · ${e.payMode}`:'';
-    const debtTag=e.debtLinked?` · 🔁 ${e.debtName||'Debt'} repayment`:'';
-    const tagChips=(e.tags&&e.tags.length)?`<div style="margin-top:4px">${e.tags.map(t=>`<span style="display:inline-block;background:var(--surface2);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:100px;margin-right:4px;margin-top:2px;">#${t}</span>`).join('')}</div>`:'';
+    const payLabel=e.payMode?` · ${escHtml(e.payMode)}`:'';
+    const debtTag=e.debtLinked?` · 🔁 ${escHtml(e.debtName||'Debt')} repayment`:'';
+    const tagChips=(e.tags&&e.tags.length)?`<div style="margin-top:4px">${e.tags.map(t=>`<span style="display:inline-block;background:var(--surface2);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:100px;margin-right:4px;margin-top:2px;">#${escHtml(t)}</span>`).join('')}</div>`:'';
     const receiptBtn=e.receipt?`<button class="del-btn" onclick="viewReceipt(${oi})" title="View receipt">🧾</button>`:'';
-    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${e.category} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+e.date:''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span>${receiptBtn}<button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
+    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${escHtml(e.category)} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+escHtml(e.date):''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span>${receiptBtn}<button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
   });
   document.getElementById('history-list').innerHTML=html;
   initSwipeToDelete('history-list');
@@ -2859,7 +3258,7 @@ function showDateRangeReport(){
   const bycat={};
   data.filter(e=>e.type!=='income').forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount;});
   const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
-  const catRows=sorted.map(([c,amt])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>${emoji(c)} ${c}</span><span style="color:var(--muted)">${fmt(amt)}</span></div>`).join('');
+  const catRows=sorted.map(([c,amt])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>${emoji(c)} ${escHtml(c)}</span><span style="color:var(--muted)">${fmt(amt)}</span></div>`).join('');
   resultEl.innerHTML=`
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--green)">${fmt(income)}</div><div style="font-size:10px;color:var(--muted)">Income</div></div>
@@ -2909,7 +3308,7 @@ function renderEditGrids(){
   MONTHS.forEach(m=>{mh+=`<div class="sel-btn${editMonth===m?' sel':''}" onclick="selEditMonth('${m}')">${m.slice(0,3)}</div>`;});
   document.getElementById('edit-month-grid').innerHTML=mh;
   const cats=getCats();let ch='';
-  cats.forEach(c=>{ch+=`<div class="sel-btn${editCat===c?' sel':''}" onclick="selEditCat('${c}')">${emoji(c)} ${c}</div>`;});
+  cats.forEach(c=>{ch+=`<div class="sel-btn${editCat===c?' sel':''}" onclick="selEditCat('${escJsAttr(c)}')">${emoji(c)} ${escHtml(c)}</div>`;});
   document.getElementById('edit-cat-grid').innerHTML=ch;
 }
 function selEditMonth(m){editMonth=m;renderEditGrids();}
@@ -2971,7 +3370,7 @@ function showNameSuggestions(val){
     const last=debts.filter(d=>d.name.toLowerCase()===n.toLowerCase()).sort((a,b)=>b.ts-a.ts)[0];
     const badgeClass=last?(last.cleared?'badge-cleared':last.type==='debt'?'badge-debt':'badge-profit'):'';
     const badgeText=last?(last.cleared?'Cleared':last.type==='debt'?'Borrowed':'Gave'):'';
-    return `<div class="ac-item" onclick="pickAcName('${n}')"><span>${n}</span><span class="ac-badge debt-entry-badge ${badgeClass}">${badgeText}</span></div>`;
+    return `<div class="ac-item" onclick="pickAcName('${escJsAttr(n)}')"><span>${escHtml(n)}</span><span class="ac-badge debt-entry-badge ${badgeClass}">${badgeText}</span></div>`;
   }).join('');
   list.classList.add('open');
 }
@@ -3101,7 +3500,7 @@ function renderDebtPage(){
     html+=`<div class="entry-row" style="${fullyCleared?'opacity:.55':''}">
       <div class="entry-icon" style="background:${bg};font-size:20px">${fullyCleared?'✅':isDebt?'💸':'💰'}</div>
       <div class="entry-info" style="flex:1">
-        <div class="entry-cat">${d.name} ${repaidBadge}</div>
+        <div class="entry-cat">${escHtml(d.name)} ${repaidBadge}</div>
         <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
         ${interestLabel}
         ${installmentLabel}
@@ -3118,15 +3517,21 @@ function renderDebtPage(){
   document.getElementById('debt-list').innerHTML=html;
 }
 async function delDebt(i){
-  if(confirm('Delete this entry?')){
-    const d=getDebts();
-    const removed=d[i];
-    d.splice(i,1);saveDebts(d);renderDebtPage();renderHome();showToast('Deleted','#ff6584');
-    if(removed&&removed.supaId){
-      const{error}=await sb.from('debts').delete().eq('id',removed.supaId);
-      if(error)console.error('Failed to delete debt from cloud:',error);
+  showConfirmModal({
+    icon:'🗑️',
+    title:'Delete this entry?',
+    message:'This debt/credit record will be permanently removed.',
+    confirmText:'Delete',
+    onConfirm:async()=>{
+      const d=getDebts();
+      const removed=d[i];
+      d.splice(i,1);saveDebts(d);renderDebtPage();renderHome();showToast('Deleted','#ff6584');
+      if(removed&&removed.supaId){
+        const{error}=await sb.from('debts').delete().eq('id',removed.supaId);
+        if(error)console.error('Failed to delete debt from cloud:',error);
+      }
     }
-  }
+  });
 }
 
 // ── DUE DATE ALERTS ──
@@ -3155,7 +3560,7 @@ function checkDueAlerts(){
     const dd=item.daysLeft;
     const urgency=dd<0?`⚠️ Overdue by ${Math.abs(dd)} day(s)`:dd===0?'🔴 Due TODAY':`⏰ Due in ${dd} day(s) — arrange money now!`;
     html+=`<div class="due-alert-item">
-      <div class="due-alert-name">${item.isRecurring?'🔁 ':''}${item.name} — ${fmt(item.amount)}</div>
+      <div class="due-alert-name">${item.isRecurring?'🔁 ':''}${escHtml(item.name)} — ${fmt(item.amount)}</div>
       <div class="due-alert-info">${item.info} · ${urgency}</div>
     </div>`;
   });
@@ -3186,6 +3591,7 @@ function showMonthPicker(){
   document.getElementById('month-modal').classList.add('open');
 }
 document.getElementById('month-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('cat-delete-modal').addEventListener('click',function(e){if(e.target===this)closeCatDeleteModal();});
 
 // ── MANAGE ──
 function renderManage(){
@@ -3194,17 +3600,17 @@ function renderManage(){
   cats.forEach((c,i)=>{
     const cl=color(c);
     const isCustom=!!getCatColors()[c];
-    html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${c}</span>${isCustom?`<button onclick="resetCatColor('${c}')" title="Reset to default color" style="background:none;border:none;color:var(--muted);font-size:10px;margin-right:4px;cursor:pointer;">↺</button>`:''}<input type="color" value="${cl}" onchange="setCatColor('${c}',this.value)" title="Choose a custom color for ${c}" style="width:20px;height:20px;border:none;border-radius:50%;padding:0;margin-right:8px;cursor:pointer;background:none;"/><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
+    html+=`<div class="manage-row"><span style="font-size:20px;width:32px;text-align:center">${emoji(c)}</span><span style="flex:1;font-size:15px">${escHtml(c)}</span>${isCustom?`<button onclick="resetCatColor('${escJsAttr(c)}')" title="Reset to default color" style="background:none;border:none;color:var(--muted);font-size:10px;margin-right:4px;cursor:pointer;">↺</button>`:''}<input type="color" value="${cl}" onchange="setCatColor('${escJsAttr(c)}',this.value)" title="Choose a custom color for ${escHtml(c)}" style="width:20px;height:20px;border:none;border-radius:50%;padding:0;margin-right:8px;cursor:pointer;background:none;"/><button class="del-btn" onclick="deleteCat(${i})">✕</button></div>`;
   });
   document.getElementById('manage-cat-list').innerHTML=html;
   const catBudgets=getCatBudgets();
   document.getElementById('cat-budget-list').innerHTML=cats.map(c=>`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <span style="font-size:16px;width:24px;text-align:center">${emoji(c)}</span>
-      <span style="flex:1;font-size:13px">${c}</span>
+      <span style="flex:1;font-size:13px">${escHtml(c)}</span>
       <div style="position:relative;width:110px">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px">₹</span>
-        <input type="number" class="ti" value="${catBudgets[c]||''}" placeholder="No limit" onchange="setCatBudget('${c}',this.value)" style="padding:7px 7px 7px 22px;font-size:12px;width:100%"/>
+        <input type="number" class="ti" value="${catBudgets[c]||''}" placeholder="No limit" onchange="setCatBudget('${escJsAttr(c)}',this.value)" style="padding:7px 7px 7px 22px;font-size:12px;width:100%"/>
       </div>
     </div>`).join('');
   document.getElementById('budget-limit-input').value=getBudgetLimit()||'';
@@ -3223,7 +3629,7 @@ function renderManage(){
     document.getElementById('edit-email').value=profile.email||'';
     document.getElementById('edit-mobile').value=profile.mobile||'';
     const pavBox=document.getElementById('profile-av-box');
-    if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}"/>`;}
+    if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}" alt="Avatar"/>`;}
     else{pavBox.innerHTML=`<span id="profile-av-ph">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
     const coverBox=document.getElementById('cover-photo-box');
     if(coverBox){
@@ -3261,7 +3667,7 @@ function renderManage(){
     bioSub.textContent='Use fingerprint / Face unlock instead of password';
   }
   // Show admin sections
-  const isAdmin=profile&&(profile.isAdmin||CU===ADMIN_USERNAME);
+  const isAdmin=!!(profile&&profile.isAdmin);
   const supportCardMng = document.getElementById("support-user-card");
   if(supportCardMng){
     supportCardMng.style.display = isAdmin ? "none" : "block";
@@ -3285,10 +3691,84 @@ function addCategory(){
   if(cats.includes(val)){showToast('Already exists!','#ffb300');return;}
   cats.push(val);saveCats(cats);inp.value='';renderManage();renderCatGrid();showToast('Category added!');
 }
+// ── CATEGORY BUG B6 FIX ──
+// Previously deleteCat() only asked a raw confirm() and then always spliced the category out,
+// even when historical transactions still referenced it by name — leaving those records with a
+// category that no longer exists in Manage → Categories (an "orphaned" category on old data).
+// That silently breaks category-based reports/filters/budgets for anything already logged.
+// Now: categories with zero historical usage delete immediately (nothing at risk). Categories
+// still in use are never blindly removed — the user must explicitly move those transactions to
+// another category first, via the themed modal below, so reports stay meaningful.
+let _catDeleteIndex=null,_catDeleteName=null,_catDeleteReassignTo=null;
 function deleteCat(i){
-  const cats=getCats(),cat=cats[i];
-  if(getData().some(e=>e.category===cat)){if(!confirm(`"${cat}" has expenses. Delete anyway?`))return;}
-  cats.splice(i,1);saveCats(cats);renderManage();showToast('Removed','#ff6584');
+  const cats=getCats();
+  const cat=cats[i];
+  if(cat===undefined)return;
+  const usageCount=getData().filter(e=>e.category===cat).length;
+  if(usageCount===0){
+    showConfirmModal({
+      icon:'🗑️',
+      title:'Delete category?',
+      message:`Delete "${cat}"? It has no transactions yet, so nothing else will be affected.`,
+      confirmText:'Delete',
+      onConfirm:()=>performCatDelete(i,cat)
+    });
+    return;
+  }
+  if(cats.length<2){
+    showAlertModal({error:true,icon:'🚫',title:'Can\u2019t delete this category',message:`"${cat}" is your only category and it's used by ${usageCount} transaction${usageCount===1?'':'s'}. Add another category first so those transactions have somewhere to go.`});
+    return;
+  }
+  openCatDeleteModal(i,cat,usageCount);
+}
+function openCatDeleteModal(i,cat,usageCount){
+  _catDeleteIndex=i;_catDeleteName=cat;_catDeleteReassignTo=null;
+  const cats=getCats().filter(c=>c!==cat);
+  const otherCats=cats.length?cats:['Other'];
+  document.getElementById('cat-delete-msg').textContent=
+    `"${cat}" is used by ${usageCount} historical transaction${usageCount===1?'':'s'}. To keep your reports and totals accurate, choose a category to move ${usageCount===1?'it':'them'} to before deleting "${cat}".`;
+  const defaultTarget=otherCats.includes('Other')?'Other':otherCats[0];
+  _catDeleteReassignTo=defaultTarget;
+  document.getElementById('cat-delete-reassign-grid').innerHTML=otherCats.map(c=>
+    `<div class="sel-btn${c===defaultTarget?' sel':''}" onclick="selectCatReassignTarget('${escJsAttr(c)}')">${emoji(c)} ${escHtml(c)}</div>`
+  ).join('');
+  document.getElementById('cat-delete-modal').classList.add('open');
+}
+function selectCatReassignTarget(c){
+  _catDeleteReassignTo=c;
+  document.querySelectorAll('#cat-delete-reassign-grid .sel-btn').forEach(el=>{
+    el.classList.toggle('sel',el.textContent.trim().endsWith(c));
+  });
+}
+function closeCatDeleteModal(){
+  document.getElementById('cat-delete-modal').classList.remove('open');
+  _catDeleteIndex=null;_catDeleteName=null;_catDeleteReassignTo=null;
+}
+function confirmCatReassignDelete(){
+  if(_catDeleteIndex===null||!_catDeleteReassignTo)return;
+  const i=_catDeleteIndex,cat=_catDeleteName,target=_catDeleteReassignTo;
+  const data=getData();
+  let moved=0;
+  data.forEach(e=>{if(e.category===cat){e.category=target;moved++;}});
+  saveData(data);
+  closeCatDeleteModal();
+  performCatDelete(i,cat);
+  showToast(`✅ Moved ${moved} transaction${moved===1?'':'s'} to "${target}" and removed "${cat}"`,'#00d084');
+  renderHome();renderHistory();
+}
+function performCatDelete(i,cat){
+  const cats=getCats();
+  const idx=cats.indexOf(cat);
+  if(idx===-1)return;
+  cats.splice(idx,1);
+  saveCats(cats);
+  // Clean up per-category settings so they don't linger for a category that no longer exists.
+  const catBudgets=getCatBudgets();
+  if(catBudgets[cat]!==undefined){delete catBudgets[cat];localStorage.setItem(uKey('catBudgets'),JSON.stringify(catBudgets));deleteCategoryBudget(cat);}
+  const catColors=getCatColors();
+  if(catColors[cat]!==undefined){delete catColors[cat];saveCatColors(catColors);}
+  renderManage();renderCatGrid();
+  showToast('Removed','#ff6584');
 }
 
 // ── CONTACT ADMIN / CUSTOMER SERVICE ──
@@ -3329,12 +3809,19 @@ async function sendAdminMessage(){
 
 }
 async function deleteAdminMessage(id){
-  if(!confirm('Delete this ticket permanently?'))return;
-  try{
-    const{error}=await sb.from('support_messages').delete().eq('id',id);
-    if(error)throw error;
-  }catch(e){console.error('Failed to delete message:',e);showToast('Failed to delete message','#e53935');return;}
-  renderAdminMessages();
+  showConfirmModal({
+    icon:'🗑️',
+    title:'Delete this ticket?',
+    message:'This support ticket will be permanently removed and cannot be recovered.',
+    confirmText:'Delete',
+    onConfirm:async()=>{
+      try{
+        const{error}=await sb.from('support_messages').delete().eq('id',id);
+        if(error)throw error;
+      }catch(e){console.error('Failed to delete message:',e);showToast('Failed to delete message','#e53935');return;}
+      renderAdminMessages();
+    }
+  });
 }
 async function setTicketStatus(id,status){
   try{
@@ -3384,18 +3871,18 @@ async function renderAdminMessages(){
     const dt=m.created_at?new Date(m.created_at).toLocaleString('en-IN'):'';
     const status=m.status||'Open';
     const sc=statusColor[status]||'#7a7d99';
-    const subjectLine=m.subject?`<div style="font-size:13px;font-weight:700;margin-bottom:2px">${m.subject.replace(/</g,'&lt;')}</div>`:'';
-    const meta=[m.category,m.priority?m.priority+' priority':null].filter(Boolean).join(' · ');
+    const subjectLine=m.subject?`<div style="font-size:13px;font-weight:700;margin-bottom:2px">${escHtml(m.subject)}</div>`:'';
+    const meta=[m.category,m.priority?m.priority+' priority':null].filter(Boolean).map(escHtml).join(' · ');
     return `<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px">
-        <span style="font-size:13px;font-weight:700">${(m.username||'Unknown').replace(/</g,'&lt;')}</span>
+        <span style="font-size:13px;font-weight:700">${escHtml(m.username||'Unknown')}</span>
         <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;white-space:nowrap">${status}</span>
       </div>
       ${subjectLine}
       ${meta?`<div style="font-size:11px;color:var(--muted);margin-bottom:6px">${meta}</div>`:''}
-      <div style="font-size:13px;line-height:1.6;margin-bottom:4px">${(m.message||'').replace(/</g,'&lt;')}</div>
+      <div style="font-size:13px;line-height:1.6;margin-bottom:4px">${escHtml(m.message||'')}</div>
       <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${dt}</div>
-      ${m.admin_reply?`<div style="padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:8px"><b style="color:var(--accent)">Your reply:</b> ${String(m.admin_reply).replace(/</g,'&lt;')}</div>`:''}
+      ${m.admin_reply?`<div style="padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:8px"><b style="color:var(--accent)">Your reply:</b> ${escHtml(m.admin_reply)}</div>`:''}
       <textarea id="reply-inp-${m.id}" class="ti" placeholder="Write a reply to the user..." style="width:100%;min-height:50px;resize:none;line-height:1.5;font-size:12px;margin-bottom:6px">${m.admin_reply?'':''}</textarea>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="pill-btn" style="font-size:11px" onclick="sendTicketReply(${m.id})">💬 Send Reply</button>
@@ -3450,14 +3937,14 @@ async function renderMembers(){
     const joined=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'—';
     const isSelf=u===CU;
     return `<div class="entry-row" style="flex-wrap:wrap">
-      <div class="entry-icon" style="background:${p.isAdmin?'rgba(108,99,255,.2)':'rgba(0,208,132,.15)'}">${p.isAdmin?'👑':(p.name||u).charAt(0).toUpperCase()}</div>
+      <div class="entry-icon" style="background:${p.isAdmin?'rgba(108,99,255,.2)':'rgba(0,208,132,.15)'}">${p.isAdmin?'👑':escHtml((p.name||u).charAt(0).toUpperCase())}</div>
       <div class="entry-info">
-        <div class="entry-cat">${p.name||u} ${p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':''}</div>
-        <div class="entry-meta">@${u} · ${entryCount} entries · ${debtCount} debt records · joined ${joined}</div>
+        <div class="entry-cat">${escHtml(p.name||u)} ${p.isAdmin?'<span class="debt-entry-badge badge-debt" style="font-size:10px">Admin</span>':''}</div>
+        <div class="entry-meta">@${escHtml(u)} · ${entryCount} entries · ${debtCount} debt records · joined ${joined}</div>
       </div>
       ${isSelf?'':`<div style="display:flex;gap:6px;width:100%;margin-top:8px">
-        <button class="pill-btn" style="font-size:11px" onclick="toggleAdminRole('${u}')">${p.isAdmin?'⬇ Remove Admin':'⬆ Make Admin'}</button>
-        <button class="pill-btn" style="font-size:11px;color:var(--red)" onclick="deleteUserAccount('${u}')">🗑 Delete Account</button>
+        <button class="pill-btn" style="font-size:11px" onclick="toggleAdminRole('${escJsAttr(u)}')">${p.isAdmin?'⬇ Remove Admin':'⬆ Make Admin'}</button>
+        <button class="pill-btn" style="font-size:11px;color:var(--red)" onclick="deleteUserAccount('${escJsAttr(u)}')">🗑 Delete Account</button>
       </div>`}
     </div>`;
   }).join('');
@@ -3473,15 +3960,24 @@ async function toggleAdminRole(u){
   renderMembers();
 }
 async function deleteUserAccount(u){
-  if(!confirm(`Permanently delete @${u}'s account? This removes their profile and cannot be undone. Their historical transactions/debts already synced to Supabase are not automatically erased.`))return;
-  const users=getUsers();
-  delete users[u];
-  saveUsers(users);
-  try{localStorage.removeItem('exp_'+u+'_data');localStorage.removeItem('exp_'+u+'_debts');localStorage.removeItem('exp_'+u+'_cats');}catch(e){}
-  try{const{error}=await sb.from('users').delete().eq('username',u);if(error)throw error;}
-  catch(e){console.error('Could not delete user from cloud:',e);showToast('Deleted locally — cloud deletion failed, check Error Logs','#ffb300');pushErrorLog({message:'Failed to delete user from Supabase: '+(e&&e.message?e.message:String(e)),source:'deleteUserAccount'});renderMembers();return;}
-  showToast(`🗑 @${u} deleted`,'#ff6584');
-  renderMembers();
+  showConfirmModal({
+    icon:'🗑️',
+    title:'Delete this account?',
+    message:`Permanently delete @${u}'s account? This removes their profile and cannot be undone. Their historical transactions/debts already synced to Supabase are not automatically erased.`,
+    confirmText:'Delete Account',
+    requireTypedText:u,
+    inputLabel:`Type "${u}" to confirm`,
+    onConfirm:async()=>{
+      const users=getUsers();
+      delete users[u];
+      saveUsers(users);
+      try{localStorage.removeItem('exp_'+u+'_data');localStorage.removeItem('exp_'+u+'_debts');localStorage.removeItem('exp_'+u+'_cats');}catch(e){}
+      try{const{error}=await sb.from('users').delete().eq('username',u);if(error)throw error;}
+      catch(e){console.error('Could not delete user from cloud:',e);showToast('Deleted locally — cloud deletion failed, check Error Logs','#ffb300');pushErrorLog({message:'Failed to delete user from Supabase: '+(e&&e.message?e.message:String(e)),source:'deleteUserAccount'});renderMembers();return;}
+      showToast(`🗑 @${u} deleted`,'#ff6584');
+      renderMembers();
+    }
+  });
 }
 
 // ── ADMIN: APPLICATION STATISTICS ──
@@ -3524,8 +4020,8 @@ function renderErrorLogs(){
   el.innerHTML=logs.map(l=>{
     const dt=new Date(l.ts).toLocaleString('en-IN');
     return `<div style="background:var(--surface2);border-radius:12px;padding:10px 12px;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12px;font-weight:700;color:var(--red)">${(l.message||'Error').replace(/</g,'&lt;')}</span><span style="font-size:10px;color:var(--muted);white-space:nowrap">${dt}</span></div>
-      ${l.source?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${String(l.source).replace(/</g,'&lt;')}${l.user?' · @'+l.user:''}</div>`:''}
+      <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:12px;font-weight:700;color:var(--red)">${escHtml(l.message||'Error')}</span><span style="font-size:10px;color:var(--muted);white-space:nowrap">${dt}</span></div>
+      ${l.source?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${escHtml(l.source)}${l.user?' · @'+escHtml(l.user):''}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -3672,7 +4168,7 @@ function dismissUpdate(){
   showToast('✅ Marked as read');
 }
 document.getElementById('update-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
-document.getElementById('forgotpw-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('forgotpw-modal').addEventListener('click',function(e){if(e.target===this)closeForgotPwModal();});
 
 // ── CHANGE PASSWORD ──
 function showChangePwModal(){document.getElementById('changepw-modal').classList.add('open');}
@@ -3682,11 +4178,35 @@ async function doChangePw(){
   const conf=document.getElementById('cp-conf').value;
   const err=document.getElementById('cp-err');
   const users=getUsers();
-  if(!users[CU]){err.textContent='User not found.';return;}
-  if(!await verifyAndMigratePassword(users,CU,old)){err.textContent='Current password is wrong.';return;}
+  if(!users[CU]||!users[CU].email){err.textContent='User not found.';return;}
+  if(!old){err.textContent='Enter your current password.';return;}
   if(nw.length<4){err.textContent='New password must be at least 4 characters.';return;}
   if(nw!==conf){err.textContent='Passwords do not match.';return;}
-  users[CU].password=await hashPassword(nw);saveUsers(users);
+
+  err.textContent='';
+
+  // Verify the current password the same way login does — via Supabase Auth — rather than
+  // comparing against a locally cached hash. A live session already exists at this point,
+  // but re-checking the old password server-side prevents someone who found an unlocked
+  // device (or a stale local cache) from changing the password without knowing it.
+  const { error: reauthError } = await sb.auth.signInWithPassword({
+    email: users[CU].email,
+    password: old
+  });
+  if (reauthError) {
+    err.textContent = 'Current password is wrong.';
+    return;
+  }
+
+  const { error } = await sb.auth.updateUser({ password: nw });
+  if (error) {
+    console.error('Failed to update password in Supabase Auth:', error);
+    err.textContent = error.message || 'Could not update password — check your connection and try again.';
+    return;
+  }
+
+  // No password hash is written to public.users or localStorage. Supabase Auth remains
+  // the sole credential authority.
   document.getElementById('changepw-modal').classList.remove('open');
   ['cp-old','cp-new','cp-conf'].forEach(id=>document.getElementById(id).value='');
   err.textContent='';
@@ -3703,7 +4223,15 @@ function exportCSV(){
   a.download='expenses_'+CU+'.csv';a.click();showToast('CSV Downloaded!');
 }
 function confirmClear(){
-  if(confirm('Delete ALL expenses? Cannot be undone.')){saveData([]);renderHome();showToast('Cleared','#ff6584');}
+  showConfirmModal({
+    icon:'🗑️',
+    title:'Delete ALL expenses?',
+    message:'This permanently removes every income and expense entry on this account. This cannot be undone.',
+    confirmText:'Delete All',
+    requireTypedText:'DELETE',
+    inputLabel:'Type DELETE to confirm',
+    onConfirm:()=>{saveData([]);renderHome();showToast('Cleared','#ff6584');}
+  });
 }
 function exportAccount(){
   if(!CU){showToast('Not logged in','#ffb300');return;}
@@ -3790,8 +4318,8 @@ function handleProfileAvatar(e){
 
     if(error){
     console.error("Support Ticket Error:", error);
-    alert(JSON.stringify(error));
-    showToast("Failed to submit ticket");
+    pushErrorLog({message:'Failed to submit support ticket: '+(error&&error.message?error.message:JSON.stringify(error)),source:'submitSupportTicket'});
+    showToast("Failed to submit ticket — please try again");
     return;
 }
 
@@ -3841,12 +4369,12 @@ async function loadSupportTickets(){
       const sc=statusColor[t.status]||'#7a7d99';
       return `<div style="background:var(--surface2);border-radius:12px;padding:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:13px;font-weight:700">${(t.subject||'(no subject)').replace(/</g,'&lt;')}</span>
-          <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;white-space:nowrap">${t.status||'Open'}</span>
+          <span style="font-size:13px;font-weight:700">${escHtml(t.subject||'(no subject)')}</span>
+          <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;white-space:nowrap">${escHtml(t.status||'Open')}</span>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${t.category||''}${t.priority?' · '+t.priority+' priority':''} · ${dt}</div>
-        <div style="font-size:13px;line-height:1.6">${(t.message||'').replace(/</g,'&lt;')}</div>
-        ${t.admin_reply?`<div style="margin-top:8px;padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6"><b style="color:var(--accent)">Admin reply:</b> ${String(t.admin_reply).replace(/</g,'&lt;')}</div>`:''}
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${escHtml(t.category||'')}${t.priority?' · '+escHtml(t.priority)+' priority':''} · ${dt}</div>
+        <div style="font-size:13px;line-height:1.6">${escHtml(t.message||'')}</div>
+        ${t.admin_reply?`<div style="margin-top:8px;padding:8px 10px;background:rgba(108,99,255,.12);border-radius:10px;font-size:12px;line-height:1.6"><b style="color:var(--accent)">Admin reply:</b> ${escHtml(t.admin_reply)}</div>`:''}
       </div>`;
     }).join('');
   }catch(e){
@@ -3868,11 +4396,8 @@ async function loadSupportTickets(){
             .single();
 
         if(error || !data){
-            console.log("No updates found");
             return;
         }
-
-        console.log("Latest Update:",data);
 
         const lastSeen = localStorage.getItem("last_seen_update");
 
@@ -3917,23 +4442,11 @@ async function saveProfile(){
   if(pendingAv){users[CU].avatar=pendingAv;pendingAv=null;}
   if(pendingCover){users[CU].coverPhoto=pendingCover;pendingCover=null;}
   saveUsers(users);
-  console.log("pendingAv =", pendingAv);
-  console.log("pendingAv =", pendingAv);
-console.log("users[CU].avatar =", users[CU].avatar);
-console.log("users[CU].avatar =", users[CU].avatar);
   // Sync profile to Supabase
-// Sync profile to Supabase
 try{
   const userId = await resolveSupabaseUserId();
 
-  console.log("Resolved User ID:", userId);
-  console.log("Avatar Value:", users[CU].avatar);
-  console.log("Avatar Length:", users[CU].avatar ? users[CU].avatar.length : 0);
-
   if(userId){
-      console.log("pendingCover =", pendingCover);
-console.log("coverPhoto =", users[CU].coverPhoto);
-console.log("coverPhoto length =", users[CU].coverPhoto ? users[CU].coverPhoto.length : 0);
     const { data, error } = await sb
       .from('users')
     .update({
@@ -3943,10 +4456,8 @@ console.log("coverPhoto length =", users[CU].coverPhoto ? users[CU].coverPhoto.l
   avatar: users[CU].avatar || null,
   cover_photo: users[CU].coverPhoto || null
 })
-      .eq('id', userId)
+      .eq('auth_user_id', userId)
       .select();
-
-    console.log("Profile Update Result:", data);
 
     if(error){
       console.error("Profile Update Error:", error);
@@ -3957,15 +4468,20 @@ console.log("coverPhoto length =", users[CU].coverPhoto ? users[CU].coverPhoto.l
 }
   // Update topbar
   const av=document.getElementById('tb-av');
-  if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  if(users[CU].avatar){av.innerHTML=`<img src="${users[CU].avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
   else{av.textContent=name.charAt(0).toUpperCase();}
   document.getElementById('tb-hi').textContent='@'+CU;
   syncDrawerProfile(users[CU]);
   showToast('✅ Profile updated!');
 }
 
-// ── FORGOT PASSWORD (identify by mobile or email, OTP sent by real email via EmailJS) ──
-let _fpOTP='', _fpTargetUser='';
+// ── FORGOT PASSWORD — real Supabase Auth recovery link ──────────────────────────────────
+// This replaces the previous custom 6-digit-OTP flow, which generated the OTP in a JS
+// variable and then wrote the new password_hash to Supabase as soon as that in-browser
+// string comparison passed (documented as B4 in SECURITY_TODO_B4_SERVER_SIDE_OTP.md — a
+// devtools user could always call the same write directly, bypassing the check). Supabase
+// Auth's resetPasswordForEmail()/updateUser() moves both the token and the password write
+// server-side, closing that gap instead of just documenting it.
 function showForgotPw(){
   document.getElementById('fp-step1').style.display='block';
   document.getElementById('fp-step2').style.display='none';
@@ -3974,114 +4490,82 @@ function showForgotPw(){
   document.getElementById('fp-title').textContent='🔑 Forgot Password';
   document.getElementById('forgotpw-modal').classList.add('open');
 }
-// Look up a user by either their registered mobile number or email address.
-// Checks local storage first (fast path), then falls back to Supabase so this
-// works even for accounts created on a different device.
-async function findUserByIdentifierAsync(idRaw){
-  const id=idRaw.trim().toLowerCase();
-  const localUsers=getUsers();
-  for(const uname in localUsers){
-    const acc=localUsers[uname];
-    if(acc.email&&acc.email.toLowerCase()===id) return{uname,row:null};
-    if(acc.mobile&&acc.mobile===idRaw.trim()) return{uname,row:null};
-  }
-  const{data,error}=await sb.from('users').select('*').or(`email.eq.${id},mobile.eq.${idRaw.trim()}`).maybeSingle();
-  if(error){console.error('Forgot-password lookup failed:',error);return null;}
-  if(!data)return null;
-  return{uname:data.username,row:data};
+function closeForgotPwModal(){
+  document.getElementById('forgotpw-modal').classList.remove('open');
 }
-async function sendForgotOTP(){
+// Resolve a login identifier (email or 10-digit mobile) to the email Supabase Auth needs.
+// Username is deliberately NOT accepted here (unlike login) — resetPasswordForEmail() needs
+// a real email address, and guessing one from a username would defeat the point.
+async function findAuthEmailByIdentifier(idRaw){
+  const id=idRaw.trim().toLowerCase();
+  if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) return id; // already an email — use directly
+  const{data,error}=await sb.from('users').select('email').eq('mobile',idRaw.trim()).maybeSingle();
+  if(error){console.error('Forgot-password lookup failed:',error);return null;}
+  return (data&&data.email)||null;
+}
+async function sendPasswordResetLink(){
   const idVal=document.getElementById('fp-identifier').value.trim();
   const err=document.getElementById('fp-err');
   err.textContent='';
   if(!idVal){err.textContent='Enter your registered mobile number or email.';return;}
-  const found=await findUserByIdentifierAsync(idVal);
-  if(!found){err.textContent='No account found with that mobile number or email.';return;}
-  const uname=found.uname;
-  const localUsers=getUsers();
-  let acc=localUsers[uname];
-  if(!acc){
-    // Account exists in Supabase but not on this device — build a local record
-    // from it so the rest of this flow (and resendOTP) work unchanged.
-    const row=found.row;
-    acc={name:row.name,email:row.email,mobile:row.mobile||null,password:row.password_hash,
-      isAdmin:!!row.is_admin,require2FA:!!row.require2FA,createdAt:Date.now(),onboarded:true};
-    localUsers[uname]=acc;
-    saveUsers(localUsers);
-  }
-  if(!acc.email){err.textContent='This account has no email on file — please contact support.';return;}
-  // Generate 6-digit OTP
-  _fpOTP=String(Math.floor(100000+Math.random()*900000));
-  _fpTargetUser=uname;
-  const maskedEmail=acc.email.replace(/^(.{2}).+(@.+)$/,'$1***$2');
-  document.getElementById('fp-mobile-display').textContent=maskedEmail;
-  document.getElementById('fp-username-hint').textContent='Username: '+uname;
-  document.getElementById('fp-step1').style.display='none';
-  document.getElementById('fp-step2').style.display='block';
-  document.getElementById('fp-err2').textContent='';
-  document.getElementById('fp-otp').value='';
-  document.getElementById('fp-newpw').value='';
-  document.getElementById('fp-confpw').value='';
-  await deliverOTPEmail(acc, uname);
-}
-async function deliverOTPEmail(acc, uname){
-  const result=await sendEmailViaEmailJS(EMAILJS_CONFIG.otpTemplateId,{
-    to_email:acc.email,
-    to_name:acc.name||uname,
-    username:uname,
-    otp_code:_fpOTP,
-    app_name:'Expenses Tracker',
-    brand_name:'ProjectVault',
-    logo_url:APP_LOGO_URL
-  });
-  if(result.ok){
-    showToast('📧 OTP emailed to '+acc.email,'#00d084');
-  } else if(result.reason==='send_failed'){
-    // EmailJS IS configured but the actual send call failed — most likely a wrong Service/Template
-    // ID, a template variable mismatch, a disabled email service, or the free-tier monthly quota.
-    showToast('⚠️ Email send failed: '+result.detail,'#ff6584');
-    setTimeout(()=>showToast('OTP: '+_fpOTP+' (shown here so you can still log in)','#6c63ff'),1800);
-  } else {
-    // EmailJS not configured yet — fall back to showing it on-screen so the app remains usable.
-    showToast('⚠️ Email not configured — showing OTP here instead','#ffb300');
-    setTimeout(()=>showToast('OTP: '+_fpOTP+' (set up EmailJS to send this by email)','#6c63ff'),1600);
+
+  const btn=document.getElementById('fp-send-btn');
+  if(btn&&btn.disabled)return;
+  setBtnLoading('fp-send-btn',true,'Sending…');
+  try{
+    const email=await findAuthEmailByIdentifier(idVal);
+    // Same response either way, whether or not an account was found — avoids leaking
+    // account existence through the UI (same anti-enumeration intent as the old flow).
+    if(email){
+      // redirectTo is built from the page the app is actually running on, so this never
+      // points at a dev-only localhost URL regardless of where it's deployed (GitHub
+      // Pages, a custom domain, etc). This origin+path MUST also be added to Supabase's
+      // Auth → URL Configuration → Redirect URLs allow-list, or Supabase will reject it.
+      const redirectTo=window.location.origin+window.location.pathname;
+      const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+      if(error)console.error('resetPasswordForEmail failed:',error); // still show generic success below
+    }
+    document.getElementById('forgotpw-modal').classList.remove('open');
+    showAlertModal({
+      icon:'📧',
+      title:'Check your email',
+      message:'If an account matches what you entered, a password reset link is on its way. Open it on this device to set a new password.'
+    });
+  } finally {
+    setBtnLoading('fp-send-btn',false);
   }
 }
-async function resendOTP(){
-  if(!_fpTargetUser){return;}
-  _fpOTP=String(Math.floor(100000+Math.random()*900000));
-  const acc=getUsers()[_fpTargetUser];
-  await deliverOTPEmail(acc, _fpTargetUser);
-}
-async function verifyForgotOTP(){
-  const otp=document.getElementById('fp-otp').value.trim();
+// completePasswordReset() only ever runs while a Supabase "recovery" session is active —
+// i.e. after the user has clicked the emailed link and landed back here (see the
+// PASSWORD_RECOVERY handler on sb.auth.onAuthStateChange near the top of this file, which
+// is what opens fp-step2 in the first place). There is no OTP left to check client-side.
+async function completePasswordReset(){
   const nw=document.getElementById('fp-newpw').value;
   const conf=document.getElementById('fp-confpw').value;
   const err=document.getElementById('fp-err2');
-  if(otp!==_fpOTP){err.textContent='Incorrect OTP. Try again.';return;}
+  err.textContent='';
   if(nw.length<4){err.textContent='Password must be at least 4 characters.';return;}
   if(nw!==conf){err.textContent='Passwords do not match.';return;}
 
-  const newHash=await hashPassword(nw);
-
-  // Update Supabase first — this is the actual source of truth doLogin() checks.
-  const{error}=await sb.from('users').update({password_hash:newHash}).eq('username',_fpTargetUser);
-  if(error){
-    console.error('Password reset failed in Supabase:',error);
-    err.textContent='Could not reset password — check your connection and try again.';
-    return;
+  const btn=document.getElementById('fp-reset-btn');
+  if(btn&&btn.disabled)return;
+  setBtnLoading('fp-reset-btn',true,'Resetting…');
+  try{
+    const{error}=await sb.auth.updateUser({password:nw});
+    if(error){
+      console.error('Password reset failed in Supabase Auth:',error);
+      err.textContent=error.message||'Could not reset password — check your connection and try again.';
+      return;
+    }
+    document.getElementById('forgotpw-modal').classList.remove('open');
+    showToast('✅ Password reset! Please log in.');
+    // The recovery session Supabase just used isn't the same as a normal login session for
+    // this app's purposes (CU was never set, profile was never loaded) — sign out cleanly
+    // so the person lands on a normal login form rather than a half-initialized app state.
+    await sb.auth.signOut();
+  } finally {
+    setBtnLoading('fp-reset-btn',false);
   }
-
-  // Keep the local copy in sync too (used for require2FA and profile display).
-  const users=getUsers();
-  if(users[_fpTargetUser]){
-    users[_fpTargetUser].password=newHash;
-    saveUsers(users);
-  }
-
-  document.getElementById('forgotpw-modal').classList.remove('open');
-  _fpOTP='';_fpTargetUser='';
-  showToast('✅ Password reset! Please login.');
 }
 
 // ── MONTHLY STATEMENT EMAIL ──
@@ -4440,7 +4924,7 @@ function renderReminders(){
     <div class="rem-row" style="${isPaused?'opacity:.5':''}">
       <span style="font-size:20px">${isPaused?'⏸️':isPaid?'✅':(isIncome?'💰':'🔔')}</span>
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:600">${r.name}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}${isPaused?' <span style="font-size:10px;color:var(--muted);font-weight:700">PAUSED</span>':''}</div>
+        <div style="font-size:14px;font-weight:600">${escHtml(r.name)}${isIncome?' <span style="font-size:10px;color:var(--green);font-weight:700">INCOME</span>':''}${isPaused?' <span style="font-size:10px;color:var(--muted);font-weight:700">PAUSED</span>':''}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px"><span style="color:${isIncome?'var(--green)':'var(--text)'}">${fmt(r.amount)}</span> · ${freqLabel(r)}</div>
       </div>
       ${!isPaused?(isPaid
@@ -4866,13 +5350,24 @@ if('serviceWorker' in navigator){
 }
 
 // ── INIT ──
-(function(){
+// Async because the lock-screen shortcut (skip straight back into a remembered account) is
+// only safe to offer if a real Supabase Auth session is still valid — otherwise this would be
+// a UI-only "session" that can never actually reach Supabase, which used to be the case when
+// this only checked the local exp_session marker.
+(async function(){
   try{
-    ensureAdminAccount();
     const s=localStorage.getItem('exp_session');
     if(s){
       const u=getUsers();
-      if(u[s]){showLockScreen(s);return;}
+      const{data:{session}}=await sb.auth.getSession();
+      if(session&&u[s]){
+        showLockScreen(s);
+        return;
+      }
+      // Local marker says "logged in" but there's no live Supabase session to back it up
+      // (expired token, signed out in another tab, cleared cookies, etc). Don't show a lock
+      // screen that can never successfully unlock — fall through to a normal login.
+      localStorage.removeItem('exp_session');
     }
     document.getElementById('auth-screen').style.display='flex';
   }catch(e){
@@ -4980,9 +5475,45 @@ const sb = window.supabase.createClient(
     SUPABASE_KEY
 );
 
-console.log(window.supabase);
-console.log(sb);
-console.log("Supabase Connected");
+// ── SUPABASE AUTH — real authentication authority ──────────────────────────────────────
+// Login/signup/password-change/password-reset all go through sb.auth (signInWithPassword /
+// signUp / updateUser / resetPasswordForEmail) instead of comparing public.users.password_hash
+// client-side. password_hash may still exist as a legacy column but is never read or written
+// by this file as of this migration. See FINAL WEBAPP AUDIT REPORT for details.
+
+// Username -> auth email, via the secure RPC (does not expose other users' emails/rows).
+// Supabase RPC calls fail on a parameter-name mismatch, not just a missing function, so this
+// tries the two conventional spellings before giving up. Once the real signature is confirmed
+// (see SCHEMA_VERIFICATION section of the release notes), the losing branch can be deleted.
+async function resolveEmailForUsername(username){
+  const attempts=[{p_username:username},{username:username}];
+  let lastError=null;
+  for(const args of attempts){
+    const{data,error}=await sb.rpc('get_auth_email_by_username',args);
+    if(!error) return {email:data||null,error:null};
+    lastError=error;
+    if(!/could not find|does not exist|schema cache|parameter/i.test(error.message||'')) break;
+  }
+  return {email:null,error:lastError};
+}
+
+// Fires when a Supabase password-recovery link (clicked from the reset email) lands back on
+// this page. supabase-js auto-parses the recovery token from the URL fragment and opens a
+// short-lived recovery session; PASSWORD_RECOVERY is the signal to show the "set new password"
+// step instead of navigating anywhere on our own.
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){
+    try{
+      document.getElementById('fp-title').textContent='🔑 Set a New Password';
+      document.getElementById('fp-step1').style.display='none';
+      document.getElementById('fp-step2').style.display='block';
+      document.getElementById('fp-err2').textContent='';
+      document.getElementById('fp-newpw').value='';
+      document.getElementById('fp-confpw').value='';
+      document.getElementById('forgotpw-modal').classList.add('open');
+    }catch(e){console.error('Could not open recovery UI:',e);}
+  }
+});
 </script>
   <script>
 // ── ANDROID → WEBAPP TRANSACTION SYNC ──
@@ -4991,12 +5522,15 @@ console.log("Supabase Connected");
 // add-expense flow. Each imported entry is tagged with supaId so re-syncing never duplicates it.
 
 async function resolveSupabaseUserId(){
+  // The canonical user identity for RLS-protected tables is the Supabase Auth UUID.
+  // Never substitute public.users.id (the legacy integer profile key) here.
   if(!CU)return null;
-  const{data,error}=await sb.from('users').select('id').eq('username',CU).maybeSingle();
-  if(error||!data){console.error('Could not resolve Supabase user id for',CU,error);return null;}
-  
-  return data.id;
-  
+  const{data,error}=await sb.auth.getUser();
+  if(error||!data?.user){
+    console.error('Could not resolve authenticated Supabase user',error);
+    return null;
+  }
+  return data.user.id;
 }
 
 function mapPayApp(paymentApp,paymentMode){
@@ -5018,11 +5552,20 @@ function androidTxnToEntry(txn){
   const raw = txn.transaction_date || txn.created_at;
   const dt = new Date(String(raw).replace(' ','T'));
   const validDt = isNaN(dt.getTime()) ? new Date() : dt;
+  const pad2=n=>String(n).padStart(2,'0');
+  // Bug fix: the previous `String(raw).split(' ')[0]` assumed `raw` always contains a space
+  // (Postgres text style "YYYY-MM-DD HH:MM:SS"). Supabase's JS client actually returns
+  // ISO-8601 strings with a 'T' separator and no space (e.g. "2026-08-15T10:30:00+00:00"), so
+  // that split silently returned the ENTIRE timestamp string as `date` instead of "YYYY-MM-DD"
+  // — breaking anything expecting a plain date (date-input fields, day-level grouping/filters).
+  // Deriving it from validDt's local calendar fields is correct for both formats and matches
+  // the local-time semantics already used for `month`/`year` below.
+  const localDateStr = `${validDt.getFullYear()}-${pad2(validDt.getMonth()+1)}-${pad2(validDt.getDate())}`;
 
   return {
     month: MONTHS[validDt.getMonth()],
     year: validDt.getFullYear(),
-    date: String(raw).split(' ')[0],
+    date: localDateStr,
 
     category: mapAndroidCategory(txn.category),
 
@@ -5050,12 +5593,14 @@ function refreshVisibleTabsAfterSync(){
 }
 
 async function syncAndroidTransactions(){
-  const cEl=document.getElementById('drawer-synccount');
+  beginSyncOp();
   const userId = await resolveSupabaseUserId();
   if(!userId){
-    if(cEl)cEl.textContent='Cloud sync: FAILED (no user id)';
+    endSyncOp(true,'user id not resolved');
     return;
   }
+  // Account may have changed while resolveSupabaseUserId() was in flight (e.g. rapid logout).
+  if(!CU){endSyncOp(true,'logged out during sync');return;}
 
   const { data: rows, error } = await sb
     .from('transactions')
@@ -5065,9 +5610,10 @@ async function syncAndroidTransactions(){
 
   if(error){
     console.error('Error fetching Android transactions:', error);
-    if(cEl)cEl.textContent='Cloud sync: ERROR — '+(error.message||'see console');
+    endSyncOp(true,error.message||'transactions fetch failed');
     return;
   }
+  if(!CU){endSyncOp(true,'logged out during sync');return;} // guard again post-await before writing anything
 
   const data = getData();
   const existingIds = new Set(
@@ -5075,10 +5621,8 @@ async function syncAndroidTransactions(){
   );
 
   let added = 0;
-
   (rows || []).forEach(txn => {
     if(existingIds.has(String(txn.id))) return;
-
     data.push(androidTxnToEntry(txn));
     added++;
   });
@@ -5089,25 +5633,44 @@ async function syncAndroidTransactions(){
     showToast(`📲 ${added} new transaction${added > 1 ? 's' : ''} synced from your phone`);
   }
 
-  if(cEl)cEl.textContent=`Cloud sync: ${(rows||[]).length} found in Supabase, ${added} new added, ${data.filter(e=>e.supaId).length} total tagged`;
+  const statusSuffix=_androidRealtimeStatus==='SUBSCRIBED'?'':' (realtime not connected — polling fallback active)';
+  endSyncOp(false,`${(rows||[]).length} found in Supabase, ${added} new added, ${data.filter(e=>e.supaId).length} total tagged${statusSuffix}`);
 
   subscribeAndroidRealtime(userId);
+  startSyncHealthMonitor();
 }
 
 let _androidRealtimeChannel=null;
 function subscribeAndroidRealtime(userId){
-  if(_androidRealtimeChannel){sb.removeChannel(_androidRealtimeChannel);}
+  if(_androidRealtimeChannel){ try{sb.removeChannel(_androidRealtimeChannel);}catch(e){} _androidRealtimeChannel=null; }
+  // ── B3: snapshot the identity this subscription belongs to. Both checks are kept
+  // (generation counter + username) as defense-in-depth — either one changing independently
+  // is sufficient to prove the account context has moved on. ──
+  const subscriptionUserId=String(userId);
+  const subscriptionUsername=CU;
+  const subscriptionGeneration=_acctGeneration;
+  _androidRealtimeStatus='IDLE';
   _androidRealtimeChannel=sb.channel('android-transactions-'+userId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'transactions',filter:`user_id=eq.${userId}`},(payload)=>{
+      // subscriptionUserId === currentUserId (and generation/username) check — refuse to write
+      // if the active account has changed since this subscription was created.
+      if(subscriptionGeneration!==_acctGeneration||subscriptionUsername!==CU){
+        console.warn('[realtime] Ignoring stale Android transaction event from a previous account session');
+        return;
+      }
       const txn=payload.new;
+      if(String(txn.user_id)!==subscriptionUserId){
+        console.warn('[realtime] Ignoring Android transaction event with mismatched user_id');
+        return;
+      }
       const data=getData();
-      if(data.some(e=>String(e.supaId)===String(txn.id)))return;
+      if(data.some(e=>String(e.supaId)===String(txn.id)))return; // preserve existing supaId dedup
       data.push(androidTxnToEntry(txn));
       saveData(data);
       refreshVisibleTabsAfterSync();
       showToast('📲 New transaction synced from your phone!');
     })
-    .subscribe();
+    .subscribe((status,err)=>{ updateSyncStatus('android',status,err); });
 }
 
 // ── DEBTS SYNC ──
@@ -5120,10 +5683,23 @@ function debtRowToLocal(row){
   };
 }
 async function syncDebts(){
+  beginSyncOp();
   const userId=await resolveSupabaseUserId();
-  if(!userId){showToast('⚠️ Debt sync skipped: user id not resolved','#e53935');return;}
+  if(!userId){
+    showToast('⚠️ Debt sync skipped: user id not resolved','#e53935');
+    endSyncOp(true,'debts: user id not resolved');
+    return;
+  }
+  // Account may have changed while resolveSupabaseUserId() was in flight (e.g. rapid logout).
+  if(!CU){endSyncOp(true,'debts: logged out during sync');return;}
   const{data:rows,error}=await sb.from('debts').select('*').eq('user_id',userId).order('entry_ts',{ascending:true});
-  if(error){console.error('Error fetching debts:',error);showToast('⚠️ Debt sync failed: '+(error.message||'unknown error'),'#e53935');return;}
+  if(error){
+    console.error('Error fetching debts:',error);
+    showToast('⚠️ Debt sync failed: '+(error.message||'unknown error'),'#e53935');
+    endSyncOp(true,'debts fetch failed');
+    return;
+  }
+  if(!CU){endSyncOp(true,'debts: logged out during sync');return;} // guard again post-await before writing anything
   const debts=getDebts();
   const existingIds=new Set(debts.filter(d=>d.supaId).map(d=>String(d.supaId)));
   let added=0;
@@ -5143,22 +5719,48 @@ async function syncDebts(){
   });
   saveDebts(debts);
   if(added>0){renderDebtPage();renderHome();showToast(`💸 ${added} debt${added>1?'s':''} synced`);}
+  const statusSuffix=_debtsRealtimeStatus==='SUBSCRIBED'?'':' (realtime not connected — polling fallback active)';
+  endSyncOp(false,`${(rows||[]).length} debts found, ${added} new added${statusSuffix}`);
   subscribeDebtsRealtime(userId);
 }
 let _debtsRealtimeChannel=null;
+let _acctGeneration=0;
+let _androidRealtimeStatus='IDLE';   // IDLE | SUBSCRIBED | TIMED_OUT | CHANNEL_ERROR | CLOSED
+let _debtsRealtimeStatus='IDLE';
+let _syncHealthTimer=null;
+let _lastFallbackTriggerMs=0;
+const FALLBACK_TRIGGER_COOLDOWN_MS=15000; // avoid a tight retry loop if the socket keeps failing
 function subscribeDebtsRealtime(userId){
-  if(_debtsRealtimeChannel){sb.removeChannel(_debtsRealtimeChannel);}
+  if(_debtsRealtimeChannel){ try{sb.removeChannel(_debtsRealtimeChannel);}catch(e){} _debtsRealtimeChannel=null; }
+  const subscriptionUserId=String(userId);
+  const subscriptionUsername=CU;
+  const subscriptionGeneration=_acctGeneration;
+  _debtsRealtimeStatus='IDLE';
+  // Shared guard used by all three handlers below.
+  const isStale=(row)=>{
+    if(subscriptionGeneration!==_acctGeneration||subscriptionUsername!==CU){
+      console.warn('[realtime] Ignoring stale debt event from a previous account session');
+      return true;
+    }
+    if(row&&row.user_id!==undefined&&String(row.user_id)!==subscriptionUserId){
+      console.warn('[realtime] Ignoring debt event with mismatched user_id');
+      return true;
+    }
+    return false;
+  };
   _debtsRealtimeChannel=sb.channel('debts-'+userId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
       const row=payload.new;
+      if(isStale(row))return;
       const debts=getDebts();
-      if(debts.some(d=>String(d.supaId)===String(row.id)))return;
+      if(debts.some(d=>String(d.supaId)===String(row.id)))return; // preserve existing supaId dedup
       debts.push(debtRowToLocal(row));
       saveDebts(debts);renderDebtPage();renderHome();
       showToast('💸 New debt entry synced!');
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
       const row=payload.new;
+      if(isStale(row))return;
       const debts=getDebts();
       const d=debts.find(x=>String(x.supaId)===String(row.id));
       if(!d)return;
@@ -5167,14 +5769,75 @@ function subscribeDebtsRealtime(userId){
     })
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'debts',filter:`user_id=eq.${userId}`},(payload)=>{
       const row=payload.old;
+      if(isStale(row))return;
       const debts=getDebts();
       const idx=debts.findIndex(x=>String(x.supaId)===String(row.id));
       if(idx===-1)return;
       debts.splice(idx,1);
       saveDebts(debts);renderDebtPage();renderHome();
     })
-    .subscribe();
+    .subscribe((status,err)=>{ updateSyncStatus('debts',status,err); });
 }
+
+function teardownRealtimeSubscriptions(reason){
+  try{
+    if(_androidRealtimeChannel){ sb.removeChannel(_androidRealtimeChannel); }
+  }catch(e){ console.error('[realtime] Error removing android channel:',e); }
+  try{
+    if(_debtsRealtimeChannel){ sb.removeChannel(_debtsRealtimeChannel); }
+  }catch(e){ console.error('[realtime] Error removing debts channel:',e); }
+  _androidRealtimeChannel=null;
+  _debtsRealtimeChannel=null;
+  _androidRealtimeStatus='IDLE';
+  _debtsRealtimeStatus='IDLE';
+  bumpAcctGeneration(); // invalidate any in-flight callback from the outgoing account
+  if(_syncHealthTimer){ clearInterval(_syncHealthTimer); _syncHealthTimer=null; }
+  renderSyncStatusUI();
+  const cEl=document.getElementById('drawer-synccount'); if(cEl)cEl.textContent='Cloud sync: —';
+  const dEl=document.getElementById('drawer-debtsynccount'); if(dEl)dEl.textContent='Debt sync: —';
+  console.log('[realtime] Subscriptions torn down ('+reason+')');
+}
+
+function updateSyncStatus(kind,status,err){
+  if(kind==='android')_androidRealtimeStatus=status;
+  else if(kind==='debts')_debtsRealtimeStatus=status;
+  if(err)console.error('[realtime]',kind,'subscription error:',err);
+  if((status==='CHANNEL_ERROR'||status==='TIMED_OUT')&&CU){
+    // Don't wait for the 45s health-check tick — fall back to a manual pull, but throttled so a
+    // persistently-down socket can't retrigger this on every failed reconnect attempt.
+    const now=Date.now();
+    if(now-_lastFallbackTriggerMs>FALLBACK_TRIGGER_COOLDOWN_MS){
+      _lastFallbackTriggerMs=now;
+      if(kind==='android')syncAndroidTransactions(); else if(kind==='debts')syncDebts();
+    }
+  }
+  renderSyncStatusUI();
+}
+
+function startSyncHealthMonitor(){
+  if(_syncHealthTimer)clearInterval(_syncHealthTimer);
+  _syncHealthTimer=setInterval(()=>{
+    if(!CU)return;
+    if(_androidRealtimeStatus!=='SUBSCRIBED'||_debtsRealtimeStatus!=='SUBSCRIBED'){
+      console.warn('[realtime] Unhealthy subscription detected, falling back to manual pull sync',
+        {android:_androidRealtimeStatus,debts:_debtsRealtimeStatus});
+      syncAndroidTransactions();
+      syncDebts();
+    }
+  },SYNC_HEALTH_CHECK_MS);
+}
+
+function renderSyncStatusUI(){
+  const el=document.getElementById('drawer-realtime-status');
+  if(!el)return;
+  const label=(s)=>({IDLE:'not connected',SUBSCRIBED:'live ✓',TIMED_OUT:'timed out — retrying',
+    CHANNEL_ERROR:'error — retrying',CLOSED:'closed'}[s]||s);
+  const healthy=_androidRealtimeStatus==='SUBSCRIBED'&&_debtsRealtimeStatus==='SUBSCRIBED';
+  el.textContent=`Realtime: transactions ${label(_androidRealtimeStatus)}, debts ${label(_debtsRealtimeStatus)}`;
+  el.style.color=healthy?'':'var(--red, #e53935)';
+}
+
+function bumpAcctGeneration(){ _acctGeneration++; }
 </script>
 </body>
 </html>
