@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Expenses Tracker">
-<meta name="theme-color" content="#0f1117f">
+<meta name="theme-color" content="#0f1117">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -434,7 +434,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <span class="di-icon">⚙️</span> Manage Account
 </div>
 
-<div class="drawer-item" onclick="closeDrawer();switchTab('support')">
+<!-- BUG FIX: there's no standalone "support" page/tab (switchTab('support') called
+     document.getElementById('page-support'), which doesn't exist, and passed no `el` argument
+     either — this threw immediately and did nothing). The support card lives inside Manage;
+     route there and scroll to it instead. -->
+<div class="drawer-item" onclick="closeDrawer();switchTab('manage',document.querySelectorAll('.tab')[4]);setTimeout(()=>document.getElementById('support-user-card')?.scrollIntoView({behavior:'smooth',block:'start'}),150)">
     <span class="di-icon">💬</span> Customer Support
 </div>
 
@@ -2525,6 +2529,14 @@ async function doUnlock(){
   }
 
   CU=session;
+  // BUG FIX: this path re-authenticates with a real password against Supabase Auth (see above)
+  // but then skipped the cloud refresh that both the normal login path and the 2FA login path
+  // already run before startApp() (see the matching comment in verifyLogin2FA()) — so data
+  // edited on another device between locks wouldn't show up here until the next full login.
+  await syncCategories();
+  await syncCategoryBudgets();
+  await syncUserSettings();
+  await syncReminders();
   document.getElementById('lock-screen').style.display='none';
   startApp(users[CU]);
 }
@@ -4016,14 +4028,28 @@ async function renderMembers(){
   }).join('');
 }
 async function toggleAdminRole(u){
-  const users=getUsers();
-  if(!users[u])return;
-  const next=!users[u].isAdmin;
-  users[u].isAdmin=next;
-  saveUsers(users);
-  try{await sb.from('users').update({is_admin:next}).eq('username',u);}catch(e){console.error('Could not sync admin role to cloud:',e);}
-  showToast(next?`👑 ${u} is now an admin`:`${u} is no longer an admin`);
-  renderMembers();
+  // BUG FIX: this used to flip the LOCAL cached isAdmin flag first (trusting whatever this
+  // browser last saw, not the real current cloud value) and only best-effort try{}catch{}'d the
+  // cloud write — a failed cloud update would silently leave this device showing the opposite
+  // admin state from what Supabase (and RLS) actually enforces. Also had no guard against an
+  // admin removing their own admin status, which could self-lock-out of the admin panel.
+  if(!u||u===CU)return;
+  try{
+    const {data:row,error:readError}=await sb.from('users').select('is_admin').eq('username',u).maybeSingle();
+    if(readError)throw readError;
+    if(!row){showToast('User not found in cloud','#ffb300');return;}
+    const next=!row.is_admin;
+    const {error:updateError}=await sb.from('users').update({is_admin:next}).eq('username',u);
+    if(updateError)throw updateError;
+    const users=getUsers();
+    if(users[u]){users[u].isAdmin=next;saveUsers(users);}
+    showToast(next?`👑 ${u} is now an admin`:`${u} is no longer an admin`);
+    renderMembers();
+  }catch(e){
+    console.error('Could not sync admin role to cloud:',e);
+    showToast('Failed to update admin role — check Error Logs','#e53935');
+    pushErrorLog({message:'Admin role update failed: '+(e&&e.message?e.message:String(e)),source:'toggleAdminRole'});
+  }
 }
 async function deleteUserAccount(u){
   showConfirmModal({
@@ -4292,17 +4318,42 @@ function confirmClear(){
   showConfirmModal({
     icon:'🗑️',
     title:'Delete ALL expenses?',
-    message:'This permanently removes every income and expense entry on this account. This cannot be undone.',
+    // BUG FIX: this used to only clear the local copy — the cloud `transactions` table (fed by
+    // the Android app and any manual entries synced from this web app) was left untouched, so a
+    // "cleared" account would repopulate on the next sync from whatever was still in Supabase.
+    message:'This permanently removes every income and expense entry on this account, including anything already synced to the cloud. This cannot be undone.',
     confirmText:'Delete All',
     requireTypedText:'DELETE',
     inputLabel:'Type DELETE to confirm',
-    onConfirm:()=>{saveData([]);renderHome();showToast('Cleared','#ff6584');}
+    onConfirm:async()=>{
+      saveData([]);
+      renderHome();
+      const userId=await resolveSupabaseUserId();
+      if(userId){
+        const {error}=await sb.from('transactions').delete().eq('user_id',userId);
+        if(error){
+          console.error('Cloud clear failed:',error);
+          pushErrorLog({message:'Cloud clear-all failed: '+(error.message||String(error)),source:'confirmClear'});
+          showToast('⚠️ Local data cleared, but cloud delete failed — check Error Logs','#ffb300');
+          return;
+        }
+      }
+      showToast('Cleared','#ff6584');
+    }
   });
 }
 function exportAccount(){
   if(!CU){showToast('Not logged in','#ffb300');return;}
   const users=getUsers();
-  const payload={version:1,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts()};
+  // BUG FIX: v1 only exported data/cats/debts — reminders, budget limit, rollover setting,
+  // per-category budgets/colors, and appearance prefs were silently dropped from every backup,
+  // so restoring from one on a new device lost all of that even though it exists locally.
+  const payload={
+    version:2,username:CU,profile:users[CU],data:getData(),cats:getCats(),debts:getDebts(),
+    reminders:getReminders(),budget:getBudgetLimit(),rollover:getRolloverEnabled(),
+    catBudgets:getCatBudgets(),catColors:getCatColors(),
+    appearance:{theme:getTheme(),textSize:getTextSize(),contrast:getContrastMode()}
+  };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='expenses_backup_'+CU+'.json';a.click();showToast('✅ Backup downloaded!');
@@ -4315,9 +4366,21 @@ function importAccount(e){
       const p=JSON.parse(ev.target.result);
       if(!p.username||!p.profile||!p.data){showToast('Invalid backup file','#ff6584');return;}
       const users=getUsers();users[p.username]=p.profile;saveUsers(users);
-      localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data));
+      localStorage.setItem('exp_'+p.username+'_data',JSON.stringify(p.data||[]));
       localStorage.setItem('exp_'+p.username+'_cats',JSON.stringify(p.cats||[]));
       localStorage.setItem('exp_'+p.username+'_debts',JSON.stringify(p.debts||[]));
+      // BUG FIX: restore the fields added to the export payload above (v2) — a v1 backup
+      // simply won't have them, hence the ||[] / ||{} / ||0 fallbacks below.
+      localStorage.setItem('exp_'+p.username+'_reminders',JSON.stringify(p.reminders||[]));
+      localStorage.setItem('exp_'+p.username+'_budget',String(p.budget||0));
+      localStorage.setItem('exp_'+p.username+'_rollover',p.rollover?'on':'off');
+      localStorage.setItem('exp_'+p.username+'_catBudgets',JSON.stringify(p.catBudgets||{}));
+      localStorage.setItem('exp_'+p.username+'_catColors',JSON.stringify(p.catColors||{}));
+      if(p.appearance){
+        if(p.appearance.theme)localStorage.setItem('exp_theme',p.appearance.theme);
+        if(p.appearance.textSize)localStorage.setItem('exp_textsize',p.appearance.textSize);
+        localStorage.setItem('exp_contrast',p.appearance.contrast?'on':'off');
+      }
       showToast('✅ Account imported! Login with: '+p.username);
     }catch(err){showToast('Error reading file','#ff6584');}
   };
@@ -4952,6 +5015,7 @@ function markReminderPaid(id){
   const entry={month:MONTHS[now.getMonth()],category:matchCat,amount:r.amount,type:isIncome?'income':'expense',year:now.getFullYear(),ts:Date.now(),date:now.toISOString().split('T')[0],payMode:null,recurring:true,reminderId:r.id,reminderName:r.name};
   data.push(entry);
   saveData(data);
+  uploadLocalTransactionToCloud(entry).then(()=>saveData(data)).catch(console.error);
   r.paid[mk]=entry.ts;
   saveReminders(rems);
   uploadReminder(r).catch(console.error);
@@ -5206,7 +5270,7 @@ function maybeShowDailyNudge(){
 function logDebtCashflow(d,amt){
   const data=getData();
   const now=new Date();
-  data.push({
+  const entry={
     month:MONTHS[now.getMonth()],
     category:'Debt',
     amount:amt,
@@ -5218,8 +5282,11 @@ function logDebtCashflow(d,amt){
     payMode:null,
     debtLinked:true,
     debtName:d.name
-  });
+  };
+  data.push(entry);
   saveData(data);
+  uploadLocalTransactionToCloud(entry).then(()=>saveData(data)).catch(console.error);
+  return entry;
 }
 // ── PATCH addRepayment to validate partial payments, show celebration, and log cashflow ──
 async function addRepayment(i){
@@ -5602,6 +5669,29 @@ function androidTxnToEntry(txn){
 
     supaId: String(txn.id)
   };
+}
+
+// BUG FIX: manually-created cashflow entries (recurring reminder payments, debt repayments/
+// receipts logged from the web app) were only ever saved to local storage — uploadReminder()
+// above syncs the reminder's own definition/paid-map, but never the resulting transaction, and
+// logDebtCashflow() below never touched the cloud at all. That meant this data existed on the
+// device that created it and nowhere else — the opposite of what every other transaction path
+// in this app does. This mirrors the same insert shape Android's TransactionSyncMapper uses.
+async function uploadLocalTransactionToCloud(entry){
+  if(!CU||!entry||entry.supaId)return null;
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return null;
+  const payload={
+    user_id:userId,amount:Number(entry.amount)||0,
+    type:entry.type==='income'?'CREDIT':'DEBIT',
+    category:entry.category||'Other',payment_app:'Manual Entry',
+    payment_mode:entry.payMode||null,message:(entry.tags||[]).join(', '),
+    transaction_date:entry.date?new Date(entry.date+'T00:00:00').toISOString():new Date().toISOString()
+  };
+  const {data,error}=await sb.from('transactions').insert(payload).select().single();
+  if(error){pushErrorLog({message:'Cloud transaction upload failed: '+(error.message||String(error)),source:'uploadLocalTransactionToCloud'});return null;}
+  entry.supaId=String(data.id);
+  return entry.supaId;
 }
 
 function refreshVisibleTabsAfterSync(){
