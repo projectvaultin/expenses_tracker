@@ -1207,6 +1207,55 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <div class="undo-toast" id="undo-toast"><span id="undo-toast-msg"></span><button onclick="performUndo()">Undo</button></div>
 
 <script>
+const SUPABASE_URL = "https://vzetpnizonsiefwxnpmr.supabase.co";
+
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXRwbml6b25zaWVmd3hucG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzQ5MzQsImV4cCI6MjEwMDA1MDkzNH0.Evn7aY3ZORN9MFcDr2jrDAJLkeATMKApEI_1NFbjBzE";
+const sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+// ── SUPABASE AUTH — real authentication authority ──────────────────────────────────────
+// Login/signup/password-change/password-reset all go through sb.auth (signInWithPassword /
+// signUp / updateUser / resetPasswordForEmail) instead of comparing public.users.password_hash
+// client-side. password_hash may still exist as a legacy column but is never read or written
+// by this file as of this migration. See FINAL WEBAPP AUDIT REPORT for details.
+
+// Username -> auth email, via the secure RPC (does not expose other users' emails/rows).
+// Supabase RPC calls fail on a parameter-name mismatch, not just a missing function, so this
+// tries the two conventional spellings before giving up. Once the real signature is confirmed
+// (see SCHEMA_VERIFICATION section of the release notes), the losing branch can be deleted.
+async function resolveEmailForUsername(username){
+  const attempts=[{p_username:username},{username:username}];
+  let lastError=null;
+  for(const args of attempts){
+    const{data,error}=await sb.rpc('get_auth_email_by_username',args);
+    if(!error) return {email:data||null,error:null};
+    lastError=error;
+    if(!/could not find|does not exist|schema cache|parameter/i.test(error.message||'')) break;
+  }
+  return {email:null,error:lastError};
+}
+
+// Fires when a Supabase password-recovery link (clicked from the reset email) lands back on
+// this page. supabase-js auto-parses the recovery token from the URL fragment and opens a
+// short-lived recovery session; PASSWORD_RECOVERY is the signal to show the "set new password"
+// step instead of navigating anywhere on our own.
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){
+    try{
+      document.getElementById('fp-title').textContent='🔑 Set a New Password';
+      document.getElementById('fp-step1').style.display='none';
+      document.getElementById('fp-step2').style.display='block';
+      document.getElementById('fp-err2').textContent='';
+      document.getElementById('fp-newpw').value='';
+      document.getElementById('fp-confpw').value='';
+      document.getElementById('forgotpw-modal').classList.add('open');
+    }catch(e){console.error('Could not open recovery UI:',e);}
+  }
+});
+</script>
+<script>
 // ── EMAILJS CONFIG ── Fill these in from your EmailJS dashboard (see EMAILJS_SETUP.md). ──
 // Until filled in, statement/OTP emails fall back to visible on-screen codes / toasts so the app still works.
 const EMAILJS_CONFIG={
@@ -2500,6 +2549,23 @@ async function doBiometric(){
       }
     });
     if(credential){
+      // BUG FIX (matches the Sync Failure report): WebAuthn only proves this is the same
+      // device/finger — it says nothing to Supabase. Unlike doUnlock() (which re-runs
+      // sb.auth.signInWithPassword), this path used to grant app access purely on the local
+      // biometric check while never confirming a live Supabase Auth session still existed.
+      // If the access/refresh token had expired or been revoked since the page loaded (long-open
+      // tab, revoked session, clock skew, etc.), the app would open successfully here but
+      // resolveSupabaseUserId() would then fail on the very next sync call — exactly the
+      // "Connected on Android / Sync Failure on web" split described in the bug report, since
+      // Android re-authenticates fully on every login and never hits this path. We don't have a
+      // password to silently re-auth with here, so if there's no live session left, fail closed
+      // and send the person to the password field instead of opening the app on a session that
+      // can never actually sync.
+      const{data:{session:supaSession}}=await sb.auth.getSession();
+      if(!supaSession){
+        showToast('Your session expired — please log in with your password','#ffb300');
+        return;
+      }
       CU=session;
       document.getElementById('lock-screen').style.display='none';
       startApp(users[CU]);
@@ -5465,55 +5531,6 @@ if('serviceWorker' in navigator){
   const timer=setTimeout(dismiss,SPLASH_DURATION_MS);
   splash.addEventListener('click',()=>{clearTimeout(timer);dismiss();});
 })();
-</script>
-  <script>
-const SUPABASE_URL = "https://vzetpnizonsiefwxnpmr.supabase.co";
-
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6ZXRwbml6b25zaWVmd3hucG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzQ5MzQsImV4cCI6MjEwMDA1MDkzNH0.Evn7aY3ZORN9MFcDr2jrDAJLkeATMKApEI_1NFbjBzE";
-const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-// ── SUPABASE AUTH — real authentication authority ──────────────────────────────────────
-// Login/signup/password-change/password-reset all go through sb.auth (signInWithPassword /
-// signUp / updateUser / resetPasswordForEmail) instead of comparing public.users.password_hash
-// client-side. password_hash may still exist as a legacy column but is never read or written
-// by this file as of this migration. See FINAL WEBAPP AUDIT REPORT for details.
-
-// Username -> auth email, via the secure RPC (does not expose other users' emails/rows).
-// Supabase RPC calls fail on a parameter-name mismatch, not just a missing function, so this
-// tries the two conventional spellings before giving up. Once the real signature is confirmed
-// (see SCHEMA_VERIFICATION section of the release notes), the losing branch can be deleted.
-async function resolveEmailForUsername(username){
-  const attempts=[{p_username:username},{username:username}];
-  let lastError=null;
-  for(const args of attempts){
-    const{data,error}=await sb.rpc('get_auth_email_by_username',args);
-    if(!error) return {email:data||null,error:null};
-    lastError=error;
-    if(!/could not find|does not exist|schema cache|parameter/i.test(error.message||'')) break;
-  }
-  return {email:null,error:lastError};
-}
-
-// Fires when a Supabase password-recovery link (clicked from the reset email) lands back on
-// this page. supabase-js auto-parses the recovery token from the URL fragment and opens a
-// short-lived recovery session; PASSWORD_RECOVERY is the signal to show the "set new password"
-// step instead of navigating anywhere on our own.
-sb.auth.onAuthStateChange((event)=>{
-  if(event==='PASSWORD_RECOVERY'){
-    try{
-      document.getElementById('fp-title').textContent='🔑 Set a New Password';
-      document.getElementById('fp-step1').style.display='none';
-      document.getElementById('fp-step2').style.display='block';
-      document.getElementById('fp-err2').textContent='';
-      document.getElementById('fp-newpw').value='';
-      document.getElementById('fp-confpw').value='';
-      document.getElementById('forgotpw-modal').classList.add('open');
-    }catch(e){console.error('Could not open recovery UI:',e);}
-  }
-});
 </script>
   <script>
 // ── ANDROID → WEBAPP TRANSACTION SYNC ──
