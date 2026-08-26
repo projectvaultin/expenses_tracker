@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Expenses Tracker">
 <meta name="theme-color" content="#0f1117">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.svg">
+<link rel="apple-touch-icon" href="icon-192.svg">
 <title>Expenses Tracker — by ProjectVault</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -314,15 +314,24 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <!-- 5) Paste all three values into the EMAILJS_CONFIG block near the top of the <script> below. -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style id="pv-events-media-css">
+.pv-media-img{display:block;width:100%;max-height:260px;object-fit:cover}
+.pv-media-video{display:block;width:100%;max-height:260px;object-fit:contain;background:#000}
+.pv-event-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.pv-event-row:last-child{border-bottom:none}
+.pv-event-pill{font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;background:rgba(108,99,255,.15);color:var(--accent)}
+.pv-admin-file{font-size:12px;color:var(--muted)}
+</style>
 </head>
 <body>
 <!-- SPLASH INTRO SCREEN -->
 <div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#181c2b 0%,#0f1117 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;overflow:hidden;">
   <div id="splash-orb" style="position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.22) 0%,rgba(108,99,255,0) 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:splashOrbPulse 3.2s ease-in-out infinite;pointer-events:none;"></div>
-  <img src="icon-192.png" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);position:relative;"/>
+  <img src="icon-192.svg" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);position:relative;"/>
   <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f0f0f5;margin-top:18px;opacity:0;animation:splashFadeIn .6s ease .3s forwards;position:relative;">Expenses<span style="color:#6c63ff;"> Tracker</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0;animation:splashFadeIn .6s ease .5s forwards;position:relative;">
-    <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto"/>
+    <img src="brand-logo.svg" alt="ProjectVault" style="height:14px;width:auto"/>
     <span style="font-size:11px;color:#7a7d99;letter-spacing:.4px;">by ProjectVault</span>
   </div>
   <div id="splash-greeting" style="font-size:15px;font-weight:700;color:#f0f0f5;margin-top:26px;opacity:0;animation:splashFadeIn .6s ease .7s forwards;position:relative;text-align:center;"></div>
@@ -344,7 +353,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
   <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.svg" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.svg" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
@@ -361,13 +370,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
+  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.svg" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ AUTH ═══════════ -->
 <div id="auth-screen">
   <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-logo-wrap"><img src="icon-192.svg" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.svg" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
   <div class="auth-card">
     <div class="auth-tabs">
@@ -398,7 +407,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
+  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.svg" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ APP ═══════════ -->
@@ -442,15 +451,19 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <span class="di-icon">💬</span> Customer Support
 </div>
 
+<div class="drawer-item" onclick="closeDrawer();openSocialModal()">
+    <span class="di-icon">💰</span> Social Money
+</div>
 <div class="drawer-item" onclick="openSwitchAccountModal()">
     <span class="di-icon">🔀</span> Switch Account
 </div>
+    <div class="drawer-item" onclick="closeDrawer();openEventsMediaModal()"><span class="di-icon">🎉</span> Events & Media</div>
     <div class="drawer-item" onclick="toggleTheme()"><span class="di-icon" id="drawer-theme-icon">🌙</span> <span id="drawer-theme-label">Switch to Light Theme</span></div>
     <div class="drawer-item" onclick="toggleTextSize()"><span class="di-icon">🔠</span> <span id="drawer-textsize-label">Switch to Large Text</span></div>
     <div class="drawer-item" onclick="toggleContrastMode()"><span class="di-icon">🔲</span> <span id="drawer-contrast-label">Turn On High Contrast</span></div>
     <div class="drawer-item" onclick="closeDrawer();showChangePwModal()"><span class="di-icon">🔑</span> Change Password</div>
     <div class="drawer-item" style="color:var(--red);margin-top:auto" onclick="doLogout()"><span class="di-icon">🚪</span> Logout</div>
-    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.png" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.svg" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
   </div>
 
   <!-- HOME -->
@@ -645,9 +658,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
   <!-- HISTORY -->
   <div id="page-history" class="page">
-    <div style="position:relative;margin-bottom:11px">
-      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px">🔍</span>
-      <input type="text" class="ti" id="hist-search" placeholder="Search category, amount, payment mode, date…" style="width:100%;padding-left:36px" oninput="onHistSearch(this.value)"/>
+    <div style="display:flex;gap:8px;margin-bottom:11px">
+      <div style="position:relative;flex:1">
+        <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px">🔍</span>
+        <input type="text" class="ti" id="hist-search" placeholder="Search category, amount, payment mode, date…" style="width:100%;padding-left:36px" oninput="onHistSearch(this.value)"/>
+      </div>
+      <button class="save-btn" style="width:auto;padding:0 16px" onclick="openAdvancedFilters()">🔎 Filters</button>
     </div>
     <div class="mscroll" id="hist-months"></div>
     <div class="card">
@@ -1017,8 +1033,45 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="form-label">Date</div>
     <input type="date" id="edit-date-input" class="date-inp" style="padding-left:14px;font-size:15px;"/>
+    <div class="form-label">Tags</div>
+    <div id="edit-tags-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="edit-tag-input" class="date-inp" style="padding-left:14px;font-size:15px;flex:1" placeholder="Add a tag, press Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addEditTag();}"/>
+      <button class="save-btn" style="width:auto;padding:0 16px" onclick="addEditTag()">Add</button>
+    </div>
     <button class="save-btn" onclick="saveEditEntry()">💾 Save Changes</button>
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeEditEntry()">Cancel</button>
+  </div>
+</div>
+
+<!-- TRANSACTION DETAILS MODAL — tap any history row to open -->
+<div class="modal-overlay" id="txn-details-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Transaction Details</div>
+    <div id="txn-details-body" style="font-size:14px;line-height:1.9"></div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:12px" onclick="document.getElementById('txn-details-modal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<!-- ADVANCED FILTERS MODAL -->
+<div class="modal-overlay" id="advanced-filters-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔎 Filters</div>
+    <div class="form-label">Type</div>
+    <div class="sgrid m3" id="filter-type-grid"></div>
+    <div class="form-label">Category</div>
+    <div class="sgrid" id="filter-cat-grid"></div>
+    <div class="form-label">Payment Mode</div>
+    <div class="sgrid m3" id="filter-paymode-grid"></div>
+    <div class="form-label">Amount range</div>
+    <div style="display:flex;gap:8px">
+      <input type="number" id="filter-amt-min" class="date-inp" style="padding-left:14px;font-size:15px" placeholder="Min"/>
+      <input type="number" id="filter-amt-max" class="date-inp" style="padding-left:14px;font-size:15px" placeholder="Max"/>
+    </div>
+    <button class="save-btn" onclick="applyAdvancedFilters()">Apply Filters</button>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="clearAdvancedFilters()">Clear Filters</button>
   </div>
 </div>
 
@@ -1054,6 +1107,140 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <button class="auth-btn" onclick="doChangePw()">Update Password</button>
     <div class="auth-err" id="cp-err"></div>
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('changepw-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+
+<!-- PROJECTVAULT EVENTS / FESTIVAL / BIRTHDAY / MEDIA LAYER -->
+<div class="modal-overlay" id="events-media-modal">
+  <div class="modal" style="max-height:92vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎉 Events & Media</div>
+    <div id="event-priority-banner" class="card" style="margin-bottom:10px;padding:14px;background:linear-gradient(135deg,rgba(108,99,255,.13),rgba(0,208,132,.08))">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">What's happening</div>
+      <div id="event-priority-title" style="font-size:18px;font-weight:800;margin-top:4px">Loading…</div>
+      <div id="event-priority-sub" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+      <div id="event-media-stage" style="margin-top:12px;border-radius:16px;overflow:hidden;background:var(--surface2);min-height:80px"></div>
+    </div>
+
+    <div class="card" style="padding:14px">
+      <div class="card-title">🎂 Birthdays</div>
+      <div id="birthday-own-editor"></div>
+      <div id="birthday-friends-list" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" style="padding:14px">
+      <div class="card-title">🪔 Festivals</div>
+      <div id="festival-list"></div>
+    </div>
+
+    <div class="card" style="padding:14px">
+      <div class="card-title">📢 Sponsored Media</div>
+      <div id="ad-media-list"></div>
+    </div>
+
+    <div class="card" id="events-admin-card" style="display:none;padding:14px;border-color:rgba(108,99,255,.35)">
+      <div class="card-title">🛡️ Admin Media Manager</div>
+      <div class="fl"><div class="fl-label">Create Festival</div>
+        <input class="ai" id="adm-festival-name" placeholder="Festival name">
+        <input class="date-inp" id="adm-festival-date" type="date" style="margin-top:7px">
+        <input class="ai" id="adm-festival-greeting" placeholder="Greeting (optional)" style="margin-top:7px">
+        <button class="auth-btn" style="margin-top:8px" onclick="pvAdminCreateFestival()">Create Festival</button>
+      </div>
+      <div class="fl" style="margin-top:14px"><div class="fl-label">Create Advertisement Campaign</div>
+        <input class="ai" id="adm-ad-name" placeholder="Campaign name">
+        <input class="ai" id="adm-ad-folder" placeholder="Folder e.g. Festival Ads" style="margin-top:7px">
+        <input class="date-inp" id="adm-ad-start" type="date" style="margin-top:7px">
+        <input class="date-inp" id="adm-ad-end" type="date" style="margin-top:7px">
+        <button class="auth-btn" style="margin-top:0" onclick="pvAdminCreateCampaign()">Create Campaign</button>
+      </div>
+      <div class="fl" style="margin-top:14px"><div class="fl-label">Upload Media to Festival</div>
+        <select class="ti" id="adm-festival-select" style="width:100%;margin-bottom:7px"></select>
+        <input id="adm-festival-media-file" type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/webm" class="ti" style="width:100%;padding:8px">
+        <button class="auth-btn" style="margin-top:8px" onclick="pvAdminUploadFestivalMedia()">Upload Festival Media</button>
+      </div>
+      <div class="fl" style="margin-top:14px"><div class="fl-label">Upload Media to Campaign</div>
+        <select class="ti" id="adm-campaign-select" style="width:100%;margin-bottom:7px"></select>
+        <input id="adm-media-file" type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/webm" class="ti" style="width:100%;padding:8px">
+        <button class="auth-btn" style="margin-top:8px" onclick="pvAdminUploadAdMedia()">Upload Ad Media</button>
+      </div>
+      <div id="events-admin-status" class="auth-err" style="margin-top:8px"></div>
+    </div>
+
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeEventsMediaModal()">Close</button>
+  </div>
+</div>
+
+<!-- SOCIAL MONEY MODAL — wired to connection_requests, connections, blocked_users,
+     shared_debts, shared_debt_payments, accept_connection_request(),
+     search_users_by_username() — see ProjectVault_social_festival_ads_schema.sql -->
+<div class="modal-overlay" id="social-modal">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 Social Money</div>
+
+    <div style="display:flex;gap:6px;margin:12px 0;flex-wrap:wrap">
+      <button class="save-btn" id="social-tab-find" style="flex:1;min-width:80px" onclick="showSocialSection('find')">Find Friends</button>
+      <button class="save-btn" id="social-tab-requests" style="flex:1;min-width:80px" onclick="showSocialSection('requests')">Requests</button>
+      <button class="save-btn" id="social-tab-connections" style="flex:1;min-width:80px" onclick="showSocialSection('connections')">Friends</button>
+      <button class="save-btn" id="social-tab-money" style="flex:1;min-width:80px" onclick="showSocialSection('money')">Money</button>
+    </div>
+
+    <div id="social-section-find">
+      <div class="fl"><div class="fl-label">Search by username</div>
+        <input class="ai" id="social-search-input" placeholder="e.g. rahul123" oninput="if(event.key!=='Enter')return;searchSocialUsers()"/>
+      </div>
+      <button class="auth-btn" onclick="searchSocialUsers()">Search</button>
+      <div id="social-search-results" style="margin-top:12px"></div>
+    </div>
+
+    <div id="social-section-requests" style="display:none">
+      <div class="fl-label">Incoming</div>
+      <div id="social-requests-incoming"></div>
+      <div class="fl-label" style="margin-top:12px">Sent</div>
+      <div id="social-requests-outgoing"></div>
+    </div>
+
+    <div id="social-section-connections" style="display:none">
+      <div id="social-connections-list"></div>
+    </div>
+
+    <div id="social-section-money" style="display:none">
+      <div id="social-money-summary" style="text-align:center;padding:12px 0"></div>
+      <div class="fl-label">Money Given (they owe you)</div>
+      <div id="social-money-lent"></div>
+      <div class="fl-label" style="margin-top:12px">Money Received (you owe them)</div>
+      <div id="social-money-borrowed"></div>
+    </div>
+
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:16px" onclick="document.getElementById('social-modal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<!-- GIVE MONEY MODAL — opened from a friend's row in the Friends section -->
+<div class="modal-overlay" id="give-money-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="give-money-title">Give Money</div>
+    <div class="fl"><div class="fl-label">Amount</div><input class="ai" id="gm-amount" type="number" min="0.01" step="0.01" placeholder="0.00"/></div>
+    <div class="fl"><div class="fl-label">Reason (optional)</div><input class="ai" id="gm-reason" placeholder="e.g. Travel"/></div>
+    <div class="fl"><div class="fl-label">Due date (optional)</div><input class="ai" id="gm-due" type="date"/></div>
+    <button class="auth-btn" onclick="submitSharedDebt()">Record</button>
+    <div class="auth-err" id="gm-err"></div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('give-money-modal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+<!-- REPAYMENT MODAL — opened from a shared-debt row in the Money section -->
+<div class="modal-overlay" id="repay-debt-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Record Repayment</div>
+    <div class="fl"><div class="fl-label">Amount</div><input class="ai" id="rd-amount" type="number" min="0.01" step="0.01" placeholder="0.00"/></div>
+    <div class="fl"><div class="fl-label">Note (optional)</div><input class="ai" id="rd-note" placeholder="e.g. Paid via UPI"/></div>
+    <button class="auth-btn" onclick="submitRepayment()">Record Repayment</button>
+    <div class="auth-err" id="rd-err"></div>
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="document.getElementById('repay-debt-modal').classList.remove('open')">Cancel</button>
   </div>
 </div>
 
@@ -1535,7 +1722,8 @@ async function toggleTextSize(){
 applyTextSize(getTextSize());
 
 let CU=null,selMonth=null,selCat=null,filterMonth='All',selDebtType=null,pendingAv=null,selEntryType='expense',histSearch='';
-let editIndex=null,editMonth=null,editCat=null;
+let editIndex=null,editMonth=null,editCat=null,editTags=[];
+let advFilters={type:'All',cat:'All',payMode:'All',min:null,max:null};
 let selPayMode='cash',selUPIApp='',selRisk='low',selGoal='growth',selTH='intraday',debtFilter='all';
 let selRemType='expense';
 let cropOffX=0,cropOffY=0,cropZoom=1,cropDragging=false,cropDragSX=0,cropDragSY=0,cropStartOX=0,cropStartOY=0;
@@ -3259,6 +3447,13 @@ function renderHistory(){
       return hay.includes(q);
     });
   }
+  // #9 Advanced Filters — layered on top of the existing month/search filters above,
+  // not replacing them, so a person can combine "March" + "grocery" + "expense only".
+  if(advFilters.type!=='All')filtered=filtered.filter(e=>e.type===advFilters.type);
+  if(advFilters.cat!=='All')filtered=filtered.filter(e=>e.category===advFilters.cat);
+  if(advFilters.payMode!=='All')filtered=filtered.filter(e=>e.payMode===advFilters.payMode);
+  if(advFilters.min!=null)filtered=filtered.filter(e=>Number(e.amount)>=advFilters.min);
+  if(advFilters.max!=null)filtered=filtered.filter(e=>Number(e.amount)<=advFilters.max);
   const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
   let html='';
   if(!sorted.length)html=`<div class="empty"><div class="empty-icon">📭</div><p>No entries found${histSearch.trim()?' for "'+escHtml(histSearch.trim())+'"':''}.</p></div>`;
@@ -3271,10 +3466,72 @@ function renderHistory(){
     const debtTag=e.debtLinked?` · 🔁 ${escHtml(e.debtName||'Debt')} repayment`:'';
     const tagChips=(e.tags&&e.tags.length)?`<div style="margin-top:4px">${e.tags.map(t=>`<span style="display:inline-block;background:var(--surface2);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:100px;margin-right:4px;margin-top:2px;">#${escHtml(t)}</span>`).join('')}</div>`:'';
     const receiptBtn=e.receipt?`<button class="del-btn" onclick="viewReceipt(${oi})" title="View receipt">🧾</button>`:'';
-    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${escHtml(e.category)} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+escHtml(e.date):''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span>${receiptBtn}<button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
+    html+=`<div class="swipe-wrap" data-idx="${oi}"><div class="swipe-delete-bg">🗑️</div><div class="entry-row swipe-fg" onclick="if(!event.target.closest('button'))openTxnDetails(${oi})"><div class="entry-icon" style="background:${bg}">${isInc?'💰':emoji(e.category)}</div><div class="entry-info"><div class="entry-cat">${escHtml(e.category)} <span class="debt-entry-badge ${isInc?'badge-profit':'badge-debt'}" style="font-size:10px">${isInc?'Income':'Expense'}</span></div><div class="entry-meta">${e.month} ${e.year||''}${e.date?' • '+escHtml(e.date):''}${payLabel}${debtTag}</div>${tagChips}</div><span class="entry-amt" style="color:${amtColor}">${isInc?'+':'−'}${fmt(e.amount)}</span>${receiptBtn}<button class="del-btn" onclick="openEditEntry(${oi})" title="Edit">✏️</button><button class="del-btn" onclick="delEntry(${oi})">✕</button></div></div>`;
   });
   document.getElementById('history-list').innerHTML=html;
   initSwipeToDelete('history-list');
+}
+
+// #7 Transaction Details — a dedicated read-only view (source, sync status, reference,
+// full tag list) alongside the existing Edit modal, which only exposes editable fields.
+function openTxnDetails(i){
+  const d=getData();const e=d[i];
+  if(!e)return;
+  const isInc=e.type==='income';
+  // "Source" is inferred from real fields already on the entry (no fabricated field) — Android
+  // imports always carry the 'Auto-synced' tag (see androidTxnToEntry), debt entries carry
+  // debtLinked. A manual entry with neither is exactly that: created directly in this app.
+  const source = e.debtLinked ? 'Debt cashflow' : ((e.tags||[]).includes('Auto-synced') ? 'Imported from Android (auto-synced)' : 'Manual entry');
+  const syncStatus = e.supaId ? `✅ Synced (cloud id: ${escHtml(String(e.supaId))})` : '⏳ Not yet synced to cloud';
+  const rows=[
+    ['Amount', (isInc?'+':'−')+fmt(e.amount)],
+    ['Type', isInc?'Income':'Expense'],
+    ['Category', escHtml(e.category)],
+    ['Date', escHtml(e.date||(e.month+' '+(e.year||'')))],
+    ['Payment Mode', e.payMode?escHtml(e.payMode):'—'],
+    ['Source', source],
+    ['Sync Status', syncStatus],
+    ['Tags', (e.tags&&e.tags.length)?e.tags.map(t=>'#'+escHtml(t)).join(', '):'—']
+  ];
+  if(e.debtLinked)rows.push(['Linked Debt', escHtml(e.debtName||'')]);
+  document.getElementById('txn-details-body').innerHTML=rows.map(([k,v])=>
+    `<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0"><span style="color:var(--muted)">${k}</span><span style="text-align:right">${v}</span></div>`
+  ).join('');
+  document.getElementById('txn-details-modal').classList.add('open');
+}
+
+// #9 Advanced Filters
+function openAdvancedFilters(){
+  let th='';
+  ['All','expense','income'].forEach(t=>{th+=`<div class="sel-btn${advFilters.type===t?' sel':''}" onclick="setAdvFilterField('type','${t}')">${t==='All'?'All':(t==='expense'?'Expense':'Income')}</div>`;});
+  document.getElementById('filter-type-grid').innerHTML=th;
+
+  let ch=`<div class="sel-btn${advFilters.cat==='All'?' sel':''}" onclick="setAdvFilterField('cat','All')">All</div>`;
+  getCats().forEach(c=>{ch+=`<div class="sel-btn${advFilters.cat===c?' sel':''}" onclick="setAdvFilterField('cat','${escJsAttr(c)}')">${emoji(c)} ${escHtml(c)}</div>`;});
+  document.getElementById('filter-cat-grid').innerHTML=ch;
+
+  const payModes=[...new Set(getData().map(e=>e.payMode).filter(Boolean))];
+  let ph=`<div class="sel-btn${advFilters.payMode==='All'?' sel':''}" onclick="setAdvFilterField('payMode','All')">All</div>`;
+  payModes.forEach(p=>{ph+=`<div class="sel-btn${advFilters.payMode===p?' sel':''}" onclick="setAdvFilterField('payMode','${escJsAttr(p)}')">${escHtml(p)}</div>`;});
+  document.getElementById('filter-paymode-grid').innerHTML=ph;
+
+  document.getElementById('filter-amt-min').value=advFilters.min??'';
+  document.getElementById('filter-amt-max').value=advFilters.max??'';
+  document.getElementById('advanced-filters-modal').classList.add('open');
+}
+function setAdvFilterField(field,val){advFilters[field]=val;openAdvancedFilters();}
+function applyAdvancedFilters(){
+  const min=document.getElementById('filter-amt-min').value;
+  const max=document.getElementById('filter-amt-max').value;
+  advFilters.min=min?parseFloat(min):null;
+  advFilters.max=max?parseFloat(max):null;
+  document.getElementById('advanced-filters-modal').classList.remove('open');
+  renderHistory();
+}
+function clearAdvancedFilters(){
+  advFilters={type:'All',cat:'All',payMode:'All',min:null,max:null};
+  document.getElementById('advanced-filters-modal').classList.remove('open');
+  renderHistory();
 }
 // ── Swipe-to-delete: left-swipe reveals a 🗑️ action behind each History row. ──
 // ── Uses event delegation so it keeps working after every re-render, without ──
@@ -3375,11 +3632,33 @@ function openEditEntry(i){
   const d=getData();const e=d[i];
   if(!e)return;
   editIndex=i;editMonth=e.month;editCat=e.category;
+  editTags=[...(e.tags||[])]; // BUG FIX (#10 Transaction Tags): tags previously displayed
+  // (from Android-imported entries) but had no way to be added/edited for any entry, manual
+  // or otherwise — there was no tag input anywhere in the app.
   document.getElementById('edit-amount-input').value=e.amount;
   document.getElementById('edit-date-input').value=e.date||'';
   document.getElementById('edit-amt-sign').style.color=e.type==='income'?'var(--green)':'var(--red)';
   renderEditGrids();
+  renderEditTagChips();
   document.getElementById('edit-entry-modal').classList.add('open');
+}
+function renderEditTagChips(){
+  const el=document.getElementById('edit-tags-chips');
+  el.innerHTML = editTags.length ? editTags.map((t,idx)=>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);color:var(--muted);font-size:12px;padding:4px 10px;border-radius:100px">#${escHtml(t)} <span style="cursor:pointer;font-weight:700" onclick="removeEditTag(${idx})">×</span></span>`
+  ).join('') : '<span style="color:var(--muted);font-size:12px">No tags yet</span>';
+}
+function addEditTag(){
+  const input=document.getElementById('edit-tag-input');
+  const raw=input.value.trim().replace(/^#/,'');
+  if(!raw)return;
+  if(!editTags.includes(raw))editTags.push(raw);
+  input.value='';
+  renderEditTagChips();
+}
+function removeEditTag(idx){
+  editTags.splice(idx,1);
+  renderEditTagChips();
 }
 function renderEditGrids(){
   let mh='';
@@ -3405,7 +3684,7 @@ async function saveEditEntry(){
   const d=getData();
   const e=d[editIndex];
   if(!e)return;
-  e.month=editMonth;e.category=editCat;e.amount=amt;e.date=dateVal;
+  e.month=editMonth;e.category=editCat;e.amount=amt;e.date=dateVal;e.tags=[...editTags];
   if(dateVal)e.year=new Date(dateVal).getFullYear();
   saveData(d);
   closeEditEntry();
@@ -5694,6 +5973,277 @@ async function uploadLocalTransactionToCloud(entry){
   return entry.supaId;
 }
 
+// ── SOCIAL MONEY ──
+// Wired to connection_requests / connections / blocked_users / shared_debts /
+// shared_debt_payments / accept_connection_request() / search_users_by_username()
+// (see ProjectVault_social_festival_ads_schema.sql). Every query below relies on
+// RLS to enforce "only visible to the participating users" — the client never
+// filters by user_id itself except for the initial resolveSupabaseUserId() call,
+// matching how the rest of this app already trusts RLS as the real boundary.
+
+// Resolves display names for a batch of auth ids via get_public_profiles() —
+// public.users' own RLS only allows reading your own row, so this MUST go
+// through that SECURITY DEFINER function; a direct sb.from('users').select()
+// here would just come back empty for everyone but yourself.
+async function fetchProfileNames(authIds){
+  const unique=[...new Set(authIds)].filter(Boolean);
+  if(unique.length===0)return {};
+  const {data,error}=await sb.rpc('get_public_profiles',{p_auth_ids:unique});
+  if(error){
+    pushErrorLog({message:'Resolving profile names failed: '+error.message,source:'fetchProfileNames'});
+    return {};
+  }
+  const map={};
+  (data||[]).forEach(p=>{map[p.auth_user_id]=p.name||p.username||p.auth_user_id.slice(0,8)+'…';});
+  return map;
+}
+
+let _socialFriendCache = []; // {authUserId, username, name} — populated by loadConnections(), read by openGiveMoneyForm()
+
+function openSocialModal(){
+  document.getElementById('social-modal').classList.add('open');
+  showSocialSection('find');
+}
+
+function showSocialSection(name){
+  ['find','requests','connections','money'].forEach(s=>{
+    document.getElementById('social-section-'+s).style.display = s===name ? '' : 'none';
+    document.getElementById('social-tab-'+s).style.opacity = s===name ? '1' : '.6';
+  });
+  if(name==='requests')loadConnectionRequests();
+  if(name==='connections')loadConnections();
+  if(name==='money')loadMoneySummary();
+}
+
+async function searchSocialUsers(){
+  const q=document.getElementById('social-search-input').value.trim();
+  const results=document.getElementById('social-search-results');
+  if(!q){results.innerHTML='';return;}
+  results.innerHTML='<div style="opacity:.6">Searching…</div>';
+  const {data,error}=await sb.rpc('search_users_by_username',{p_query:q});
+  if(error){
+    pushErrorLog({message:'Social search failed: '+error.message,source:'searchSocialUsers'});
+    results.innerHTML='<div style="color:var(--red)">Search failed — check Error Logs</div>';
+    return;
+  }
+  if(!data||data.length===0){results.innerHTML='<div style="opacity:.6">No users found</div>';return;}
+  results.innerHTML=data.map(u=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div><b>${u.name||u.username}</b><br><span style="opacity:.6;font-size:12px">@${u.username}</span></div>
+      <button class="save-btn" onclick="sendConnectionRequest('${u.auth_user_id}')">Add Friend</button>
+    </div>
+  `).join('');
+}
+
+async function sendConnectionRequest(toUserId){
+  const userId=await resolveSupabaseUserId();
+  if(!userId){showToast('Could not resolve your account — try again','#ffb300');return;}
+  const {error}=await sb.from('connection_requests').insert({from_user:userId,to_user:toUserId});
+  if(error){
+    // unique(from_user,to_user) means a repeat click here is expected, not a bug —
+    // surface it plainly instead of a generic failure toast.
+    const msg = error.code==='23505' ? 'Request already sent' : (error.message||'Could not send request');
+    showToast('⚠️ '+msg,'#ffb300');
+    return;
+  }
+  showToast('✅ Friend request sent');
+}
+
+async function loadConnectionRequests(){
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const incomingEl=document.getElementById('social-requests-incoming');
+  const outgoingEl=document.getElementById('social-requests-outgoing');
+  incomingEl.innerHTML='<div style="opacity:.6">Loading…</div>';
+  outgoingEl.innerHTML='<div style="opacity:.6">Loading…</div>';
+
+  const [{data:incoming,error:e1},{data:outgoing,error:e2}]=await Promise.all([
+    sb.from('connection_requests').select('id,from_user,status,created_at').eq('to_user',userId).eq('status','pending'),
+    sb.from('connection_requests').select('id,to_user,status,created_at').eq('from_user',userId).eq('status','pending')
+  ]);
+  if(e1||e2){pushErrorLog({message:'Loading requests failed: '+((e1||e2).message),source:'loadConnectionRequests'});}
+
+  const idsToResolve=[...(incoming||[]).map(r=>r.from_user),...(outgoing||[]).map(r=>r.to_user)];
+  const nameMap=await fetchProfileNames(idsToResolve);
+  const nameFor=(authId)=>nameMap[authId]||authId.slice(0,8)+'…';
+
+  incomingEl.innerHTML = (incoming&&incoming.length) ? incoming.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>${nameFor(r.from_user)}</div>
+      <div style="display:flex;gap:6px">
+        <button class="save-btn" onclick="acceptConnectionRequest('${r.id}')">Accept</button>
+        <button class="save-btn" style="color:var(--red)" onclick="respondConnectionRequest('${r.id}','rejected')">Reject</button>
+      </div>
+    </div>`).join('') : '<div style="opacity:.6">No incoming requests</div>';
+
+  outgoingEl.innerHTML = (outgoing&&outgoing.length) ? outgoing.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>${nameFor(r.to_user)} <span style="opacity:.6;font-size:12px">Pending</span></div>
+      <button class="save-btn" onclick="respondConnectionRequest('${r.id}','cancelled')">Cancel</button>
+    </div>`).join('') : '<div style="opacity:.6">No sent requests</div>';
+}
+
+async function acceptConnectionRequest(requestId){
+  // accept_connection_request() does both writes (create the connection row +
+  // close the request) atomically server-side — see the schema file. Never
+  // do this as two separate client calls; a failure between them would leave
+  // an accepted request with no actual connection.
+  const {error}=await sb.rpc('accept_connection_request',{p_request_id:requestId});
+  if(error){
+    pushErrorLog({message:'Accept request failed: '+error.message,source:'acceptConnectionRequest'});
+    showToast('⚠️ Could not accept — check Error Logs','#e53935');
+    return;
+  }
+  showToast('✅ You are now connected');
+  loadConnectionRequests();
+}
+
+async function respondConnectionRequest(requestId,status){
+  const {error}=await sb.from('connection_requests').update({status,responded_at:new Date().toISOString()}).eq('id',requestId);
+  if(error){showToast('⚠️ Action failed','#e53935');return;}
+  loadConnectionRequests();
+}
+
+async function loadConnections(){
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const el=document.getElementById('social-connections-list');
+  el.innerHTML='<div style="opacity:.6">Loading…</div>';
+  const {data,error}=await sb.from('connections').select('id,user_a,user_b').or(`user_a.eq.${userId},user_b.eq.${userId}`);
+  if(error){
+    pushErrorLog({message:'Loading connections failed: '+error.message,source:'loadConnections'});
+    el.innerHTML='<div style="color:var(--red)">Failed to load — check Error Logs</div>';
+    return;
+  }
+  const friendIds=(data||[]).map(c=>c.user_a===userId?c.user_b:c.user_a);
+  const nameMap=await fetchProfileNames(friendIds);
+  _socialFriendCache=friendIds.map(id=>({authUserId:id, name: nameMap[id]||id.slice(0,8)+'…'}));
+  el.innerHTML = _socialFriendCache.length ? _socialFriendCache.map(f=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>${f.name}</div>
+      <button class="save-btn" onclick="openGiveMoneyForm('${f.authUserId}')">Give Money</button>
+    </div>`).join('') : '<div style="opacity:.6">No friends yet — find some in the Find Friends tab</div>';
+}
+
+function openGiveMoneyForm(friendAuthId){
+  const friend=_socialFriendCache.find(f=>f.authUserId===friendAuthId);
+  document.getElementById('give-money-title').textContent='Give Money to '+(friend?friend.name:'friend');
+  document.getElementById('give-money-modal').dataset.borrowerId=friendAuthId;
+  document.getElementById('gm-amount').value='';
+  document.getElementById('gm-reason').value='';
+  document.getElementById('gm-due').value='';
+  document.getElementById('gm-err').textContent='';
+  document.getElementById('give-money-modal').classList.add('open');
+}
+
+async function submitSharedDebt(){
+  const err=document.getElementById('gm-err');
+  const amount=parseFloat(document.getElementById('gm-amount').value);
+  if(!amount||amount<=0){err.textContent='Enter a valid amount';return;}
+  const borrowerId=document.getElementById('give-money-modal').dataset.borrowerId;
+  const userId=await resolveSupabaseUserId();
+  if(!userId){err.textContent='Could not resolve your account';return;}
+  const payload={
+    lender_id:userId, borrower_id:borrowerId, amount,
+    reason:document.getElementById('gm-reason').value.trim()||null,
+    due_date:document.getElementById('gm-due').value||null
+  };
+  const {error}=await sb.from('shared_debts').insert(payload);
+  if(error){
+    // The insert policy requires an existing connections row between the two
+    // users — a failure here most often means that row genuinely isn't
+    // there yet (e.g. stale friend cache), not a generic error.
+    err.textContent = error.code==='42501' ? 'You can only record money with a connected friend' : (error.message||'Failed to record');
+    pushErrorLog({message:'Shared debt insert failed: '+error.message,source:'submitSharedDebt'});
+    return;
+  }
+  document.getElementById('give-money-modal').classList.remove('open');
+  showToast('✅ Recorded');
+  loadMoneySummary();
+}
+
+async function loadMoneySummary(){
+  const userId=await resolveSupabaseUserId();
+  if(!userId)return;
+  const summaryEl=document.getElementById('social-money-summary');
+  const lentEl=document.getElementById('social-money-lent');
+  const borrowedEl=document.getElementById('social-money-borrowed');
+  summaryEl.innerHTML='<div style="opacity:.6">Loading…</div>';
+
+  // shared_debts_with_computed_status derives remaining/effective_status
+  // (including overdue) at query time — never trust a locally-cached
+  // "remaining" value for this, since it must match exactly what the other
+  // participant sees.
+  const [{data:lent,error:e1},{data:borrowed,error:e2}]=await Promise.all([
+    sb.from('shared_debts_with_computed_status').select('*').eq('lender_id',userId).order('created_at',{ascending:false}),
+    sb.from('shared_debts_with_computed_status').select('*').eq('borrower_id',userId).order('created_at',{ascending:false})
+  ]);
+  if(e1||e2){
+    pushErrorLog({message:'Loading money summary failed: '+((e1||e2).message),source:'loadMoneySummary'});
+    summaryEl.innerHTML='<div style="color:var(--red)">Failed to load — check Error Logs</div>';
+    return;
+  }
+
+  const owedToMe=(lent||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
+  const iOwe=(borrowed||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
+  const net=owedToMe-iOwe;
+  summaryEl.innerHTML=`
+    <div style="font-size:13px;opacity:.7">Owed to me: ₹${owedToMe.toFixed(2)} &nbsp;|&nbsp; I owe: ₹${iOwe.toFixed(2)}</div>
+    <div style="font-size:22px;font-weight:700;margin-top:4px;color:${net>=0?'var(--green)':'var(--red)'}">Net ${net>=0?'+':''}₹${net.toFixed(2)}</div>
+  `;
+
+  const statusLabel=s=>({pending:'Pending',partially_paid:'Partially Paid',paid:'Paid',overdue:'Overdue',cancelled:'Cancelled'}[s]||s);
+  const idsToResolve=[...(lent||[]).map(d=>d.borrower_id),...(borrowed||[]).map(d=>d.lender_id)];
+  const nameMap=await fetchProfileNames(idsToResolve);
+  const nameFor=(authId)=>nameMap[authId]||authId.slice(0,8)+'…';
+
+  const renderDebtRow=(d,otherIdField,canRepay)=>`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between">
+        <b>${nameFor(d[otherIdField])}</b>
+        <span style="color:${d.effective_status==='overdue'?'var(--red)':'inherit'}">${statusLabel(d.effective_status)}</span>
+      </div>
+      <div style="font-size:13px;opacity:.7">₹${Number(d.remaining).toFixed(2)} remaining of ₹${Number(d.amount).toFixed(2)}${d.due_date?' · due '+d.due_date:''}${d.reason?' · '+d.reason:''}</div>
+      ${canRepay && d.effective_status!=='paid' && d.effective_status!=='cancelled' ? `<button class="save-btn" style="margin-top:6px" onclick="openRepayForm('${d.id}')">Record Repayment</button>` : ''}
+    </div>`;
+
+  lentEl.innerHTML = (lent&&lent.length) ? lent.map(d=>renderDebtRow(d,'borrower_id',false)).join('') : '<div style="opacity:.6">Nothing given yet</div>';
+  borrowedEl.innerHTML = (borrowed&&borrowed.length) ? borrowed.map(d=>renderDebtRow(d,'lender_id',true)).join('') : '<div style="opacity:.6">Nothing borrowed</div>';
+}
+
+function openRepayForm(debtId){
+  document.getElementById('repay-debt-modal').dataset.debtId=debtId;
+  document.getElementById('rd-amount').value='';
+  document.getElementById('rd-note').value='';
+  document.getElementById('rd-err').textContent='';
+  document.getElementById('repay-debt-modal').classList.add('open');
+}
+
+async function submitRepayment(){
+  const err=document.getElementById('rd-err');
+  const amount=parseFloat(document.getElementById('rd-amount').value);
+  if(!amount||amount<=0){err.textContent='Enter a valid amount';return;}
+  const debtId=document.getElementById('repay-debt-modal').dataset.debtId;
+  const userId=await resolveSupabaseUserId();
+  if(!userId){err.textContent='Could not resolve your account';return;}
+  const {error}=await sb.from('shared_debt_payments').insert({
+    shared_debt_id:debtId, amount, recorded_by:userId,
+    note:document.getElementById('rd-note').value.trim()||null
+  });
+  if(error){
+    err.textContent=error.message||'Failed to record repayment';
+    pushErrorLog({message:'Repayment insert failed: '+error.message,source:'submitRepayment'});
+    return;
+  }
+  // A DB trigger (recompute_shared_debt_status, see the schema file)
+  // recalculates status/remaining server-side from the payment total — this
+  // reload picks up that recalculated value rather than computing it here,
+  // so both participants can never see different numbers.
+  document.getElementById('repay-debt-modal').classList.remove('open');
+  showToast('✅ Repayment recorded');
+  loadMoneySummary();
+}
+
 function refreshVisibleTabsAfterSync(){
   if(document.getElementById('page-home')?.classList.contains('active'))renderHome();
   if(document.getElementById('page-history')?.classList.contains('active'))renderHistory();
@@ -5945,6 +6495,233 @@ function renderSyncStatusUI(){
 }
 
 function bumpAcctGeneration(){ _acctGeneration++; }
+</script>
+
+<script id="pv-events-media-js">
+/* ProjectVault Events/Media extension.
+ * Uses the already-provisioned Supabase festivals/festival_media/ad_campaigns/ad_media
+ * schema and pv-media storage bucket. It intentionally keeps private finance data out
+ * of public profiles and only uses existing authenticated-user/RLS paths.
+ */
+(function(){
+  const PV_ALLOWED_MEDIA=new Set(['image/jpeg','image/png','image/gif','video/mp4','video/webm']);
+  let pvMediaTimer=null,pvMediaIndex=0,pvMediaItems=[],pvCurrentFestival=null;
+
+  function pvEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function pvStorageUrl(path){
+    if(!path)return '';
+    return SUPABASE_URL+'/storage/v1/object/public/pv-media/'+path.split('/').map(encodeURIComponent).join('/');
+  }
+  function pvMediaMarkup(m){
+    const url=pvStorageUrl(m.storage_path);
+    const t=String(m.media_type||'').toLowerCase();
+    if(t.startsWith('video/')) return '<video class="pv-media-video" controls playsinline preload="metadata" src="'+pvEsc(url)+'"></video>';
+    return '<img class="pv-media-img" loading="lazy" src="'+pvEsc(url)+'" alt="ProjectVault media">';
+  }
+  window.openEventsMediaModal=async function(){
+    document.getElementById('events-media-modal').classList.add('open');
+    await pvLoadEventsMedia();
+  };
+  window.closeEventsMediaModal=function(){
+    document.getElementById('events-media-modal').classList.remove('open');
+    if(pvMediaTimer){clearInterval(pvMediaTimer);pvMediaTimer=null;}
+  };
+
+  async function pvAuthId(){
+    try{
+      const s=await sb.auth.getSession();
+      return s?.data?.session?.user?.id||null;
+    }catch(e){return null;}
+  }
+
+  async function pvLoadEventsMedia(){
+    const [festivalRes,adRes]=await Promise.all([
+      sb.from('festivals').select('*').eq('is_active',true).order('priority',{ascending:true}).order('festival_date',{ascending:true}),
+      sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true})
+    ]);
+    const festivals=festivalRes.data||[];
+    const ads=adRes.data||[];
+    pvCurrentFestival=pvPickFestival(festivals);
+    await Promise.all([pvRenderPriority(festivals,ads),pvRenderBirthdays(),pvRenderFestivals(festivals),pvRenderAds(ads)]);
+    if(await pvIsAdmin()) await pvRenderAdmin(ads);
+  }
+
+  function pvPickFestival(list){
+    const now=new Date(); now.setHours(0,0,0,0);
+    const current=list.find(f=>{
+      const d=new Date(f.festival_date+'T00:00:00'); return d.getTime()===now.getTime();
+    });
+    if(current)return current;
+    return list.find(f=>new Date(f.festival_date+'T00:00:00')>=now)||null;
+  }
+
+  async function pvLoadFestivalMedia(festivalId){
+    if(!festivalId)return [];
+    const {data}=await sb.from('festival_media').select('*').eq('festival_id',festivalId).eq('is_active',true).order('weight',{ascending:false}).order('created_at',{ascending:false});
+    return data||[];
+  }
+
+  async function pvRenderPriority(festivals,ads){
+    const title=document.getElementById('event-priority-title'),sub=document.getElementById('event-priority-sub'),stage=document.getElementById('event-media-stage');
+    if(!title)return;
+    pvMediaItems=[];
+    const bday=await pvGetOwnBirthday();
+    if(bday && pvIsToday(bday)){
+      title.textContent='🎂 Happy Birthday!';
+      sub.textContent='Your birthday is today.';
+    }else if(pvCurrentFestival && pvIsToday(pvCurrentFestival.festival_date)){
+      title.textContent='🪔 '+pvCurrentFestival.name;
+      sub.textContent=pvCurrentFestival.greeting||'Celebrate the day with ProjectVault.';
+      pvMediaItems=await pvLoadFestivalMedia(pvCurrentFestival.id);
+    }else if(pvCurrentFestival){
+      const days=Math.max(0,Math.ceil((new Date(pvCurrentFestival.festival_date+'T00:00:00')-new Date(new Date().toDateString()))/86400000));
+      title.textContent='📅 '+pvCurrentFestival.name;
+      sub.textContent=(pvCurrentFestival.greeting||'Upcoming festival')+' · '+days+' day'+(days===1?'':'s')+' remaining';
+      pvMediaItems=await pvLoadFestivalMedia(pvCurrentFestival.id);
+    }else if(ads.length){
+      title.textContent='📢 Sponsored media';
+      sub.textContent='Rotating media selected by campaign priority.';
+      pvMediaItems=await pvLoadCampaignMedia(ads);
+    }else{
+      title.textContent='✨ ProjectVault';
+      sub.textContent='No active event or sponsored media right now.';
+    }
+    pvRenderStage();
+  }
+
+  function pvRenderStage(){
+    const stage=document.getElementById('event-media-stage'); if(!stage)return;
+    if(!pvMediaItems.length){stage.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">No media scheduled for this event.</div>';return;}
+    const item=pvMediaItems[pvMediaIndex%pvMediaItems.length];
+    stage.innerHTML=pvMediaMarkup(item);
+    if(pvMediaItems.length>1){
+      if(pvMediaTimer)clearInterval(pvMediaTimer);
+      pvMediaTimer=setInterval(()=>{pvMediaIndex++;pvRenderStage();},10000);
+    }
+  }
+
+  async function pvLoadCampaignMedia(campaigns){
+    const ids=campaigns.map(c=>c.id); if(!ids.length)return [];
+    const {data}=await sb.from('ad_media').select('*').in('campaign_id',ids).eq('is_active',true).order('sort_order',{ascending:true});
+    return data||[];
+  }
+
+  function pvIsToday(dateStr){
+    const d=new Date(dateStr+'T00:00:00'),n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
+  }
+
+  async function pvGetOwnBirthday(){
+    const id=await pvAuthId(); if(!id)return null;
+    const {data}=await sb.from('users').select('birthday').eq('auth_user_id',id).maybeSingle();
+    return data?.birthday||null;
+  }
+
+  async function pvRenderBirthdays(){
+    const own=document.getElementById('birthday-own-editor'),friends=document.getElementById('birthday-friends-list');
+    if(!own)return;
+    const id=await pvAuthId();
+    if(!id){own.innerHTML='<div style="color:var(--muted)">Sign in to manage birthdays.</div>';return;}
+    const {data:u}=await sb.from('users').select('birthday,show_birthday_to_friends').eq('auth_user_id',id).maybeSingle();
+    own.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Your birthday</div>'+
+      '<div style="display:flex;gap:7px;align-items:center"><input class="date-inp" id="pv-own-birthday" type="date" value="'+pvEsc(u?.birthday||'')+'" style="margin:0;flex:1">'+
+      '<button class="pill-btn" onclick="pvSaveBirthday()">Save</button></div>'+
+      '<label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-top:8px"><input id="pv-bday-public" type="checkbox" '+(u?.show_birthday_to_friends!==false?'checked':'')+'> Show to connected friends</label>';
+    const {data:conns}=await sb.from('connections').select('user_a,user_b').or('user_a.eq.'+id+',user_b.eq.'+id);
+    const ids=(conns||[]).map(c=>c.user_a===id?c.user_b:c.user_a);
+    if(!ids.length){friends.innerHTML='<div style="font-size:12px;color:var(--muted);margin-top:10px">No connected friends yet.</div>';return;}
+    const {data:fs}=await sb.from('users').select('auth_user_id,name,username,birthday').in('auth_user_id',ids).not('birthday','is',null);
+    const today=new Date();
+    const rows=(fs||[]).map(f=>{
+      const raw=new Date(f.birthday+'T00:00:00'); const next=new Date(today.getFullYear(),raw.getMonth(),raw.getDate());
+      if(next<new Date(today.getFullYear(),today.getMonth(),today.getDate()))next.setFullYear(today.getFullYear()+1);
+      const days=Math.ceil((next-new Date(today.getFullYear(),today.getMonth(),today.getDate()))/86400000);
+      return {f,days};
+    }).sort((a,b)=>a.days-b.days);
+    friends.innerHTML=rows.length?rows.map(x=>'<div class="pv-event-row"><div><b>🎂 '+pvEsc(x.f.name||x.f.username||'Friend')+'</b><div style="font-size:11px;color:var(--muted)">'+(x.days===0?'Today!':x.days+' day'+(x.days===1?'':'s')+' remaining')+'</div></div><span class="pv-event-pill">'+new Date(x.f.birthday+'T00:00:00').toLocaleDateString(undefined,{day:'2-digit',month:'short'})+'</span></div>').join(''):'<div style="font-size:12px;color:var(--muted)">No visible friend birthdays.</div>';
+  }
+
+  window.pvSaveBirthday=async function(){
+    const id=await pvAuthId(); if(!id)return;
+    const birthday=document.getElementById('pv-own-birthday')?.value||null;
+    const show=document.getElementById('pv-bday-public')?.checked!==false;
+    const {error}=await sb.from('users').update({birthday,show_birthday_to_friends:show}).eq('auth_user_id',id);
+    if(error){showToast('⚠️ Could not save birthday');return;}
+    showToast('🎂 Birthday saved');
+    await pvLoadEventsMedia();
+  };
+
+  async function pvRenderFestivals(festivals){
+    const el=document.getElementById('festival-list'); if(!el)return;
+    const today=new Date();today.setHours(0,0,0,0);
+    const rows=festivals.filter(f=>new Date(f.festival_date+'T00:00:00')>=today).slice(0,8);
+    el.innerHTML=rows.length?rows.map(f=>'<div class="pv-event-row"><div><b>'+pvEsc(f.name)+'</b><div style="font-size:11px;color:var(--muted)">'+pvEsc(f.greeting||'')+'</div></div><span class="pv-event-pill">'+pvEsc(f.festival_date)+'</span></div>').join(''):'<div style="color:var(--muted);font-size:12px">No upcoming festivals configured.</div>';
+  }
+
+  async function pvRenderAds(ads){
+    const el=document.getElementById('ad-media-list'); if(!el)return;
+    const media=await pvLoadCampaignMedia(ads);
+    el.innerHTML=media.length?media.slice(0,6).map(m=>'<div class="pv-event-row"><div style="flex:1"><b>'+pvEsc((ads.find(a=>a.id===m.campaign_id)||{}).name||'Sponsored media')+'</b><div style="font-size:11px;color:var(--muted)">'+pvEsc(m.media_type)+'</div></div><span class="pv-event-pill">Active</span></div>').join(''):'<div style="color:var(--muted);font-size:12px">No active sponsored media.</div>';
+  }
+
+  async function pvIsAdmin(){
+    const id=await pvAuthId();if(!id)return false;
+    const {data}=await sb.from('users').select('is_admin').eq('auth_user_id',id).maybeSingle();
+    return data?.is_admin===true;
+  }
+  async function pvRenderAdmin(ads){
+    const card=document.getElementById('events-admin-card');if(!card)return;
+    card.style.display='block';
+    const [cr,fr]=await Promise.all([
+      sb.from('ad_campaigns').select('id,name').order('created_at',{ascending:false}).limit(100),
+      sb.from('festivals').select('id,name,festival_date').order('festival_date',{ascending:true}).limit(100)
+    ]);
+    const select=document.getElementById('adm-campaign-select');
+    const fselect=document.getElementById('adm-festival-select');
+    if(select)select.innerHTML=(cr.data||[]).map(a=>'<option value="'+pvEsc(a.id)+'">'+pvEsc(a.name)+'</option>').join('')||'<option value="">No campaigns</option>';
+    if(fselect)fselect.innerHTML=(fr.data||[]).map(f=>'<option value="'+pvEsc(f.id)+'">'+pvEsc(f.name)+' · '+pvEsc(f.festival_date)+'</option>').join('')||'<option value="">No festivals</option>';
+  }
+  window.pvAdminCreateFestival=async function(){
+    const id=await pvAuthId(); if(!id)return;
+    const name=document.getElementById('adm-festival-name').value.trim(),date=document.getElementById('adm-festival-date').value,greeting=document.getElementById('adm-festival-greeting').value.trim();
+    const st=document.getElementById('events-admin-status'); if(!name||!date){st.textContent='Festival name and date are required.';return;}
+    const {error}=await sb.from('festivals').insert({name,festival_date:date,greeting:greeting||null,priority:10,is_active:true,created_by:id});
+    st.textContent=error?('Error: '+error.message):'Festival created.';
+    if(!error){document.getElementById('adm-festival-name').value='';await pvLoadEventsMedia();}
+  };
+  window.pvAdminCreateCampaign=async function(){
+    const id=await pvAuthId();if(!id)return;
+    const name=document.getElementById('adm-ad-name').value.trim();if(!name){document.getElementById('events-admin-status').textContent='Campaign name is required.';return;}
+    const payload={name,folder:document.getElementById('adm-ad-folder').value.trim()||'General Ads',start_date:document.getElementById('adm-ad-start').value||null,end_date:document.getElementById('adm-ad-end').value||null,priority:10,status:'active',created_by:id};
+    const {error}=await sb.from('ad_campaigns').insert(payload);
+    document.getElementById('events-admin-status').textContent=error?('Error: '+error.message):'Campaign created.';
+    if(!error){document.getElementById('adm-ad-name').value='';await pvLoadEventsMedia();}
+  };
+  window.pvAdminUploadFestivalMedia=async function(){
+    const id=await pvAuthId(),festival=document.getElementById('adm-festival-select').value,file=document.getElementById('adm-festival-media-file').files[0],st=document.getElementById('events-admin-status');
+    if(!id||!festival||!file){st.textContent='Select a festival and media file.';return;}
+    if(!PV_ALLOWED_MEDIA.has(file.type)){st.textContent='Unsupported media type.';return;}
+    if(file.size>50*1024*1024){st.textContent='Media exceeds the 50 MB client safety limit.';return;}
+    const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path='festivals/'+festival+'/'+Date.now()+'_'+safe;
+    const up=await sb.storage.from('pv-media').upload(path,file,{upsert:false,contentType:file.type});
+    if(up.error){st.textContent='Upload error: '+up.error.message;return;}
+    const {error}=await sb.from('festival_media').insert({festival_id:festival,storage_path:path,media_type:file.type,weight:1,is_active:true});
+    st.textContent=error?('Metadata error: '+error.message):'Festival media uploaded successfully.';
+    if(error)await sb.storage.from('pv-media').remove([path]); else {document.getElementById('adm-festival-media-file').value='';await pvLoadEventsMedia();}
+  };
+  window.pvAdminUploadAdMedia=async function(){
+    const id=await pvAuthId(),campaign=document.getElementById('adm-campaign-select').value,file=document.getElementById('adm-media-file').files[0],st=document.getElementById('events-admin-status');
+    if(!id||!campaign||!file){st.textContent='Select a campaign and media file.';return;}
+    if(!PV_ALLOWED_MEDIA.has(file.type)){st.textContent='Unsupported media type.';return;}
+    if(file.size>50*1024*1024){st.textContent='Media exceeds the 50 MB client safety limit.';return;}
+    const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const path='ads/'+campaign+'/'+Date.now()+'_'+safe;
+    const up=await sb.storage.from('pv-media').upload(path,file,{upsert:false,contentType:file.type});
+    if(up.error){st.textContent='Upload error: '+up.error.message;return;}
+    const {error}=await sb.from('ad_media').insert({campaign_id:campaign,storage_path:path,media_type:file.type,file_size_bytes:file.size,sort_order:0,is_active:true});
+    st.textContent=error?('Metadata error: '+error.message):'Media uploaded successfully.';
+    if(error)await sb.storage.from('pv-media').remove([path]); else {document.getElementById('adm-media-file').value='';await pvLoadEventsMedia();}
+  };
+})();
 </script>
 </body>
 </html>
