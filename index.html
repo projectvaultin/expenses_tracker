@@ -6704,7 +6704,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path='festivals/'+festival+'/'+Date.now()+'_'+safe;
     const up=await sb.storage.from('pv-media').upload(path,file,{upsert:false,contentType:file.type});
     if(up.error){st.textContent='Upload error: '+up.error.message;return;}
-    const {error}=await sb.from('festival_media').insert({festival_id:festival,storage_path:path,media_type:file.type,weight:1,is_active:true});
+    const {error}=await sb.from('festival_media').insert({festival_id:festival,storage_path:path,media_type:(file.type==='image/gif'?'gif':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'image'),weight:1,is_active:true});
     st.textContent=error?('Metadata error: '+error.message):'Festival media uploaded successfully.';
     if(error)await sb.storage.from('pv-media').remove([path]); else {document.getElementById('adm-festival-media-file').value='';await pvLoadEventsMedia();}
   };
@@ -6717,7 +6717,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     const path='ads/'+campaign+'/'+Date.now()+'_'+safe;
     const up=await sb.storage.from('pv-media').upload(path,file,{upsert:false,contentType:file.type});
     if(up.error){st.textContent='Upload error: '+up.error.message;return;}
-    const {error}=await sb.from('ad_media').insert({campaign_id:campaign,storage_path:path,media_type:file.type,file_size_bytes:file.size,sort_order:0,is_active:true});
+    const {error}=await sb.from('ad_media').insert({campaign_id:campaign,storage_path:path,media_type:(file.type==='image/gif'?'gif':file.type.startsWith('video/')?'video':'image'),file_size_bytes:file.size,sort_order:0,is_active:true});
     st.textContent=error?('Metadata error: '+error.message):'Media uploaded successfully.';
     if(error)await sb.storage.from('pv-media').remove([path]); else {document.getElementById('adm-media-file').value='';await pvLoadEventsMedia();}
   };
