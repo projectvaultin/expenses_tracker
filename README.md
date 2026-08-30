@@ -1,6 +1,6 @@
 # ProjectVault Expenses Tracker — WebApp
 
-This WebApp is the supplied `index (4).html`, integrated into the complete ProjectVault source package.
+This WebApp is the supplied `index.html`, integrated into the complete ProjectVault source package.
 
 ## Included
 - Supabase Auth client integration already present in the supplied app

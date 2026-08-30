@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Expenses Tracker">
 <meta name="theme-color" content="#0f1117">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.svg">
-<link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Expenses Tracker — by ProjectVault</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -328,10 +328,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <!-- SPLASH INTRO SCREEN -->
 <div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#181c2b 0%,#0f1117 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;overflow:hidden;">
   <div id="splash-orb" style="position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.22) 0%,rgba(108,99,255,0) 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:splashOrbPulse 3.2s ease-in-out infinite;pointer-events:none;"></div>
-  <img src="icon-192.svg" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);position:relative;"/>
+  <img src="icon-192.png" alt="Expenses Tracker" style="width:88px;height:88px;border-radius:22px;box-shadow:0 10px 40px rgba(108,99,255,.4);animation:splashPop .7s cubic-bezier(.34,1.56,.64,1);position:relative;"/>
   <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f0f0f5;margin-top:18px;opacity:0;animation:splashFadeIn .6s ease .3s forwards;position:relative;">Expenses<span style="color:#6c63ff;"> Tracker</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0;animation:splashFadeIn .6s ease .5s forwards;position:relative;">
-    <img src="brand-logo.svg" alt="ProjectVault" style="height:14px;width:auto"/>
+    <img src="brand-logo.png" alt="ProjectVault" style="height:14px;width:auto"/>
     <span style="font-size:11px;color:#7a7d99;letter-spacing:.4px;">by ProjectVault</span>
   </div>
   <div id="splash-greeting" style="font-size:15px;font-weight:700;color:#f0f0f5;margin-top:26px;opacity:0;animation:splashFadeIn .6s ease .7s forwards;position:relative;text-align:center;"></div>
@@ -353,7 +353,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
   <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.svg" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.svg" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
     <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
@@ -370,13 +370,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.svg" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
+  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ AUTH ═══════════ -->
 <div id="auth-screen">
   <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap"><img src="icon-192.svg" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.svg" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
   <div class="auth-card">
     <div class="auth-tabs">
@@ -407,7 +407,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.svg" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
+  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ APP ═══════════ -->
@@ -463,7 +463,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="drawer-item" onclick="toggleContrastMode()"><span class="di-icon">🔲</span> <span id="drawer-contrast-label">Turn On High Contrast</span></div>
     <div class="drawer-item" onclick="closeDrawer();showChangePwModal()"><span class="di-icon">🔑</span> Change Password</div>
     <div class="drawer-item" style="color:var(--red);margin-top:auto" onclick="doLogout()"><span class="di-icon">🚪</span> Logout</div>
-    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.svg" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;">by <img src="brand-logo.png" style="height:14px" alt="ProjectVault"/> ProjectVault</div>
   </div>
 
   <!-- HOME -->
