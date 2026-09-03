@@ -310,7 +310,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 .pv-display-top-btn{display:none!important}
-#pv-full-display{position:relative;width:100%;height:100px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
+#pv-full-display{position:relative;width:100%;height:30px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
 .pv-fd-bg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(108,99,255,.15),rgba(0,208,132,.08),rgba(255,179,0,.10)),#05060a}
 .pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 34px 0 8px;box-sizing:border-box;overflow:hidden}
 .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -325,7 +325,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-fd-sound-inline{position:absolute;right:5px;top:3px;width:24px;height:24px;padding:0;border-radius:50%;z-index:6;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);color:#fff;cursor:pointer;font-size:11px}
 .pv-fd-status-inline{position:absolute;left:6px;bottom:2px;z-index:6;font-size:7px;color:rgba(255,255,255,.6);display:none}
 .pv-fd-btn{backdrop-filter:blur(8px)}
-@media(min-width:701px){#pv-full-display{height:100px}}
+@media(min-width:701px){#pv-full-display{height:30px}}
 </style>
 <!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
 <!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
@@ -1447,6 +1447,26 @@ async function resolveSupabaseUserId(){
   }
 }
 
+// Legacy bigint-user-id tables (categories, budgets, settings, reminders, support).
+// These tables intentionally use public.users.id, not auth.users.id.
+async function resolveLegacyUserId(){
+  if(!CU) return null;
+  try{
+    const {data:authData,error:authError}=await sb.auth.getUser();
+    if(authError || !authData?.user) return null;
+    const {data:profile,error:profileError}=await sb.from('users')
+      .select('id').eq('auth_user_id',authData.user.id).maybeSingle();
+    if(profileError || !profile) {
+      console.error('Could not resolve legacy public.users.id',profileError);
+      return null;
+    }
+    return profile.id;
+  }catch(error){
+    console.error('Could not resolve legacy public.users.id',error);
+    return null;
+  }
+}
+
 
 // ── SUPABASE AUTH — real authentication authority ──────────────────────────────────────
 // Login/signup/password-change/password-reset all go through sb.auth (signInWithPassword /
@@ -1782,7 +1802,7 @@ function saveData(d){localStorage.setItem(uKey('data'),JSON.stringify(d));}
   async function syncCategories(){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const { data, error } = await sb
@@ -1806,7 +1826,7 @@ function saveData(d){localStorage.setItem(uKey('data'),JSON.stringify(d));}
 async function uploadCategories(){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const cats = JSON.parse(localStorage.getItem(uKey("cats")) || "[]");
@@ -1875,7 +1895,7 @@ function getCatBudgets(){return JSON.parse(localStorage.getItem(uKey('catBudgets
   async function uploadCategoryBudget(category, amount){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const { data: existing } = await sb
@@ -1906,7 +1926,7 @@ function getCatBudgets(){return JSON.parse(localStorage.getItem(uKey('catBudgets
 async function deleteCategoryBudget(category){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   await sb
@@ -1918,7 +1938,7 @@ async function deleteCategoryBudget(category){
   async function syncCategoryBudgets(){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const { data, error } = await sb
@@ -1960,7 +1980,7 @@ async function setCatBudget(cat,val){
   async function uploadUserSettings(){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const monthlyBudget = getBudgetLimit();
@@ -2003,7 +2023,7 @@ const highContrast = getContrastMode();
 async function syncUserSettings(){
   if(!CU) return;
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
 
   const { data, error } = await sb
@@ -2412,7 +2432,7 @@ async function toggleRequire2FA(on){
   users[CU].require2FA=on;
   saveUsers(users);
   showToast(on?'🔒 Two-factor login enabled':'Two-factor login disabled');
-  const userId=await resolveSupabaseUserId();
+  const userId=await resolveLegacyUserId();
   if(userId===null||userId===undefined)return;
   const{error}=await sb.from('users').update({require2FA:on}).eq('id',userId);
   if(error)console.error('Failed to sync 2FA preference to cloud:',error);
@@ -4795,7 +4815,7 @@ function saveSeenReplies(arr){localStorage.setItem('exp_seen_replies_'+CU,JSON.s
 async function checkUnreadReplies(){
   const badge=document.getElementById('manage-reply-badge');
   if(!badge)return;
-  const userId=await resolveSupabaseUserId();
+  const userId=await resolveLegacyUserId();
   if(userId===null||userId===undefined){badge.style.display='none';return;}
   try{
     const{data,error}=await sb.from('support_messages').select('id,admin_reply').eq('user_id',userId).not('admin_reply','is',null);
@@ -4808,7 +4828,7 @@ async function checkUnreadReplies(){
 async function loadSupportTickets(){
   const el=document.getElementById('support-ticket-list');
   if(!el)return;
-  const userId=await resolveSupabaseUserId();
+  const userId=await resolveLegacyUserId();
   if(userId===null||userId===undefined){el.innerHTML='<div style="font-size:12px;color:var(--muted)">Log in to see your tickets.</div>';return;}
   el.innerHTML='<div style="font-size:12px;color:var(--muted)">Loading your tickets…</div>';
   try{
@@ -4901,7 +4921,7 @@ async function saveProfile(){
   saveUsers(users);
   // Sync profile to Supabase
 try{
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
 
   if(userId){
     const { data, error } = await sb
@@ -5194,7 +5214,7 @@ function getReminders(){return JSON.parse(localStorage.getItem(uKey('reminders')
 function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(r));}
   async function uploadReminder(r){
   if(!CU) return;
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
   const { error } = await sb.from('reminders').upsert({
     id: r.id,
@@ -5213,7 +5233,7 @@ function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(
 
 async function deleteReminderCloud(id){
   if(!CU) return;
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
   const { error } = await sb.from('reminders').delete().eq('id', id).eq('user_id', userId);
   if(error) console.error('Reminder delete failed:', error);
@@ -5221,7 +5241,7 @@ async function deleteReminderCloud(id){
 
 async function syncReminders(){
   if(!CU) return;
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
   if(userId===null||userId===undefined) return;
   const { data, error } = await sb.from('reminders').select('*').eq('user_id', userId);
   if(error){ console.error('Reminders sync failed:', error); return; }
