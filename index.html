@@ -6171,6 +6171,16 @@ function openGiveMoneyForm(friendAuthId){
 }
 
 
+<div id="shared-debt-user-search-wrap" style="margin-top:10px">
+  <div class="fl-label">ProjectVault User</div>
+  <input class="ai" id="shared-debt-user-search" type="search"
+    placeholder="Search username or full name…" autocomplete="off"
+    oninput="searchDebtUser(this.value)">
+  <div id="shared-debt-user-results" style="margin-top:6px"></div>
+  <div id="shared-debt-selected" style="margin-top:6px"></div>
+</div>
+
+
 let _selectedDebtUser = null;
 window._debtSearchResults = [];
 
