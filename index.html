@@ -310,29 +310,35 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 <style id="pv-full-display-css">
-#pv-inline-display{position:relative;width:100%;height:220px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
-#pv-inline-display .pv-fd-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 15%,rgba(108,99,255,.18),transparent 45%),#05060a}
-.pv-inline-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px 10px 24px;box-sizing:border-box}
-.pv-inline-stage .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
-.pv-fd-media{width:100%;height:100%;object-fit:contain;display:block;background:#050505}
+.pv-display-top-btn{border:1px solid rgba(108,99,255,.35);cursor:pointer;white-space:nowrap}
+#pv-full-display{position:fixed;inset:0;z-index:99999;background:#05060a;color:#fff;display:none;overflow:hidden}
+#pv-full-display.open{display:block}
+.pv-fd-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 15%,rgba(108,99,255,.18),transparent 45%),#05060a}
+.pv-fd-header{position:absolute;z-index:4;top:0;left:0;right:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.72),transparent);pointer-events:none}
+.pv-fd-header>*{pointer-events:auto}
+.pv-fd-brand{font-weight:800;letter-spacing:.3px;font-size:15px;text-shadow:0 2px 10px #000}
+.pv-fd-actions{display:flex;gap:8px;align-items:center}
+.pv-fd-btn{border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);backdrop-filter:blur(10px);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:700}
+.pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:56px 22px 58px;box-sizing:border-box}
+.pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.pv-fd-media{width:100%;height:100%;object-fit:contain;display:block;border-radius:18px;background:#050505}
 .pv-fd-media.cover{object-fit:cover}
-.pv-fd-card{width:100%;height:100%;border-radius:0;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(108,99,255,.28),rgba(255,101,132,.14) 50%,rgba(0,208,132,.12));border:0;box-shadow:none}
+.pv-fd-card{width:min(1050px,96vw);height:min(720px,82vh);border-radius:28px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(108,99,255,.28),rgba(255,101,132,.14) 50%,rgba(0,208,132,.12));border:1px solid rgba(255,255,255,.14);box-shadow:0 25px 80px rgba(0,0,0,.45)}
 .pv-fd-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.16),transparent 35%)}
-.pv-fd-birthday{display:flex;gap:18px;align-items:center;padding:12px 18px;box-sizing:border-box;z-index:1;max-width:100%}
-.pv-fd-avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.72);box-shadow:0 8px 25px rgba(0,0,0,.35);background:#202431;flex:none}
-.pv-fd-avatar-placeholder{display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800}
-.pv-fd-copy{text-align:left;min-width:0}
-.pv-fd-kicker{font-size:11px;font-weight:700;opacity:.86;margin-bottom:3px}
-.pv-fd-title{font-size:clamp(22px,5vw,42px);line-height:1.02;font-weight:800;letter-spacing:-.5px}
-.pv-fd-sub{font-size:11px;margin-top:5px;opacity:.86;line-height:1.3}
-.pv-inline-footer{position:absolute;z-index:4;left:0;right:0;bottom:4px;padding:0 10px;display:flex;justify-content:space-between;gap:8px;font-size:9px;color:rgba(255,255,255,.72);pointer-events:none}
+.pv-fd-birthday{display:flex;gap:34px;align-items:center;padding:45px;box-sizing:border-box;z-index:1}
+.pv-fd-avatar{width:min(270px,32vw);height:min(270px,32vw);border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,.72);box-shadow:0 18px 55px rgba(0,0,0,.4);background:#202431;flex:none}
+.pv-fd-avatar-placeholder{display:flex;align-items:center;justify-content:center;font-size:clamp(60px,9vw,110px);font-weight:800}
+.pv-fd-copy{text-align:left}
+.pv-fd-kicker{font-size:clamp(15px,2vw,24px);font-weight:700;opacity:.86;margin-bottom:8px}
+.pv-fd-title{font-size:clamp(34px,6vw,78px);line-height:1.02;font-weight:800;letter-spacing:-1.5px}
+.pv-fd-sub{font-size:clamp(16px,2.1vw,27px);margin-top:14px;opacity:.86;line-height:1.35}
+.pv-fd-progress{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.12);z-index:5}
+.pv-fd-progress i{display:block;height:100%;width:0;background:#fff;transition:width linear}
+.pv-fd-footer{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:12px 18px;display:flex;justify-content:space-between;gap:12px;background:linear-gradient(to top,rgba(0,0,0,.72),transparent);font-size:11px;color:rgba(255,255,255,.72)}
 .pv-fd-status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pv-fd-muted{opacity:.7}
-.pv-inline-progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.12);z-index:5}
-.pv-inline-progress i{display:block;height:100%;width:0;background:#fff;transition:width linear}
-@media(max-width:700px){#pv-inline-display{height:190px}.pv-inline-stage{padding:6px 6px 20px}.pv-fd-birthday{gap:10px;padding:8px 10px}.pv-fd-avatar{width:68px;height:68px}.pv-fd-title{font-size:clamp(19px,6vw,30px)}.pv-fd-sub{font-size:9px}.pv-fd-kicker{font-size:9px}.pv-inline-footer{font-size:8px;padding:0 7px}}
-@media(min-width:701px){#pv-inline-display{height:250px}}
-</style>
+@media(max-width:700px){.pv-fd-stage{padding:52px 10px 45px}.pv-fd-birthday{flex-direction:column;text-align:center;padding:25px;gap:18px}.pv-fd-copy{text-align:center}.pv-fd-avatar{width:min(220px,55vw);height:min(220px,55vw)}.pv-fd-card{height:82vh;border-radius:22px}}
+#social-modal{display:none!important;} #shared-debt-user-results .pill-btn{min-height:40px}</style>
 <!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
 <!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
 <!-- 2) Add an Email Service (e.g. connect your Gmail) → copy the Service ID  -->
@@ -439,6 +445,21 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ APP ═══════════ -->
 
+<!-- PROJECTVAULT FULL-SCREEN AUTOMATIC DISPLAY -->
+<div id="pv-full-display" aria-hidden="true">
+  <div class="pv-fd-bg"></div>
+  <div class="pv-fd-header">
+    <div class="pv-fd-brand">ProjectVault · Automatic Display</div>
+    <div class="pv-fd-actions">
+      <button class="pv-fd-btn" id="pv-fd-sound" onclick="pvToggleDisplaySound()">🔇 Sound off</button>
+      <button class="pv-fd-btn" onclick="pvCloseDisplay()">✕ Close</button>
+    </div>
+  </div>
+  <div class="pv-fd-stage"><div class="pv-fd-content" id="pv-fd-content"></div></div>
+  <div class="pv-fd-footer"><span class="pv-fd-status" id="pv-fd-status">Preparing automatic display…</span><span class="pv-fd-muted">Birthday · Festival · Admin Ads</span></div>
+  <div class="pv-fd-progress"><i id="pv-fd-progress-bar"></i></div>
+</div>
+
 <div id="app-screen">
   <div class="topbar">
     <div class="tb-left">
@@ -451,16 +472,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="tb-right">
       <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
-      <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
+      <button class="pill-btn pv-display-top-btn" onclick="pvOpenDisplay()" title="Open automatic media display">📺 Display</button> <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
-  </div>
-
-  <!-- PROJECTVAULT INLINE DISPLAY: fixed directly below the top navbar -->
-  <div id="pv-inline-display" aria-label="ProjectVault automatic display">
-    <div class="pv-fd-bg"></div>
-    <div class="pv-inline-stage"><div class="pv-fd-content" id="pv-fd-content"></div></div>
-    <div class="pv-inline-footer"><span class="pv-fd-status" id="pv-fd-status">Preparing automatic display…</span><span class="pv-fd-muted">Birthday · Festival · Admin Ads</span></div>
-    <div class="pv-inline-progress"><i id="pv-fd-progress-bar"></i></div>
   </div>
 
   <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
@@ -487,8 +500,8 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <span class="di-icon">💬</span> Customer Support
 </div>
 
-<div class="drawer-item" onclick="closeDrawer();switchTab('debt',document.querySelectorAll('.tab')[3])">
-    <span class="di-icon">🤝</span> Money & Debts
+<div class="drawer-item" onclick="closeDrawer();openSocialModal()">
+    <span class="di-icon">💰</span> Social Money
 </div>
 <div class="drawer-item" onclick="openSwitchAccountModal()">
     <span class="di-icon">🔀</span> Switch Account
@@ -719,18 +732,15 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card"><div id="history-list"></div></div>
   </div>
 
-  <!-- DEBT / SHARED MONEY -->
+  <!-- DEBT / PROFIT -->
   <div id="page-debt" class="page">
     <div class="card">
-      <div class="card-title">🤝 Money with a ProjectVault User</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin:-4px 0 12px">Search a registered user by <b>username or full name</b>. Select the person so the same shared payment/debt can be reflected in both accounts.</div>
-      <div class="form-label">Search User</div>
+      <div class="form-label">Person's Name</div>
       <div class="autocomplete-wrap">
-        <input class="ai" id="debt-name" type="text" placeholder="Search username or full name…" autocomplete="off"
-          oninput="searchDebtUsers(this.value)" onblur="setTimeout(()=>closeAC(),250)"/>
+        <input class="ai" id="debt-name" type="text" placeholder="e.g. Ravi, Priya…" autocomplete="off"
+          oninput="showNameSuggestions(this.value)" onblur="setTimeout(()=>closeAC(),200)"/>
         <div class="autocomplete-list" id="name-ac-list"></div>
       </div>
-      <div id="selected-debt-user" style="display:none;margin:8px 0 13px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px"></div>
       <div class="form-label">Amount</div>
       <div class="amt-wrap" style="margin-bottom:13px">
         <span class="rs-pre">₹</span>
@@ -747,17 +757,16 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <input type="number" step="0.1" class="ti" id="debt-interest" placeholder="e.g. 12" style="width:100%;margin-bottom:13px"/>
       <div class="form-label">Repay in Installments? <span style="color:var(--muted);font-weight:400">(optional)</span></div>
       <input type="number" class="ti" id="debt-installments" placeholder="e.g. 12 (number of installments)" style="width:100%;margin-bottom:13px"/>
-      <button class="save-btn" onclick="saveDebt()">Save Shared Entry</button>
-      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45">🔒 Shared entries are visible only to the two participating accounts. The selected user must be connected before a shared record can be created.</div>
+      <button class="save-btn" onclick="saveDebt()">Save Entry</button>
     </div>
     <div class="card">
-      <div class="card-title">Shared & Personal Debt Entries</div>
+      <div class="card-title">All Entries</div>
       <div class="debt-filter-row">
         <div class="dfilter-chip active" id="df-all" onclick="setDebtFilter('all')">All</div>
         <div class="dfilter-chip" id="df-active" onclick="setDebtFilter('active')">Active</div>
         <div class="dfilter-chip" id="df-cleared" onclick="setDebtFilter('cleared')">Cleared</div>
-        <div class="dfilter-chip" id="df-debt" onclick="setDebtFilter('debt')">I Owe</div>
-        <div class="dfilter-chip" id="df-profit" onclick="setDebtFilter('profit')">They Owe Me</div>
+        <div class="dfilter-chip" id="df-debt" onclick="setDebtFilter('debt')">Borrowed</div>
+        <div class="dfilter-chip" id="df-profit" onclick="setDebtFilter('profit')">Gave</div>
       </div>
       <div id="debt-list"></div>
     </div>
@@ -1216,6 +1225,29 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
 
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeEventsMediaModal()">Close</button>
+  </div>
+</div>
+
+<div id="social-section-requests" style="display:none">
+      <div class="fl-label">Incoming</div>
+      <div id="social-requests-incoming"></div>
+      <div class="fl-label" style="margin-top:12px">Sent</div>
+      <div id="social-requests-outgoing"></div>
+    </div>
+
+    <div id="social-section-connections" style="display:none">
+      <div id="social-connections-list"></div>
+    </div>
+
+    <div id="social-section-money" style="display:none">
+      <div id="social-money-summary" style="text-align:center;padding:12px 0"></div>
+      <div class="fl-label">Money Given (they owe you)</div>
+      <div id="social-money-lent"></div>
+      <div class="fl-label" style="margin-top:12px">Money Received (you owe them)</div>
+      <div id="social-money-borrowed"></div>
+    </div>
+
+    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:16px" onclick="document.getElementById('social-modal').classList.remove('open')">Close</button>
   </div>
 </div>
 
@@ -2915,7 +2947,7 @@ if(supportCard){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   runCloudSyncAfterLogin();
-  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
+  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); },1300);
 }
 
 // ── TABS ──
@@ -3706,106 +3738,6 @@ async function saveEditEntry(){
   }
 }
 
-// ── DEBT / SHARED MONEY CLOUD LOADER ──
-let _sharedDebtLoadPromise=null;
-async function loadSharedDebtsIntoLocal(){
-  if(!CU)return;
-  if(_sharedDebtLoadPromise)return _sharedDebtLoadPromise;
-  _sharedDebtLoadPromise=(async()=>{
-    const userId=await resolveSupabaseUserId();
-    if(userId===null||userId===undefined)return;
-    const {data,error}=await sb.from('shared_debts_with_computed_status').select('*').or(`lender_id.eq.${userId},borrower_id.eq.${userId}`).order('created_at',{ascending:false});
-    if(error){
-      console.error('Shared debt cloud load failed:',error);
-      pushErrorLog({message:'Shared debt cloud load failed: '+error.message,source:'loadSharedDebtsIntoLocal'});
-      return;
-    }
-    const rows=data||[];
-    const otherIds=rows.map(r=>r.lender_id===userId?r.borrower_id:r.lender_id).filter(Boolean);
-    const nameMap=await fetchProfileNames(otherIds);
-    const local=getDebts();
-    const personal=local.filter(d=>!d.sharedDebtId);
-    const shared=rows.map(r=>{
-      const otherId=r.lender_id===userId?r.borrower_id:r.lender_id;
-      const remaining=Math.max(0,Number(r.remaining)||0);
-      const amount=Number(r.amount)||0;
-      const role=r.lender_id===userId?'profit':'debt';
-      const name=nameMap[otherId]||'ProjectVault User';
-      return {
-        name, amount, type:role, ts:new Date(r.created_at||Date.now()).getTime(),
-        cleared:r.effective_status==='paid'||remaining<=0, repaid:Math.max(0,amount-remaining),
-        dueDate:r.due_date||null, interestRate:null, installments:null,
-        sharedUserId:otherId, sharedDebtId:String(r.id), sharedStatus:r.effective_status,
-        sharedRemaining:remaining, sharedReason:r.reason||null, supaId:'shared:'+String(r.id)
-      };
-    });
-    saveDebts([...personal,...shared]);
-    renderDebtPageLocal();
-  })().finally(()=>{_sharedDebtLoadPromise=null;});
-  return _sharedDebtLoadPromise;
-}
-function renderDebtPageLocal(){
-  const debts=getDebts();
-  let filtered=[...debts];
-  if(debtFilter==='active')filtered=filtered.filter(d=>!d.cleared);
-  else if(debtFilter==='cleared')filtered=filtered.filter(d=>d.cleared);
-  else if(debtFilter==='debt')filtered=filtered.filter(d=>d.type==='debt');
-  else if(debtFilter==='profit')filtered=filtered.filter(d=>d.type==='profit');
-  const sorted=[...filtered].sort((a,b)=>b.ts-a.ts);
-  let html='';
-  if(!sorted.length)html='<div class="empty"><div class="empty-icon">💸</div><p>No entries.</p></div>';
-  sorted.forEach(d=>{
-    const oi=debts.indexOf(d);
-    const isDebt=d.type==='debt';
-    const cleared=d.cleared;
-    const repaid=d.repaid||0;
-    const remaining=d.sharedUserId&&d.sharedRemaining!=null?Number(d.sharedRemaining):Math.max(0,d.amount-repaid);
-    const fullyCleared=cleared||(remaining<=0);
-    const c=fullyCleared?'var(--muted)':isDebt?'var(--red)':'var(--green)';
-    const bg=fullyCleared?'rgba(122,125,153,.1)':isDebt?'rgba(255,101,132,.1)':'rgba(0,208,132,.1)';
-    const label=fullyCleared?'✅ Cleared':isDebt?'💸 I Owe':'💰 They Owe Me';
-    const badgeClass=fullyCleared?'badge-cleared':isDebt?'badge-debt':'badge-profit';
-    const dueDays=d.dueDate?daysDiff(d.dueDate):null;
-    let dueLabel='';
-    if(d.dueDate&&!fullyCleared){
-      if(dueDays<0)dueLabel=`<span style="font-size:10px;color:var(--red)">⚠️ Overdue by ${Math.abs(dueDays)}d</span>`;
-      else if(dueDays===0)dueLabel=`<span style="font-size:10px;color:var(--red)">🔴 Due TODAY</span>`;
-      else if(dueDays<=2)dueLabel=`<span style="font-size:10px;color:var(--red)">⏰ Due in ${dueDays}d</span>`;
-      else dueLabel=`<span style="font-size:10px;color:var(--muted)">📅 ${d.dueDate}</span>`;
-    }
-    const sharedBadge=d.sharedUserId?`<span style="font-size:10px;color:var(--accent);margin-left:4px">🤝 Shared</span>`:'';
-    const reason=d.sharedReason?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${escHtml(d.sharedReason)}</div>`:'';
-    const partialControl=!fullyCleared&&!d.sharedUserId?`<div class="repay-row"><input class="repay-inp" type="number" inputmode="decimal" placeholder="Amount returned" id="repay-inp-${oi}"/><button class="repay-btn" onclick="addRepayment(${oi})">↩ Return</button></div>`:'';
-    const sharedRepay=!fullyCleared&&d.sharedUserId&&isDebt?`<div class="repay-row"><input class="repay-inp" type="number" inputmode="decimal" placeholder="Amount paid" id="repay-inp-${oi}"/><button class="repay-btn" onclick="addSharedDebtRepayment('${escJsAttr(d.sharedDebtId)}',${oi})">↩ Pay</button></div>`:'';
-    html+=`<div class="entry-row" style="${fullyCleared?'opacity:.55':''}">
-      <div class="entry-icon" style="background:${bg};font-size:20px">${fullyCleared?'✅':isDebt?'💸':'💰'}</div>
-      <div class="entry-info" style="flex:1">
-        <div class="entry-cat">${escHtml(d.name)} ${sharedBadge}</div>
-        <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
-        ${reason}
-        ${d.sharedStatus==='pending'&&!fullyCleared?'<div style="font-size:10px;color:var(--amber);margin-top:3px">⏳ Pending shared payment</div>':''}
-        ${!d.sharedUserId&&d.interestRate&&!fullyCleared?`<div style="font-size:10px;color:var(--amber);margin-top:2px">📈 ${d.interestRate}%/yr interest</div>`:''}
-        ${partialControl}${sharedRepay}
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:8px">
-        <span class="entry-amt" style="color:${c}">${fmt(fullyCleared?d.amount:remaining)}</span>
-        ${d.sharedUserId?'':`<button class="clear-btn ${fullyCleared?'active':'inactive'}" onclick="toggleClear(${oi})" style="white-space:nowrap;font-size:10px">${fullyCleared?'Cleared':'Clear'}</button>`}
-        ${d.sharedUserId?'':`<button class="del-btn" onclick="delDebt(${oi})">✕</button>`}
-      </div>
-    </div>`;
-  });
-  const el=document.getElementById('debt-list'); if(el)el.innerHTML=html;
-}
-async function addSharedDebtRepayment(sharedDebtId,idx){
-  const input=document.getElementById('repay-inp-'+idx); const amount=parseFloat(input?.value||'0');
-  if(!amount||amount<=0){showToast('Enter a valid payment','#ffb300');return;}
-  const userId=await resolveSupabaseUserId(); if(userId===null||userId===undefined)return;
-  const {error}=await sb.from('shared_debt_payments').insert({shared_debt_id:sharedDebtId,amount,recorded_by:userId,note:null});
-  if(error){pushErrorLog({message:'Shared repayment failed: '+error.message,source:'addSharedDebtRepayment'});showToast('⚠️ Payment failed','#e53935');return;}
-  showToast('✅ Payment recorded for both accounts');
-  await loadSharedDebtsIntoLocal();
-}
-
 // ── DEBT / PROFIT ──
 function setDebtFilter(f){
   debtFilter=f;
@@ -3814,102 +3746,30 @@ function setDebtFilter(f){
   });
   renderDebtPage();
 }
-let selectedDebtUser=null;
-let debtUserSearchTimer=null;
 function getAllDebtNames(){
   const debts=getDebts();
-  return [...new Set(debts.map(d=>d.name).filter(Boolean))];
+  return [...new Set(debts.map(d=>d.name))];
 }
-function closeAC(){
-  const el=document.getElementById('name-ac-list');
-  if(el)el.classList.remove('open');
-}
-function renderSelectedDebtUser(){
-  const el=document.getElementById('selected-debt-user');
-  if(!el)return;
-  if(!selectedDebtUser){el.style.display='none';el.innerHTML='';return;}
-  const label=selectedDebtUser.name||selectedDebtUser.username||'User';
-  el.style.display='block';
-  el.innerHTML=`<div style="display:flex;align-items:center;gap:10px">
-    <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:800">${selectedDebtUser.avatar?`<img src="${escHtml(selectedDebtUser.avatar)}" style="width:100%;height:100%;object-fit:cover" alt="">`:escHtml(label.charAt(0).toUpperCase())}</div>
-    <div style="flex:1"><b>${escHtml(label)}</b><div style="font-size:11px;color:var(--muted)">@${escHtml(selectedDebtUser.username||'')}</div></div>
-    <button type="button" class="del-btn" onclick="clearSelectedDebtUser()">✕</button>
-  </div>`;
-}
-function clearSelectedDebtUser(){
-  selectedDebtUser=null;
-  const inp=document.getElementById('debt-name'); if(inp)inp.value='';
-  renderSelectedDebtUser();
-}
-async function searchDebtUsers(val){
+function showNameSuggestions(val){
   const list=document.getElementById('name-ac-list');
-  if(!list)return;
-  const q=String(val||'').trim();
-  selectedDebtUser=null; renderSelectedDebtUser();
-  if(debtUserSearchTimer)clearTimeout(debtUserSearchTimer);
-  if(q.length<2){
-    list.classList.remove('open');
-    // Still show local previous debt names for quick entry only when there is no user search.
-    return;
-  }
-  list.innerHTML='<div class="ac-item"><span>🔎 Searching users…</span></div>';
+  if(!val||val.length<1){list.classList.remove('open');return;}
+  const all=getAllDebtNames();
+  const matches=all.filter(n=>n.toLowerCase().startsWith(val.toLowerCase()));
+  if(!matches.length){list.classList.remove('open');return;}
+  const debts=getDebts();
+  list.innerHTML=matches.map(n=>{
+    const last=debts.filter(d=>d.name.toLowerCase()===n.toLowerCase()).sort((a,b)=>b.ts-a.ts)[0];
+    const badgeClass=last?(last.cleared?'badge-cleared':last.type==='debt'?'badge-debt':'badge-profit'):'';
+    const badgeText=last?(last.cleared?'Cleared':last.type==='debt'?'Borrowed':'Gave'):'';
+    return `<div class="ac-item" onclick="pickAcName('${escJsAttr(n)}')"><span>${escHtml(n)}</span><span class="ac-badge debt-entry-badge ${badgeClass}">${badgeText}</span></div>`;
+  }).join('');
   list.classList.add('open');
-  debtUserSearchTimer=setTimeout(async()=>{
-    try{
-      // Existing secure RPC returns only safe public profile fields. The current database
-      // function is named by username, but its returned name field lets the UI display full names.
-      let data=null,error=null;
-      // Preferred RPC for this merged Debt screen. It is expected to search BOTH username
-      // and full name while returning only safe profile fields.
-      ({data,error}=await sb.rpc('search_users_for_shared_money',{p_query:q}));
-      if(error){
-        // Backward-compatible fallback for databases that still only have the old username RPC.
-        const fallback=await sb.rpc('search_users_by_username',{p_query:q});
-        if(!fallback.error){data=fallback.data;error=null;}
-        else error=fallback.error;
-      }
-      if(error){
-        pushErrorLog({message:'Debt user search failed: '+error.message,source:'searchDebtUsers'});
-        list.innerHTML='<div class="ac-item"><span style="color:var(--red)">User search is not configured yet — check the Supabase migration.</span></div>';
-        return;
-      }
-      const me=await resolveSupabaseUserId();
-      const rows=(data||[]).filter(u=>u.auth_user_id!==me);
-      if(!rows.length){
-        list.innerHTML='<div class="ac-item"><span style="opacity:.65">No matching ProjectVault users</span></div>';
-        return;
-      }
-      list.innerHTML=rows.slice(0,12).map(u=>{
-        const display=u.name||u.username||'User';
-        const avatar=u.avatar||null;
-        return `<div class="ac-item" onclick='selectDebtUser(${JSON.stringify({auth_user_id:u.auth_user_id,username:u.username,name:u.name||u.username,avatar}).replace(/'/g,"&#39;")})'>
-          <span style="display:flex;align-items:center;gap:9px">
-            <span style="width:30px;height:30px;border-radius:50%;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700">${avatar?`<img src="${escHtml(avatar)}" style="width:100%;height:100%;object-fit:cover" alt="">`:escHtml(display.charAt(0).toUpperCase())}</span>
-            <span><b>${escHtml(display)}</b><br><span style="font-size:11px;opacity:.6">@${escHtml(u.username||'')}</span></span>
-          </span>
-          <span style="font-size:11px;color:var(--accent)">Select</span>
-        </div>`;
-      }).join('');
-    }catch(e){
-      console.error('Debt user search failed:',e);
-      list.innerHTML='<div class="ac-item"><span style="color:var(--red)">Search failed</span></div>';
-    }
-  },250);
 }
-function selectDebtUser(u){
-  selectedDebtUser=u||null;
-  const inp=document.getElementById('debt-name');
-  if(inp)inp.value=u?(u.name||u.username||''):'';
-  closeAC();
-  renderSelectedDebtUser();
-}
-// Backward-compatible local suggestion helper; no longer drives the primary user picker.
-function showNameSuggestions(val){searchDebtUsers(val);}
 function pickAcName(n){
-  const local={name:n,username:n,auth_user_id:null};
-  selectDebtUser(local);
+  document.getElementById('debt-name').value=n;
+  document.getElementById('name-ac-list').classList.remove('open');
 }
-
+function closeAC(){document.getElementById('name-ac-list').classList.remove('open');}
 function selectDebtType(t){
   selDebtType=t;
   document.getElementById('dtype-debt').classList.toggle('sel',t==='debt');
@@ -3921,49 +3781,37 @@ async function saveDebt(){
   const dueDate=document.getElementById('debt-due-date').value;
   const interestRate=parseFloat(document.getElementById('debt-interest').value)||0;
   const installments=parseInt(document.getElementById('debt-installments').value)||0;
-  if(!selectedDebtUser||!selectedDebtUser.auth_user_id){showToast('Search and select a ProjectVault user','#ffb300');return;}
+  if(!name){showToast('Enter a name','#ffb300');return;}
   if(!amt||amt<=0){showToast('Enter a valid amount','#ffb300');return;}
   if(!selDebtType){showToast('Select type','#ffb300');return;}
   const debtType=selDebtType;
   const ts=Date.now();
-  // Preserve the existing local debt model as the user's local view, while adding the
-  // cross-account shared-debt record below. The local name is the selected person's
-  // display name rather than an arbitrary free-text person.
-  const newDebt={name,amount:amt,type:debtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null,sharedUserId:selectedDebtUser.auth_user_id,sharedUsername:selectedDebtUser.username||null,sharedName:selectedDebtUser.name||name};
-  const debts=getDebts(); debts.push(newDebt); saveDebts(debts);
+  const newDebt={name,amount:amt,type:debtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null};
+  const debts=getDebts();
+  debts.push(newDebt);
+  saveDebts(debts);
   document.getElementById('debt-name').value='';
   document.getElementById('debt-amount').value='';
   document.getElementById('debt-due-date').value='';
   document.getElementById('debt-interest').value='';
   document.getElementById('debt-installments').value='';
-  const selectedUserId=selectedDebtUser.auth_user_id;
-  selectedDebtUser=null; renderSelectedDebtUser();
   selDebtType=null;
   document.getElementById('dtype-debt').classList.remove('sel');
   document.getElementById('dtype-profit').classList.remove('sel');
   renderDebtPage();renderHome();
+  showToast('Entry saved!');
 
   const userId=await resolveSupabaseUserId();
   if(userId===null||userId===undefined)return;
-  // Existing shared_debts is the cross-account source of truth. "I Gave" means current
-  // user is lender; "I Borrowed" means current user is borrower.
-  const lender_id=debtType==='profit'?userId:selectedUserId;
-  const borrower_id=debtType==='profit'?selectedUserId:userId;
-  const payload={lender_id,borrower_id,amount:amt,reason:null,due_date:dueDate||null};
-  const {data:shared,error:sharedError}=await sb.from('shared_debts').insert(payload).select().single();
-  if(sharedError){
-    console.error('Failed to sync shared debt:',sharedError);
-    pushErrorLog({message:'Shared debt upload failed: '+(sharedError.message||String(sharedError)),source:'saveDebt'});
-    // Do not leave a misleading local-only record when the cross-account source of truth failed.
-    const clean=getDebts().filter(x=>x.ts!==ts); saveDebts(clean); renderDebtPage(); renderHome();
-    showToast(sharedError.code==='42501'?'⚠️ Connect with this user before sharing money':'⚠️ Shared money sync failed','#ffb300');
-    return;
-  }
+  const{data:inserted,error}=await sb.from('debts').insert({
+    user_id:userId,name,amount:amt,type:debtType,cleared:false,
+    due_date:dueDate||null,interest_rate:interestRate||null,
+    installments:installments||null,repaid:0,repay_log:[],entry_ts:ts
+  }).select().single();
+  if(error){console.error('Failed to sync debt to cloud:',error);showToast('⚠️ Cloud sync failed: '+(error.message||'unknown error'),'#e53935');return;}
   const d2=getDebts();
   const target=d2.find(x=>x.ts===ts&&x.name===name);
-  if(target){target.sharedDebtId=String(shared.id);target.supaId='shared:'+String(shared.id);saveDebts(d2);}
-  showToast('✅ Shared debt recorded for both accounts');
-  await loadSharedDebtsIntoLocal();
+  if(target){target.supaId=String(inserted.id);saveDebts(d2);}
 }
 async function toggleClear(i){
   const debts=getDebts();
@@ -3986,7 +3834,7 @@ async function toggleClear(i){
     if(error)console.error('Failed to sync cleared-status to cloud:',error);
   }
 }
-function renderDebtPageLegacy(){
+function renderDebtPage(){
   const debts=getDebts();
   let filtered=[...debts];
   if(debtFilter==='active')filtered=filtered.filter(d=>!d.cleared);
@@ -4036,7 +3884,6 @@ function renderDebtPageLegacy(){
       installmentLabel=`<div style="font-size:10px;color:var(--accent);margin-top:2px">📋 Installment ${doneCount} of ${d.installments} (${fmt(perInstallment)}/installment)</div>`;
     }
     const repaidBadge=repaid>0&&!fullyCleared?`<span class="remaining-badge">Remaining: ${fmt(remaining)}</span>`:'';
-    const sharedBadge=d.sharedUserId?`<span style="font-size:10px;color:var(--accent);margin-left:4px">🤝 Shared</span>`:'';
     const partialControl=!fullyCleared?`<div class="repay-row">
       <input class="repay-inp" type="number" inputmode="decimal" placeholder="Amount returned" id="repay-inp-${oi}"/>
       <button class="repay-btn" onclick="addRepayment(${oi})">↩ Return</button>
@@ -4044,7 +3891,7 @@ function renderDebtPageLegacy(){
     html+=`<div class="entry-row" style="${fullyCleared?'opacity:.55':''}">
       <div class="entry-icon" style="background:${bg};font-size:20px">${fullyCleared?'✅':isDebt?'💸':'💰'}</div>
       <div class="entry-info" style="flex:1">
-        <div class="entry-cat">${escHtml(d.name)} ${sharedBadge} ${repaidBadge}</div>
+        <div class="entry-cat">${escHtml(d.name)} ${repaidBadge}</div>
         <div class="entry-meta"><span class="debt-entry-badge ${badgeClass}">${label}</span> ${dueLabel}</div>
         ${interestLabel}
         ${installmentLabel}
@@ -4060,12 +3907,6 @@ function renderDebtPageLegacy(){
   });
   document.getElementById('debt-list').innerHTML=html;
 }
-function renderDebtPage(){
-  renderDebtPageLocal();
-  // Refresh shared records from Supabase without blocking the UI.
-  loadSharedDebtsIntoLocal();
-}
-
 async function delDebt(i){
   showConfirmModal({
     icon:'🗑️',
@@ -6329,11 +6170,75 @@ function openGiveMoneyForm(friendAuthId){
   document.getElementById('give-money-modal').classList.add('open');
 }
 
+
+<div id="shared-debt-user-search-wrap" style="margin-top:10px">
+  <div class="fl-label">ProjectVault User</div>
+  <input class="ai" id="shared-debt-user-search" type="search"
+    placeholder="Search username or full name…" autocomplete="off"
+    oninput="searchDebtUser(this.value)">
+  <div id="shared-debt-user-results" style="margin-top:6px"></div>
+  <div id="shared-debt-selected" style="margin-top:6px"></div>
+</div>
+
+
+let _selectedDebtUser = null;
+window._debtSearchResults = [];
+
+async function searchDebtUser(query){
+  const q=String(query||'').trim();
+  const results=document.getElementById('shared-debt-user-results');
+  if(!results)return;
+  if(!q){results.innerHTML='';window._debtSearchResults=[];return;}
+  results.innerHTML='<div style="opacity:.6;font-size:12px">Searching…</div>';
+  try{
+    const {data,error}=await sb.rpc('search_users_for_shared_money',{p_query:q});
+    if(error)throw error;
+    window._debtSearchResults=data||[];
+    if(!window._debtSearchResults.length){
+      results.innerHTML='<div style="opacity:.6;font-size:12px">No ProjectVault user found</div>';
+      return;
+    }
+    results.innerHTML=window._debtSearchResults.map((u,i)=>`
+      <button type="button" class="pill-btn"
+        style="display:block;width:100%;text-align:left;margin-top:5px;background:var(--surface2);border:0;cursor:pointer"
+        onclick="selectDebtUser(${i})">
+        <b>${escHtml(u.name||u.username)}</b>
+        <span style="opacity:.65;font-size:11px"> @${escHtml(u.username)}</span>
+      </button>`).join('');
+  }catch(e){
+    console.error('Debt user search failed:',e);
+    results.innerHTML='<div style="color:var(--red);font-size:12px">Search failed — check your connection.</div>';
+  }
+}
+
+function selectDebtUser(index){
+  const u=window._debtSearchResults[index];
+  if(!u)return;
+  _selectedDebtUser=u;
+  const input=document.getElementById('shared-debt-user-search');
+  const results=document.getElementById('shared-debt-user-results');
+  const selected=document.getElementById('shared-debt-selected');
+  if(input)input.value='';
+  if(results)results.innerHTML='';
+  if(selected)selected.innerHTML=`
+    <div style="padding:8px 10px;border-radius:10px;background:rgba(0,208,132,.10);border:1px solid rgba(0,208,132,.25)">
+      <b>${escHtml(u.name||u.username)}</b>
+      <span style="opacity:.65;font-size:11px"> @${escHtml(u.username)}</span>
+      <button type="button" class="pill-btn" style="float:right;font-size:10px" onclick="clearDebtUser()">Change</button>
+    </div>`;
+}
+
+function clearDebtUser(){
+  _selectedDebtUser=null;
+  const selected=document.getElementById('shared-debt-selected');
+  if(selected)selected.innerHTML='';
+}
+
 async function submitSharedDebt(){
   const err=document.getElementById('gm-err');
   const amount=parseFloat(document.getElementById('gm-amount').value);
   if(!amount||amount<=0){err.textContent='Enter a valid amount';return;}
-  const borrowerId=document.getElementById('give-money-modal').dataset.borrowerId;
+  const borrowerId=(_selectedDebtUser&&_selectedDebtUser.auth_user_id)||document.getElementById('give-money-modal').dataset.borrowerId;
   const userId=await resolveSupabaseUserId();
   if(userId===null||userId===undefined){err.textContent='Could not resolve your account';return;}
   const payload={
@@ -7047,11 +6952,12 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     index=index%items.length;render(items[index++]);clearTimeout(timer);timer=setTimeout(next,DISPLAY_MS);
   }
   window.pvOpenDisplay=async function(){
-    const el=document.getElementById('pv-inline-display');if(!el)return;el.style.display='block';started=true;index=0;items=[];await build();await next();
+    const el=document.getElementById('pv-full-display');if(!el)return;el.classList.add('open');el.setAttribute('aria-hidden','false');started=true;index=0;items=[];await build();await next();
+    try{if(!document.fullscreenElement)await el.requestFullscreen();}catch(e){}
   };
-  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);};
+  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.classList.remove('open');el.setAttribute('aria-hidden','true');}if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});};
   window.pvToggleDisplaySound=function(){sound=!sound;const b=document.getElementById('pv-fd-sound');if(b)b.textContent=sound?'🔊 Sound on':'🔇 Sound off';const v=document.querySelector('#pv-fd-content video');if(v){v.muted=!sound;if(sound)v.play().catch(()=>{});}};
-  
+  document.addEventListener('fullscreenchange',()=>{const el=document.getElementById('pv-full-display');if(el&&!document.fullscreenElement&&el.classList.contains('open')){/* keep in-app overlay open */}});
 })();
 </script>
 </body>
