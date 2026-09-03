@@ -310,34 +310,28 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 <style id="pv-full-display-css">
-.pv-display-top-btn{border:1px solid rgba(108,99,255,.35);cursor:pointer;white-space:nowrap}
-#pv-full-display{position:fixed;inset:0;z-index:99999;background:#05060a;color:#fff;display:none;overflow:hidden}
-#pv-full-display.open{display:block}
-.pv-fd-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 15%,rgba(108,99,255,.18),transparent 45%),#05060a}
-.pv-fd-header{position:absolute;z-index:4;top:0;left:0;right:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.72),transparent);pointer-events:none}
-.pv-fd-header>*{pointer-events:auto}
-.pv-fd-brand{font-weight:800;letter-spacing:.3px;font-size:15px;text-shadow:0 2px 10px #000}
-.pv-fd-actions{display:flex;gap:8px;align-items:center}
-.pv-fd-btn{border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);backdrop-filter:blur(10px);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:700}
-.pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:56px 22px 58px;box-sizing:border-box}
-.pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
-.pv-fd-media{width:100%;height:100%;object-fit:contain;display:block;border-radius:18px;background:#050505}
+#pv-inline-display{position:relative;width:100%;height:220px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
+#pv-inline-display .pv-fd-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 15%,rgba(108,99,255,.18),transparent 45%),#05060a}
+.pv-inline-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px 10px 24px;box-sizing:border-box}
+.pv-inline-stage .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.pv-fd-media{width:100%;height:100%;object-fit:contain;display:block;background:#050505}
 .pv-fd-media.cover{object-fit:cover}
-.pv-fd-card{width:min(1050px,96vw);height:min(720px,82vh);border-radius:28px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(108,99,255,.28),rgba(255,101,132,.14) 50%,rgba(0,208,132,.12));border:1px solid rgba(255,255,255,.14);box-shadow:0 25px 80px rgba(0,0,0,.45)}
+.pv-fd-card{width:100%;height:100%;border-radius:0;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(108,99,255,.28),rgba(255,101,132,.14) 50%,rgba(0,208,132,.12));border:0;box-shadow:none}
 .pv-fd-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.16),transparent 35%)}
-.pv-fd-birthday{display:flex;gap:34px;align-items:center;padding:45px;box-sizing:border-box;z-index:1}
-.pv-fd-avatar{width:min(270px,32vw);height:min(270px,32vw);border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,.72);box-shadow:0 18px 55px rgba(0,0,0,.4);background:#202431;flex:none}
-.pv-fd-avatar-placeholder{display:flex;align-items:center;justify-content:center;font-size:clamp(60px,9vw,110px);font-weight:800}
-.pv-fd-copy{text-align:left}
-.pv-fd-kicker{font-size:clamp(15px,2vw,24px);font-weight:700;opacity:.86;margin-bottom:8px}
-.pv-fd-title{font-size:clamp(34px,6vw,78px);line-height:1.02;font-weight:800;letter-spacing:-1.5px}
-.pv-fd-sub{font-size:clamp(16px,2.1vw,27px);margin-top:14px;opacity:.86;line-height:1.35}
-.pv-fd-progress{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.12);z-index:5}
-.pv-fd-progress i{display:block;height:100%;width:0;background:#fff;transition:width linear}
-.pv-fd-footer{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:12px 18px;display:flex;justify-content:space-between;gap:12px;background:linear-gradient(to top,rgba(0,0,0,.72),transparent);font-size:11px;color:rgba(255,255,255,.72)}
+.pv-fd-birthday{display:flex;gap:18px;align-items:center;padding:12px 18px;box-sizing:border-box;z-index:1;max-width:100%}
+.pv-fd-avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.72);box-shadow:0 8px 25px rgba(0,0,0,.35);background:#202431;flex:none}
+.pv-fd-avatar-placeholder{display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800}
+.pv-fd-copy{text-align:left;min-width:0}
+.pv-fd-kicker{font-size:11px;font-weight:700;opacity:.86;margin-bottom:3px}
+.pv-fd-title{font-size:clamp(22px,5vw,42px);line-height:1.02;font-weight:800;letter-spacing:-.5px}
+.pv-fd-sub{font-size:11px;margin-top:5px;opacity:.86;line-height:1.3}
+.pv-inline-footer{position:absolute;z-index:4;left:0;right:0;bottom:4px;padding:0 10px;display:flex;justify-content:space-between;gap:8px;font-size:9px;color:rgba(255,255,255,.72);pointer-events:none}
 .pv-fd-status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pv-fd-muted{opacity:.7}
-@media(max-width:700px){.pv-fd-stage{padding:52px 10px 45px}.pv-fd-birthday{flex-direction:column;text-align:center;padding:25px;gap:18px}.pv-fd-copy{text-align:center}.pv-fd-avatar{width:min(220px,55vw);height:min(220px,55vw)}.pv-fd-card{height:82vh;border-radius:22px}}
+.pv-inline-progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.12);z-index:5}
+.pv-inline-progress i{display:block;height:100%;width:0;background:#fff;transition:width linear}
+@media(max-width:700px){#pv-inline-display{height:190px}.pv-inline-stage{padding:6px 6px 20px}.pv-fd-birthday{gap:10px;padding:8px 10px}.pv-fd-avatar{width:68px;height:68px}.pv-fd-title{font-size:clamp(19px,6vw,30px)}.pv-fd-sub{font-size:9px}.pv-fd-kicker{font-size:9px}.pv-inline-footer{font-size:8px;padding:0 7px}}
+@media(min-width:701px){#pv-inline-display{height:250px}}
 </style>
 <!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
 <!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
@@ -445,21 +439,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 
 <!-- ═══════════ APP ═══════════ -->
 
-<!-- PROJECTVAULT FULL-SCREEN AUTOMATIC DISPLAY -->
-<div id="pv-full-display" aria-hidden="true">
-  <div class="pv-fd-bg"></div>
-  <div class="pv-fd-header">
-    <div class="pv-fd-brand">ProjectVault · Automatic Display</div>
-    <div class="pv-fd-actions">
-      <button class="pv-fd-btn" id="pv-fd-sound" onclick="pvToggleDisplaySound()">🔇 Sound off</button>
-      <button class="pv-fd-btn" onclick="pvCloseDisplay()">✕ Close</button>
-    </div>
-  </div>
-  <div class="pv-fd-stage"><div class="pv-fd-content" id="pv-fd-content"></div></div>
-  <div class="pv-fd-footer"><span class="pv-fd-status" id="pv-fd-status">Preparing automatic display…</span><span class="pv-fd-muted">Birthday · Festival · Admin Ads</span></div>
-  <div class="pv-fd-progress"><i id="pv-fd-progress-bar"></i></div>
-</div>
-
 <div id="app-screen">
   <div class="topbar">
     <div class="tb-left">
@@ -472,8 +451,16 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="tb-right">
       <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
-      <button class="pill-btn pv-display-top-btn" onclick="pvOpenDisplay()" title="Open automatic media display">📺 Display</button> <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
+      <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
+  </div>
+
+  <!-- PROJECTVAULT INLINE DISPLAY: fixed directly below the top navbar -->
+  <div id="pv-inline-display" aria-label="ProjectVault automatic display">
+    <div class="pv-fd-bg"></div>
+    <div class="pv-inline-stage"><div class="pv-fd-content" id="pv-fd-content"></div></div>
+    <div class="pv-inline-footer"><span class="pv-fd-status" id="pv-fd-status">Preparing automatic display…</span><span class="pv-fd-muted">Birthday · Festival · Admin Ads</span></div>
+    <div class="pv-inline-progress"><i id="pv-fd-progress-bar"></i></div>
   </div>
 
   <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
@@ -1229,52 +1216,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
 
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:8px" onclick="closeEventsMediaModal()">Close</button>
-  </div>
-</div>
-
-<!-- SOCIAL MONEY MODAL — wired to connection_requests, connections, blocked_users,
-     shared_debts, shared_debt_payments, accept_connection_request(),
-     search_users_by_username() — see ProjectVault_social_festival_ads_schema.sql -->
-<div class="modal-overlay" id="social-modal">
-  <div class="modal" style="max-height:85vh;overflow-y:auto">
-    <div class="modal-handle"></div>
-    <div class="modal-title">💰 Social Money</div>
-
-    <div style="display:flex;gap:6px;margin:12px 0;flex-wrap:wrap">
-      <button class="save-btn" id="social-tab-find" style="flex:1;min-width:80px" onclick="showSocialSection('find')">Find Friends</button>
-      <button class="save-btn" id="social-tab-requests" style="flex:1;min-width:80px" onclick="showSocialSection('requests')">Requests</button>
-      <button class="save-btn" id="social-tab-connections" style="flex:1;min-width:80px" onclick="showSocialSection('connections')">Friends</button>
-      <button class="save-btn" id="social-tab-money" style="flex:1;min-width:80px" onclick="showSocialSection('money')">Money</button>
-    </div>
-
-    <div id="social-section-find">
-      <div class="fl"><div class="fl-label">Search by username</div>
-        <input class="ai" id="social-search-input" placeholder="e.g. rahul123" oninput="if(event.key!=='Enter')return;searchSocialUsers()"/>
-      </div>
-      <button class="auth-btn" onclick="searchSocialUsers()">Search</button>
-      <div id="social-search-results" style="margin-top:12px"></div>
-    </div>
-
-    <div id="social-section-requests" style="display:none">
-      <div class="fl-label">Incoming</div>
-      <div id="social-requests-incoming"></div>
-      <div class="fl-label" style="margin-top:12px">Sent</div>
-      <div id="social-requests-outgoing"></div>
-    </div>
-
-    <div id="social-section-connections" style="display:none">
-      <div id="social-connections-list"></div>
-    </div>
-
-    <div id="social-section-money" style="display:none">
-      <div id="social-money-summary" style="text-align:center;padding:12px 0"></div>
-      <div class="fl-label">Money Given (they owe you)</div>
-      <div id="social-money-lent"></div>
-      <div class="fl-label" style="margin-top:12px">Money Received (you owe them)</div>
-      <div id="social-money-borrowed"></div>
-    </div>
-
-    <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:16px" onclick="document.getElementById('social-modal').classList.remove('open')">Close</button>
   </div>
 </div>
 
@@ -2974,7 +2915,7 @@ if(supportCard){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   runCloudSyncAfterLogin();
-  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); },1300);
+  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
 }
 
 // ── TABS ──
@@ -7106,12 +7047,11 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     index=index%items.length;render(items[index++]);clearTimeout(timer);timer=setTimeout(next,DISPLAY_MS);
   }
   window.pvOpenDisplay=async function(){
-    const el=document.getElementById('pv-full-display');if(!el)return;el.classList.add('open');el.setAttribute('aria-hidden','false');started=true;index=0;items=[];await build();await next();
-    try{if(!document.fullscreenElement)await el.requestFullscreen();}catch(e){}
+    const el=document.getElementById('pv-inline-display');if(!el)return;el.style.display='block';started=true;index=0;items=[];await build();await next();
   };
-  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.classList.remove('open');el.setAttribute('aria-hidden','true');}if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});};
+  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);};
   window.pvToggleDisplaySound=function(){sound=!sound;const b=document.getElementById('pv-fd-sound');if(b)b.textContent=sound?'🔊 Sound on':'🔇 Sound off';const v=document.querySelector('#pv-fd-content video');if(v){v.muted=!sound;if(sound)v.play().catch(()=>{});}};
-  document.addEventListener('fullscreenchange',()=>{const el=document.getElementById('pv-full-display');if(el&&!document.fullscreenElement&&el.classList.contains('open')){/* keep in-app overlay open */}});
+  
 })();
 </script>
 </body>
