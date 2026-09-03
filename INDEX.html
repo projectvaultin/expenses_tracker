@@ -1429,6 +1429,25 @@ const sb = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+// Canonical Supabase Auth user UUID used by UUID-based backend tables.
+// Defined in the primary application script so it is globally available
+// before any sync/debt/settings function can call it.
+async function resolveSupabaseUserId(){
+  if(!CU) return null;
+  try{
+    const {data,error}=await sb.auth.getUser();
+    if(error || !data?.user){
+      console.error('Could not resolve authenticated Supabase user', error);
+      return null;
+    }
+    return data.user.id;
+  }catch(error){
+    console.error('Could not resolve authenticated Supabase user', error);
+    return null;
+  }
+}
+
+
 // ── SUPABASE AUTH — real authentication authority ──────────────────────────────────────
 // Login/signup/password-change/password-reset all go through sb.auth (signInWithPassword /
 // signUp / updateUser / resetPasswordForEmail) instead of comparing public.users.password_hash
@@ -5914,17 +5933,6 @@ if('serviceWorker' in navigator){
 // and keeps them live-synced via Supabase Realtime, without touching the existing manual
 // add-expense flow. Each imported entry is tagged with supaId so re-syncing never duplicates it.
 
-async function resolveSupabaseUserId(){
-  // The canonical user identity for RLS-protected tables is the Supabase Auth UUID.
-  // Never substitute public.users.id (the legacy integer profile key) here.
-  if(!CU)return null;
-  const{data,error}=await sb.auth.getUser();
-  if(error||!data?.user){
-    console.error('Could not resolve authenticated Supabase user',error);
-    return null;
-  }
-  return data.user.id;
-}
 
 function mapPayApp(paymentApp,paymentMode){
   const map={
