@@ -6233,35 +6233,47 @@ function openGiveMoneyForm(friendAuthId){
 
 let _selectedDebtUser = null;
 window._debtSearchResults = [];
-
 let _debtSearchTimer=null;
+let _debtSearchRequest=0;
+
 async function searchDebtUser(query){
-  const q=String(query||'').trim();
+  const raw=String(query||'').trim();
+  const q=raw.replace(/^@+/, '').trim();
   const results=document.getElementById('shared-debt-user-results');
   if(!results)return;
-  if(_debtSearchTimer)clearTimeout(_debtSearchTimer);
-  if(!q){results.innerHTML='';window._debtSearchResults=[];return;}
-  if(q.length<2){results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">Type at least 2 characters…</div>';return;}
-  results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">Searching username and name…</div>';
+  if(_debtSearchTimer){clearTimeout(_debtSearchTimer);_debtSearchTimer=null;}
+  window._debtSearchResults=[];
+  if(!q){results.innerHTML='';return;}
+  if(q.length<2){results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">Type at least 2 characters…</div>';return;}
+  const requestId=++_debtSearchRequest;
+  results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">🔎 Searching ProjectVault users…</div>';
   _debtSearchTimer=setTimeout(async()=>{
     try{
+      if(!sb){throw new Error('Supabase client is not ready');}
       const {data,error}=await sb.rpc('search_users_for_shared_money',{p_query:q});
+      if(requestId!==_debtSearchRequest)return;
       if(error)throw error;
-      window._debtSearchResults=Array.isArray(data)?data:[];
-      if(!window._debtSearchResults.length){
-        results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">No ProjectVault user found</div>';
+      const rows=(Array.isArray(data)?data:[]).filter(u=>u&&u.auth_user_id);
+      window._debtSearchResults=rows;
+      if(!rows.length){
+        results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">No ProjectVault user found for “'+escHtml(q)+'”</div>';
         return;
       }
-      results.innerHTML=window._debtSearchResults.map((u,i)=>`
-        <button type="button" class="pill-btn" style="display:block;width:100%;text-align:left;margin-top:5px;background:var(--surface2);border:0;cursor:pointer" onclick="selectDebtUser(${i})">
-          <b>${escHtml(u.name||'Unnamed user')}</b>
-          <span style="display:block;opacity:.65;font-size:11px;margin-top:2px">@${escHtml(u.username||'username unavailable')}</span>
-        </button>`).join('');
+      results.innerHTML=rows.map((u,i)=>{
+        const displayName=String(u.name||'').trim()||String(u.username||'').trim()||'ProjectVault user';
+        const username=String(u.username||'').trim();
+        return `<button type="button" class="pill-btn" style="display:block;width:100%;text-align:left;margin-top:5px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;padding:10px 12px" onclick="selectDebtUser(${i})">
+          <b>${escHtml(displayName)}</b>
+          ${username?`<span style="display:block;opacity:.7;font-size:11px;margin-top:3px">@${escHtml(username)}</span>`:''}
+        </button>`;
+      }).join('');
     }catch(e){
+      if(requestId!==_debtSearchRequest)return;
       console.error('Debt user search failed:',e);
-      results.innerHTML='<div style="color:var(--red);font-size:12px;padding:6px">Search failed — '+escHtml(e.message||'database error')+'</div>';
+      pushErrorLog({message:'Debt user search failed: '+(e.message||e),source:'searchDebtUser'});
+      results.innerHTML='<div style="color:var(--red);font-size:12px;padding:8px">Search failed — '+escHtml(e.message||'database error')+'</div>';
     }
-  },180);
+  },250);
 }
 
 function selectDebtUser(index){
