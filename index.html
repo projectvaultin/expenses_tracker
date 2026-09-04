@@ -310,7 +310,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 .pv-display-top-btn{display:none!important}
-#pv-full-display{position:relative;width:100%;height:100px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
+#pv-full-display{position:relative;width:100%;height:180px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
 .pv-fd-bg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(108,99,255,.15),rgba(0,208,132,.08),rgba(255,179,0,.10)),#05060a}
 .pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 34px 0 8px;box-sizing:border-box;overflow:hidden}
 .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -325,7 +325,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-fd-sound-inline{position:absolute;right:5px;top:3px;width:24px;height:24px;padding:0;border-radius:50%;z-index:6;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);color:#fff;cursor:pointer;font-size:11px}
 .pv-fd-status-inline{position:absolute;left:6px;bottom:2px;z-index:6;font-size:7px;color:rgba(255,255,255,.6);display:none}
 .pv-fd-btn{backdrop-filter:blur(8px)}
-@media(min-width:701px){#pv-full-display{height:100px}}
+@media(min-width:701px){#pv-full-display{height:180px}}
 </style>
 <!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
 <!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
@@ -6955,7 +6955,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   function esc(v){return typeof pvEsc==='function'?pvEsc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function todayBirthday(b){if(!b)return false;const d=new Date(String(b).slice(0,10)+'T00:00:00'),n=new Date();return d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
   function mediaUrl(path){return typeof pvStorageUrl==='function'?pvStorageUrl(path):((window.SUPABASE_URL||'')+'/storage/v1/object/public/pv-media/'+String(path||'').split('/').map(encodeURIComponent).join('/'));}
-  function mediaHtml(m){const t=String(m?.media_type||'').toLowerCase(),u=mediaUrl(m?.storage_path);if(!u)return '';if(t==='video'||t.startsWith('video/'))return '<video class="pv-fd-media cover" autoplay '+(sound?'':'muted')+' playsinline preload="auto" src="'+esc(u)+'"></video>';return '<img class="pv-fd-media cover" src="'+esc(u)+'" alt="ProjectVault display media">';}
+  function mediaHtml(m){const t=String(m?.media_type||'').toLowerCase(),u=mediaUrl(m?.storage_path);if(!u)return '';if(t==='video'||t.startsWith('video/'))return '<video class="pv-fd-media cover" autoplay muted playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" src="'+esc(u)+'"></video>';return '<img class="pv-fd-media cover" src="'+esc(u)+'" alt="ProjectVault display media">';}
   async function loadBirthdays(){
     try{
       const {data,error}=await sb.from('users').select('auth_user_id,name,username,birthday,avatar,show_birthday_to_friends').not('birthday','is',null);
@@ -7009,7 +7009,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       st.textContent='📢 Admin advertisement · '+item.name;
     }
     if(bar){bar.style.transition='none';bar.style.width='0%';requestAnimationFrame(()=>{bar.style.transition='width '+DISPLAY_MS+'ms linear';bar.style.width='100%';});}
-    const v=c.querySelector('video');if(v){v.muted=!sound;v.play().catch(()=>{});}
+    const v=c.querySelector('video');if(v){v.muted=true;v.setAttribute('muted','');v.setAttribute('autoplay','');v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');v.preload='auto';const startVideo=()=>{v.muted=!sound;if(v.readyState<2){try{v.load();}catch(e){}}const p=v.play();if(p&&typeof p.catch==='function')p.catch(err=>console.warn('[display] video autoplay blocked:',err));};v.addEventListener('loadedmetadata',startVideo,{once:true});v.addEventListener('canplay',startVideo,{once:true});try{v.load();}catch(e){}setTimeout(startVideo,150);}
   }
   async function next(){
     if(!started)return;
