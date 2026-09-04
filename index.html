@@ -1676,6 +1676,19 @@ function endSyncOp(failed,detail){
     _syncGroupFailed=false;
   }
 }
+
+// PV cloud status resume guard: a successful Supabase sync is authoritative.
+// navigator.onLine can be stale/incorrect in installed PWAs/WebViews.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' &&
+     typeof CU !== 'undefined' && CU &&
+     typeof _cloudStatusState !== 'undefined' &&
+     _cloudStatusState !== 'failed'){
+    if(_cloudStatusState === 'offline' && navigator.onLine){
+      setCloudStatus('connected');
+    }
+  }
+});
 window.addEventListener('online',()=>{updateOnlineStatus();if(typeof CU!=='undefined'&&CU){runCloudSyncAfterLogin();}});
 window.addEventListener('offline',updateOnlineStatus);
 
