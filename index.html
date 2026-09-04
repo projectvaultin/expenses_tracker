@@ -488,7 +488,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 <div class="drawer-item" onclick="openSwitchAccountModal()">
     <span class="di-icon">🔀</span> Switch Account
 </div>
-    <div class="drawer-item" onclick="closeDrawer();openEventsMediaModal()"><span class="di-icon">🎉</span> Events & Media</div>
+    <div class="drawer-item" id="drawer-events-media" style="display:none" onclick="closeDrawer();openEventsMediaModal()"><span class="di-icon">🎉</span> Events & Media</div>
     <div class="drawer-item" onclick="toggleTheme()"><span class="di-icon" id="drawer-theme-icon">🌙</span> <span id="drawer-theme-label">Switch to Light Theme</span></div>
     <div class="drawer-item" onclick="toggleTextSize()"><span class="di-icon">🔠</span> <span id="drawer-textsize-label">Switch to Large Text</span></div>
     <div class="drawer-item" onclick="toggleContrastMode()"><span class="di-icon">🔲</span> <span id="drawer-contrast-label">Turn On High Contrast</span></div>
@@ -514,6 +514,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
       </div>
       <span style="color:var(--muted);font-size:16px">✕</span>
+    </div>
+    <div class="card" id="pv-notifications-card" style="display:none;border-color:rgba(108,99,255,.3)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:21px">🔔</span><div style="font-weight:800;font-size:14px">Notifications</div></div>
+      <div id="pv-notifications-list"></div>
     </div>
     <div class="card" id="notif-prompt-card" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,208,132,.08));">
       <div style="display:flex;align-items:center;gap:10px">
@@ -1011,6 +1015,14 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <button class="add-btn" style="width:100%;padding:12px" onclick="pushAnnouncement()">📣 Publish Announcement</button>
       <div id="admin-announcement-sync-note" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5"></div>
     </div>
+    <!-- Persistent user notifications (Admin Only) -->
+    <div class="card" id="admin-notification-section" style="display:none">
+      <div class="card-title">🔔 Send User Notification <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">One persistent notification per user. If a user is offline, it appears when they next open the app. After they open and mark it read, it will not appear again.</div>
+      <input class="ti" id="pv-notif-title-inp" placeholder="Notification title" style="width:100%;margin-bottom:8px">
+      <textarea class="ti" id="pv-notif-body-inp" placeholder="Notification message" style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
+      <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pvPublishNotification()">🔔 Send Notification</button>
+    </div>
     <!-- App Update Management (Admin Only) -->
     <div class="card" id="admin-update-section" style="display:none">
       <div class="card-title">📢 Push App Update Notice <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
@@ -1019,6 +1031,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <input type="text" class="ti" id="update-version-inp" placeholder="Version e.g. 2.1" style="width:100%;margin-bottom:8px"/>
       <textarea class="ti" id="update-notes-inp" placeholder="What's new in this update..." style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
       <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pushUpdateNotice()">📢 Publish Update Notice</button>
+      <button class="pill-btn" style="width:100%;margin-top:8px;padding:11px" onclick="openEventsMediaModal()">🎉 Open Events & Media Manager</button>
     </div>
     <!-- Database Management (Admin Only) -->
     <div class="card" id="admin-database-section" style="display:none">
@@ -1636,6 +1649,7 @@ document.getElementById('confirm-modal').addEventListener('click',function(e){if
 // ── CLOUD SYNC STATUS ──
 // Central place that reflects real sync state in the topbar pill + drawer, instead of only ever
 // implying success. States: connected, syncing, offline, failed, reconnecting.
+const SYNC_HEALTH_CHECK_MS=45000;
 const CLOUD_STATUS_LABELS={connected:'Connected',syncing:'Syncing…',offline:'Offline',failed:'Sync failed',reconnecting:'Reconnecting…'};
 let _cloudStatusState='offline';
 function setCloudStatus(state,detail){
@@ -2951,6 +2965,8 @@ function startApp(profile){
   setInterval(checkDueAlerts,3600000);
   setTimeout(checkForAppUpdates,1000);
   setTimeout(checkAnnouncement,1100);
+  setTimeout(pvCheckPendingNotifications,1200);
+  setTimeout(pvCheckPendingAppUpdate,1300);
   // Notification permission MUST be requested from a real tap/click — browsers silently ignore
   // requests triggered by a timer with no user gesture, which was the bug here (permission stayed
   // stuck at "default" forever, so native reminder popups never appeared). Show a real button instead.
@@ -2966,6 +2982,8 @@ if(supportCard){
   document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-announcement-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-notification-section').style.display=isAdmin?'block':'none';
+  const eventsDrawer=document.getElementById('drawer-events-media'); if(eventsDrawer)eventsDrawer.style.display=isAdmin?'flex':'none';
   document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
   if(isAdmin){renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   setTimeout(checkAndSendMonthlyStatement,1500);
@@ -4103,6 +4121,8 @@ function renderManage(){
   document.getElementById('admin-stats-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-errorlogs-section').style.display=isAdmin?'block':'none';
   document.getElementById('admin-announcement-section').style.display=isAdmin?'block':'none';
+  document.getElementById('admin-notification-section').style.display=isAdmin?'block':'none';
+  const eventsDrawer=document.getElementById('drawer-events-media'); if(eventsDrawer)eventsDrawer.style.display=isAdmin?'flex':'none';
   document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
   if(isAdmin){renderMembers();renderAdminMessages();renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   document.getElementById('admin-update-section').style.display=isAdmin?'block':'none';
@@ -4466,6 +4486,50 @@ function renderErrorLogs(){
   }).join('');
 }
 
+// ── PERSISTENT SUPABASE NOTIFICATIONS ─────────────────────────────────────
+async function pvPublishNotification(){
+  const title=document.getElementById('pv-notif-title-inp')?.value.trim();
+  const body=document.getElementById('pv-notif-body-inp')?.value.trim();
+  if(!title||!body){showToast('Enter notification title and message','#ffb300');return;}
+  const uid=await pvGetAuthId();
+  if(!uid){showToast('Admin session unavailable','#ffb300');return;}
+  const {error}=await sb.from('pv_notifications').insert({title,body,kind:'admin',scheduled_at:new Date().toISOString(),active:true,created_by:uid});
+  if(error){console.error(error);showToast('Notification failed: '+error.message,'#e53935');return;}
+  document.getElementById('pv-notif-title-inp').value='';document.getElementById('pv-notif-body-inp').value='';
+  showToast('🔔 Notification queued for all users!');
+}
+async function pvCheckPendingNotifications(){
+  const uid=await pvGetAuthId();if(!uid)return;
+  try{
+    const now=new Date().toISOString();
+    const {data:notes,error}=await sb.from('pv_notifications').select('*').eq('active',true).lte('scheduled_at',now).order('created_at',{ascending:false}).limit(20);
+    if(error)throw error;
+    const ids=(notes||[]).map(n=>n.id);if(!ids.length)return;
+    const {data:receipts}=await sb.from('pv_notification_receipts').select('notification_id,delivered_at,read_at').eq('user_id',uid).in('notification_id',ids);
+    const rm=new Map((receipts||[]).map(r=>[String(r.notification_id),r]));
+    const pending=[];
+    for(const n of (notes||[])){
+      const r=rm.get(String(n.id));
+      if(r?.read_at)continue;
+      if(!r){const {error:ie}=await sb.from('pv_notification_receipts').insert({notification_id:n.id,user_id:uid,delivered_at:new Date().toISOString()});if(ie&&ie.code!=='23505')console.warn('notification receipt:',ie);}
+      pending.push(n);
+    }
+    const card=document.getElementById('pv-notifications-card'),list=document.getElementById('pv-notifications-list');
+    if(!pending.length||!card||!list){if(card)card.style.display='none';return;}
+    card.style.display='block';
+    list.innerHTML=pending.map(n=>`<div style="padding:10px 0;border-top:1px solid var(--border)"><div style="font-weight:800;font-size:13px">${escHtml(n.title)}</div><div style="font-size:12px;color:var(--muted);line-height:1.6;margin:4px 0 8px;white-space:pre-wrap">${escHtml(n.body)}</div><button class="pill-btn" onclick="pvMarkNotificationRead('${escJsAttr(n.id)}')">✓ Mark as read</button></div>`).join('');
+    if('Notification' in window&&Notification.permission==='granted'){
+      for(const n of pending){const r=rm.get(String(n.id));if(!r){try{new Notification('ProjectVault — '+n.title,{body:n.body,tag:'pv-notification-'+n.id});}catch(e){}}}
+    }
+  }catch(e){console.error('Pending notification check failed:',e);}
+}
+async function pvMarkNotificationRead(id){
+  const uid=await pvGetAuthId();if(!uid)return;
+  const {error}=await sb.from('pv_notification_receipts').upsert({notification_id:id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'notification_id,user_id'});
+  if(error){showToast('Could not mark as read','#ffb300');return;}
+  showToast('✓ Notification read');await pvCheckPendingNotifications();
+}
+
 // ── ADMIN: ANNOUNCEMENTS (broadcast banner, independent of version release notes) ──
 // Prefers a shared Supabase table so the announcement reaches every device; if the table doesn't
 // exist yet or the query fails, falls back to this-device-only storage so the feature still works.
@@ -4555,7 +4619,7 @@ async function pushUpdateNotice(){
     // Retire older updates so the newest one is unambiguously "the" active update.
     await sb.from('app_updates').update({active:false}).eq('active',true);
     const{error}=await sb.from('app_updates').insert({
-      title:title||`Version ${ver}`,version:ver,description:notes,active:true
+      title:title||`Version ${ver}`,version:ver,description:notes,active:true,scheduled_at:new Date().toISOString(),published_by_user_id:(await pvGetAuthId())
     });
     if(error)throw error;
   }catch(e){
@@ -4860,47 +4924,37 @@ async function loadSupportTickets(){
     pushErrorLog({message:'Failed to load user support tickets: '+(e&&e.message?e.message:String(e)),source:'loadSupportTickets'});
   }
 }
-  async function checkForAppUpdates(){
-
-    try{
-
-        const { data, error } = await sb
-            .from("app_updates")
-            .select("*")
-            .eq("active", true)
-            .order("created_at",{ascending:false})
-            .limit(1)
-            .single();
-
-        if(error || !data){
-            return;
-        }
-
-        const lastSeen = localStorage.getItem("last_seen_update");
-
-        if(lastSeen === String(data.id)){
-            return;
-        }
-
-        const banner=document.getElementById("update-banner");
-
-        if(banner){
-
-            banner.style.display="flex";
-
-            document.getElementById("update-version-text").textContent=
-                `${data.version} • ${data.title}`;
-
-        }
-
-        window.latestUpdate=data;
-
-    }catch(err){
-
-        console.error("Update Check Error:",err);
-
+  async function pvGetAuthId(){try{return (await sb.auth.getUser()).data?.user?.id||null;}catch(e){return null;}}
+async function pvCheckPendingAppUpdate(){
+  const uid=await pvGetAuthId(); if(!uid)return;
+  try{
+    const now=new Date().toISOString();
+    const {data,error}=await sb.from('app_updates').select('*').eq('active',true).lte('scheduled_at',now).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(error||!data)return;
+    const {data:receipt}=await sb.from('pv_app_update_receipts').select('read_at,delivered_at').eq('update_id',data.id).eq('user_id',uid).maybeSingle();
+    if(receipt?.read_at)return;
+    if(!receipt){await sb.from('pv_app_update_receipts').insert({update_id:data.id,user_id:uid,delivered_at:new Date().toISOString()});
+      if('Notification' in window&&Notification.permission==='granted')try{new Notification('ProjectVault — '+(data.title||'App Update'),{body:data.description||('Version '+data.version+' is available'),tag:'pv-update-'+data.id});}catch(e){}
     }
-
+    window.latestUpdate=data;
+    const banner=document.getElementById('update-banner'); if(banner)banner.style.display='flex';
+    const txt=document.getElementById('update-version-text'); if(txt)txt.textContent=`${data.version} • ${data.title||'New update available'}`;
+  }catch(e){console.error('Update delivery check failed:',e);}
+}
+async function checkForAppUpdates(){return pvCheckPendingAppUpdate();}
+async function showUpdateModal(){
+  if(!window.latestUpdate)return;
+  const update=window.latestUpdate;
+  document.getElementById('update-modal-content').innerHTML=`<div style="font-size:18px;font-weight:700;margin-bottom:10px">🚀 ${escHtml(update.title||'App Update')}</div><div style="font-size:13px;color:var(--accent);margin-bottom:12px">Version ${escHtml(update.version||'')}</div><div style="line-height:1.8;white-space:pre-wrap">${escHtml(update.description||'')}</div>`;
+  document.getElementById('update-modal').classList.add('open');
+}
+async function dismissUpdate(){
+  if(window.latestUpdate){
+    const uid=await pvGetAuthId();
+    if(uid)await sb.from('pv_app_update_receipts').upsert({update_id:window.latestUpdate.id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'update_id,user_id'});
+  }
+  document.getElementById('update-modal').classList.remove('open');
+  const b=document.getElementById('update-banner');if(b)b.style.display='none';
 }
 async function saveProfile(){
   const name=document.getElementById('edit-name').value.trim();
@@ -4923,7 +4977,7 @@ async function saveProfile(){
 try{
   const userId = await resolveLegacyUserId();
 
-  if(userId){
+  if(userId!==null&&userId!==undefined){
     const { data, error } = await sb
       .from('users')
     .update({
@@ -4933,7 +4987,7 @@ try{
   avatar: users[CU].avatar || null,
   cover_photo: users[CU].coverPhoto || null
 })
-      .eq('auth_user_id', userId)
+      .eq('id', userId)
       .select();
 
     if(error){
@@ -5213,50 +5267,32 @@ async function sendTestStatementNow(){
 function getReminders(){return JSON.parse(localStorage.getItem(uKey('reminders'))||'[]');}
 function saveReminders(r){localStorage.setItem(uKey('reminders'),JSON.stringify(r));}
   async function uploadReminder(r){
-  if(!CU) return;
-  const userId = await resolveLegacyUserId();
-  if(userId===null||userId===undefined) return;
-  const { error } = await sb.from('reminders').upsert({
-    id: r.id,
-    user_id: userId,
-    name: r.name,
-    amount: r.amount,
-    day: r.day,
-    month: r.month,
-    type: r.type,
-    frequency: r.frequency,
-    active: r.active !== false,
-    paid: r.paid || {}
-  });
-  if(error) console.error('Reminder upload failed:', error);
+  if(!CU||!sb)return false;
+  const userId=await resolveLegacyUserId();
+  const authId=(await sb.auth.getUser()).data?.user?.id||null;
+  if(userId===null||userId===undefined||!authId)return false;
+  const payload={id:Number(r.id),user_id:Number(userId),auth_user_id:authId,name:r.name||null,amount:Number(r.amount),day:Number(r.day),month:r.month===null||r.month===undefined?null:Number(r.month),type:r.type||'expense',frequency:r.frequency||'monthly',active:r.active!==false,paid:r.paid||{}};
+  const {error}=await sb.from('reminders').upsert(payload,{onConflict:'id'});
+  if(error){console.error('Reminder upload failed:',error);return false;}
+  return true;
 }
-
 async function deleteReminderCloud(id){
-  if(!CU) return;
-  const userId = await resolveLegacyUserId();
-  if(userId===null||userId===undefined) return;
-  const { error } = await sb.from('reminders').delete().eq('id', id).eq('user_id', userId);
-  if(error) console.error('Reminder delete failed:', error);
+  if(!CU||!sb)return false;
+  const userId=await resolveLegacyUserId();
+  if(userId===null||userId===undefined)return false;
+  const {error}=await sb.from('reminders').delete().eq('id',Number(id)).eq('user_id',Number(userId));
+  if(error)console.error('Reminder delete failed:',error);
+  return !error;
 }
-
 async function syncReminders(){
-  if(!CU) return;
-  const userId = await resolveLegacyUserId();
-  if(userId===null||userId===undefined) return;
-  const { data, error } = await sb.from('reminders').select('*').eq('user_id', userId);
-  if(error){ console.error('Reminders sync failed:', error); return; }
-  const rems = (data||[]).map(row=>({
-    id: row.id,
-    name: row.name,
-    amount: Number(row.amount),
-    day: row.day,
-    month: row.month,
-    active: row.active,
-    paid: row.paid || {},
-    type: row.type,
-    frequency: row.frequency
-  }));
+  if(!CU||!sb)return false;
+  const userId=await resolveLegacyUserId();
+  if(userId===null||userId===undefined)return false;
+  const {data,error}=await sb.from('reminders').select('*').eq('user_id',Number(userId)).order('updated_at',{ascending:true});
+  if(error){console.error('Reminders sync failed:',error);return false;}
+  const rems=(data||[]).map(row=>({id:Number(row.id),name:row.name||'',amount:Number(row.amount),day:Number(row.day),month:row.month===null?null:Number(row.month),active:row.active!==false,paid:row.paid||{},type:row.type||'expense',frequency:row.frequency||'monthly'}));
   saveReminders(rems);
+  return true;
 }
 function monthKeyNow(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1);}
 function selectRemType(t){
@@ -6198,31 +6234,34 @@ function openGiveMoneyForm(friendAuthId){
 let _selectedDebtUser = null;
 window._debtSearchResults = [];
 
+let _debtSearchTimer=null;
 async function searchDebtUser(query){
   const q=String(query||'').trim();
   const results=document.getElementById('shared-debt-user-results');
   if(!results)return;
+  if(_debtSearchTimer)clearTimeout(_debtSearchTimer);
   if(!q){results.innerHTML='';window._debtSearchResults=[];return;}
-  results.innerHTML='<div style="opacity:.6;font-size:12px">Searching…</div>';
-  try{
-    const {data,error}=await sb.rpc('search_users_for_shared_money',{p_query:q});
-    if(error)throw error;
-    window._debtSearchResults=data||[];
-    if(!window._debtSearchResults.length){
-      results.innerHTML='<div style="opacity:.6;font-size:12px">No ProjectVault user found</div>';
-      return;
+  if(q.length<2){results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">Type at least 2 characters…</div>';return;}
+  results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">Searching username and name…</div>';
+  _debtSearchTimer=setTimeout(async()=>{
+    try{
+      const {data,error}=await sb.rpc('search_users_for_shared_money',{p_query:q});
+      if(error)throw error;
+      window._debtSearchResults=Array.isArray(data)?data:[];
+      if(!window._debtSearchResults.length){
+        results.innerHTML='<div style="opacity:.6;font-size:12px;padding:6px">No ProjectVault user found</div>';
+        return;
+      }
+      results.innerHTML=window._debtSearchResults.map((u,i)=>`
+        <button type="button" class="pill-btn" style="display:block;width:100%;text-align:left;margin-top:5px;background:var(--surface2);border:0;cursor:pointer" onclick="selectDebtUser(${i})">
+          <b>${escHtml(u.name||'Unnamed user')}</b>
+          <span style="display:block;opacity:.65;font-size:11px;margin-top:2px">@${escHtml(u.username||'username unavailable')}</span>
+        </button>`).join('');
+    }catch(e){
+      console.error('Debt user search failed:',e);
+      results.innerHTML='<div style="color:var(--red);font-size:12px;padding:6px">Search failed — '+escHtml(e.message||'database error')+'</div>';
     }
-    results.innerHTML=window._debtSearchResults.map((u,i)=>`
-      <button type="button" class="pill-btn"
-        style="display:block;width:100%;text-align:left;margin-top:5px;background:var(--surface2);border:0;cursor:pointer"
-        onclick="selectDebtUser(${i})">
-        <b>${escHtml(u.name||u.username)}</b>
-        <span style="opacity:.65;font-size:11px"> @${escHtml(u.username)}</span>
-      </button>`).join('');
-  }catch(e){
-    console.error('Debt user search failed:',e);
-    results.innerHTML='<div style="color:var(--red);font-size:12px">Search failed — check your connection.</div>';
-  }
+  },180);
 }
 
 function selectDebtUser(index){
@@ -6356,8 +6395,6 @@ async function submitRepayment(){
   loadMoneySummary();
 }
 
-
-const SYNC_HEALTH_CHECK_MS=45000;
 
 async function verifyCloudSessionHealth(){
   if(!CU||!sb)return false;
@@ -6667,6 +6704,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     return '<img class="pv-media-img" loading="lazy" src="'+pvEsc(url)+'" alt="ProjectVault media">';
   }
   window.openEventsMediaModal=async function(){
+    if(!(await pvIsAdmin())){showToast('Events & Media is available to administrators only','#ffb300');return;}
     document.getElementById('events-media-modal').classList.add('open');
     await pvLoadEventsMedia();
   };
@@ -6683,7 +6721,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   }
 
 
-  async function pvRenderHomeSponsoredMedia(){
+  window.pvRenderHomeSponsoredMedia=async function(){
     const card=document.getElementById('pv-home-sponsored-card');
     const stage=document.getElementById('pv-home-sponsored-stage');
     const meta=document.getElementById('pv-home-sponsored-meta');
@@ -6708,7 +6746,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     }
   }
 
-  async function pvLoadEventsMedia(){
+  window.pvLoadEventsMedia=async function(){
     const [festivalRes,adRes]=await Promise.all([
       sb.from('festivals').select('*').eq('is_active',true).order('priority',{ascending:true}).order('festival_date',{ascending:true}),
       sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true})
