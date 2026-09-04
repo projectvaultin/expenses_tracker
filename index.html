@@ -2993,7 +2993,7 @@ if(supportCard){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   runCloudSyncAfterLogin();
-  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); },1300);
+  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
 }
 
 // ── TABS ──
@@ -6737,7 +6737,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     const card=document.getElementById('pv-home-sponsored-card');
     const stage=document.getElementById('pv-home-sponsored-stage');
     const meta=document.getElementById('pv-home-sponsored-meta');
-    if(!card||!stage||!meta||!window.sb)return;
+    if(!card||!stage||!meta||!sb)return;
     try{
       const {data:campaigns,error}=await sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true});
       if(error)throw error;
@@ -6951,7 +6951,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
 <script id="pv-full-display-js">
 (function(){
   let timer=null,progressTimer=null,items=[],index=0,sound=false,started=false;
-  const DISPLAY_MS=10000;
+  const DISPLAY_MS=30000;
   function esc(v){return typeof pvEsc==='function'?pvEsc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function todayBirthday(b){if(!b)return false;const d=new Date(String(b).slice(0,10)+'T00:00:00'),n=new Date();return d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
   function mediaUrl(path){return typeof pvStorageUrl==='function'?pvStorageUrl(path):((window.SUPABASE_URL||'')+'/storage/v1/object/public/pv-media/'+String(path||'').split('/').map(encodeURIComponent).join('/'));}
@@ -7020,7 +7020,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   window.pvOpenDisplay=async function(){
     const el=document.getElementById('pv-full-display');if(!el)return;el.style.display='block';el.setAttribute('aria-hidden','false');started=true;index=0;items=[];await build();await next();
   };
-  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.style.display='block';el.setAttribute('aria-hidden','false');}};
+  window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.style.display='none';el.setAttribute('aria-hidden','true');}};
   window.pvToggleDisplaySound=function(){sound=!sound;const b=document.getElementById('pv-fd-sound');if(b)b.textContent=sound?'🔊 Sound on':'🔇 Sound off';const v=document.querySelector('#pv-fd-content video');if(v){v.muted=!sound;if(sound)v.play().catch(()=>{});}};
   document.addEventListener('fullscreenchange',()=>{const el=document.getElementById('pv-full-display');if(el&&!document.fullscreenElement&&el.classList.contains('open')){/* keep in-app overlay open */}});
 })();
