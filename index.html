@@ -6954,7 +6954,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   const DISPLAY_MS=30000;
   function esc(v){return typeof pvEsc==='function'?pvEsc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function todayBirthday(b){if(!b)return false;const d=new Date(String(b).slice(0,10)+'T00:00:00'),n=new Date();return d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
-  function mediaUrl(path){return typeof pvStorageUrl==='function'?pvStorageUrl(path):((window.SUPABASE_URL||'')+'/storage/v1/object/public/pv-media/'+String(path||'').split('/').map(encodeURIComponent).join('/'));}
+  function mediaUrl(path){if(!path)return '';return SUPABASE_URL+'/storage/v1/object/public/pv-media/'+String(path).split('/').map(encodeURIComponent).join('/');}
   function mediaHtml(m){const t=String(m?.media_type||'').toLowerCase(),u=mediaUrl(m?.storage_path);if(!u)return '';if(t==='video'||t.startsWith('video/'))return '<video class="pv-fd-media cover" autoplay muted playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" src="'+esc(u)+'"></video>';return '<img class="pv-fd-media cover" src="'+esc(u)+'" alt="ProjectVault display media">';}
   async function loadBirthdays(){
     try{
