@@ -6243,10 +6243,10 @@ async function searchDebtUser(query){
   if(!results)return;
   if(_debtSearchTimer){clearTimeout(_debtSearchTimer);_debtSearchTimer=null;}
   window._debtSearchResults=[];
-  if(!q){results.innerHTML='';return;}
-  if(q.length<2){results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">Type at least 2 characters…</div>';return;}
+  if(!q){results.innerHTML='';results.classList.remove('open');return;}
+  if(q.length<2){results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">Type at least 2 characters…</div>';results.classList.add('open');return;}
   const requestId=++_debtSearchRequest;
-  results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">🔎 Searching ProjectVault users…</div>';
+  results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">🔎 Searching ProjectVault users…</div>';results.classList.add('open');
   _debtSearchTimer=setTimeout(async()=>{
     try{
       if(!sb){throw new Error('Supabase client is not ready');}
@@ -6256,7 +6256,7 @@ async function searchDebtUser(query){
       const rows=(Array.isArray(data)?data:[]).filter(u=>u&&u.auth_user_id);
       window._debtSearchResults=rows;
       if(!rows.length){
-        results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">No ProjectVault user found for “'+escHtml(q)+'”</div>';
+        results.innerHTML='<div style="opacity:.6;font-size:12px;padding:8px">No ProjectVault user found for “'+escHtml(q)+'”</div>';results.classList.add('open');
         return;
       }
       results.innerHTML=rows.map((u,i)=>{
@@ -6267,11 +6267,12 @@ async function searchDebtUser(query){
           ${username?`<span style="display:block;opacity:.7;font-size:11px;margin-top:3px">@${escHtml(username)}</span>`:''}
         </button>`;
       }).join('');
+      results.classList.add('open');
     }catch(e){
       if(requestId!==_debtSearchRequest)return;
       console.error('Debt user search failed:',e);
       pushErrorLog({message:'Debt user search failed: '+(e.message||e),source:'searchDebtUser'});
-      results.innerHTML='<div style="color:var(--red);font-size:12px;padding:8px">Search failed — '+escHtml(e.message||'database error')+'</div>';
+      results.innerHTML='<div style="color:var(--red);font-size:12px;padding:8px">Search failed — '+escHtml(e.message||'database error')+'</div>';results.classList.add('open');
     }
   },250);
 }
@@ -6284,7 +6285,7 @@ function selectDebtUser(index){
   const results=document.getElementById('shared-debt-user-results');
   const selected=document.getElementById('shared-debt-selected');
   if(input)input.value='';
-  if(results)results.innerHTML='';
+  if(results){results.innerHTML='';results.classList.remove('open');}
   if(selected)selected.innerHTML=`
     <div style="padding:8px 10px;border-radius:10px;background:rgba(0,208,132,.10);border:1px solid rgba(0,208,132,.25)">
       <b>${escHtml(u.name||u.username)}</b>
