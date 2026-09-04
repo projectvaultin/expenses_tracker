@@ -6357,8 +6357,10 @@ async function submitRepayment(){
 }
 
 
+const SYNC_HEALTH_CHECK_MS=45000;
+
 async function verifyCloudSessionHealth(){
-  if(!CU||!window.sb)return false;
+  if(!CU||!sb)return false;
   try{
     const {data,error}=await sb.auth.getUser();
     if(error||!data?.user){
@@ -6532,7 +6534,6 @@ let _androidRealtimeStatus='IDLE';   // IDLE | SUBSCRIBED | TIMED_OUT | CHANNEL_
 let _debtsRealtimeStatus='IDLE';
 let _syncHealthTimer=null;
 let _lastFallbackTriggerMs=0;
-const SYNC_HEALTH_CHECK_MS=45000; // periodically verify realtime subscriptions and fall back to manual pull
 const FALLBACK_TRIGGER_COOLDOWN_MS=15000; // avoid a tight retry loop if the socket keeps failing
 function subscribeDebtsRealtime(userId){
   if(_debtsRealtimeChannel){ try{sb.removeChannel(_debtsRealtimeChannel);}catch(e){} _debtsRealtimeChannel=null; }
