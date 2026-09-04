@@ -1676,19 +1676,6 @@ function endSyncOp(failed,detail){
     _syncGroupFailed=false;
   }
 }
-
-// PV cloud status resume guard: a successful Supabase sync is authoritative.
-// navigator.onLine can be stale/incorrect in installed PWAs/WebViews.
-document.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState === 'visible' &&
-     typeof CU !== 'undefined' && CU &&
-     typeof _cloudStatusState !== 'undefined' &&
-     _cloudStatusState !== 'failed'){
-    if(_cloudStatusState === 'offline' && navigator.onLine){
-      setCloudStatus('connected');
-    }
-  }
-});
 window.addEventListener('online',()=>{updateOnlineStatus();if(typeof CU!=='undefined'&&CU){runCloudSyncAfterLogin();}});
 window.addEventListener('offline',updateOnlineStatus);
 
@@ -6545,6 +6532,7 @@ let _androidRealtimeStatus='IDLE';   // IDLE | SUBSCRIBED | TIMED_OUT | CHANNEL_
 let _debtsRealtimeStatus='IDLE';
 let _syncHealthTimer=null;
 let _lastFallbackTriggerMs=0;
+const SYNC_HEALTH_CHECK_MS=45000; // periodically verify realtime subscriptions and fall back to manual pull
 const FALLBACK_TRIGGER_COOLDOWN_MS=15000; // avoid a tight retry loop if the socket keeps failing
 function subscribeDebtsRealtime(userId){
   if(_debtsRealtimeChannel){ try{sb.removeChannel(_debtsRealtimeChannel);}catch(e){} _debtsRealtimeChannel=null; }
