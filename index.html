@@ -5030,9 +5030,9 @@ function closeForgotPwModal(){
 async function findAuthEmailByIdentifier(idRaw){
   const id=idRaw.trim().toLowerCase();
   if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) return id; // already an email — use directly
-  const{data,error}=await sb.from('users').select('email').eq('mobile',idRaw.trim()).maybeSingle();
+  const{data,error}=await sb.rpc('get_auth_email_by_mobile',{p_mobile:idRaw.trim()});
   if(error){console.error('Forgot-password lookup failed:',error);return null;}
-  return (data&&data.email)||null;
+  return data||null;
 }
 async function sendPasswordResetLink(){
   const idVal=document.getElementById('fp-identifier').value.trim();
