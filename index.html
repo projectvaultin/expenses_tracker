@@ -5168,7 +5168,8 @@ async function checkAndSendWeeklyDigest(){
   const rangeLabel='Week of '+weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'–'+weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
   const yStats=computeYearStats(getData(),now.getFullYear());
   const catBreakdown=buildCategoryBreakdownSlots(data);
-  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7)},yStats,catBreakdown);
+  const reportInsights=buildReportInsights(data,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7),count:data.length});
+  const result=await sendStatementEmail(acc,CU,rangeLabel,now.getFullYear(),{totalIncome,totalExpense,avgDaily:(totalExpense/7),count:data.length},yStats,catBreakdown,reportInsights);
   if(result.ok){acc.lastWeeklyDigestSent=wk;saveUsers(users);}
 }
 // Annual summary — sent once per year (checked in January), covering the previous calendar year.
@@ -5186,7 +5187,8 @@ async function checkAndSendAnnualSummary(){
   if(yStats.totalExpense===0&&yearIncome===0)return;
   const yearData=allData.filter(e=>e.year===prevYear);
   const catBreakdown=buildCategoryBreakdownSlots(yearData);
-  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365},yStats,catBreakdown);
+  const reportInsights=buildReportInsights(yearData,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365,count:yearData.length});
+  const result=await sendStatementEmail(acc,CU,'Full Year Summary',prevYear,{totalIncome:yearIncome,totalExpense:yStats.totalExpense,avgDaily:yStats.totalExpense/365,count:yearData.length},yStats,catBreakdown,reportInsights);
   if(result.ok){acc.lastAnnualSummarySent=prevYear;saveUsers(users);}
 }
 async function checkAndSendMonthlyStatement(){
@@ -5206,7 +5208,8 @@ async function checkAndSendMonthlyStatement(){
   try{
     const periodData=data.filter(e=>e.month===monthName&&e.year===year);
     const catBreakdown=buildCategoryBreakdownSlots(periodData);
-    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
+    const reportInsights=buildReportInsights(periodData,monthName,year,mStats);
+    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown,reportInsights);
     if(result.ok){
       acc.lastStatementSent=key;
       saveUsers(users);
@@ -5217,9 +5220,83 @@ async function checkAndSendMonthlyStatement(){
     _statementCheckInFlight=false;
   }
 }
-async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,catSlots){
+// Builds the extra insights used by the enhanced monthly report.
+// All calculations are derived from the same local transaction/budget data used by the app.
+function buildReportInsights(periodData,monthName,year,mStats){
+  const rows=Array.isArray(periodData)?periodData:[];
+  const expenses=rows.filter(e=>e.type!=='income'&&Number(e.amount)>0);
+  const bycat={};
+  expenses.forEach(e=>{
+    const cat=(e.category||'Other').trim()||'Other';
+    bycat[cat]=(bycat[cat]||0)+Number(e.amount||0);
+  });
+
+  const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
+  const top=sorted[0];
+  const topCategory=top?`${emoji(top[0])} ${top[0]} — ${fmt(top[1])}`:'No expense category recorded.';
+
+  const configuredCats=[...new Set(getCats().filter(c=>c&&c!=='Salary'))];
+  const noSpend=configuredCats.filter(cat=>!Object.prototype.hasOwnProperty.call(bycat,cat));
+  const noSpendCategories=noSpend.length?noSpend.join(', '):'All configured expense categories had spending.';
+
+  const highest=expenses.reduce((max,e)=>Number(e.amount)>Number(max?.amount||0)?e:max,null);
+  const highestExpense=highest?`${highest.category||'Other'} — ${fmt(Number(highest.amount||0))}`:'No individual expense recorded.';
+
+  const catBudgets=getCatBudgets();
+  const budgetRows=Object.entries(catBudgets)
+    .map(([category,budget])=>({category,budget:Number(budget)||0,spent:Number(bycat[category]||0)}))
+    .filter(x=>x.budget>0);
+  const budgetTotal=budgetRows.reduce((s,x)=>s+x.budget,0);
+  const budgetSpent=budgetRows.reduce((s,x)=>s+x.spent,0);
+  const overBudget=budgetRows.filter(x=>x.spent>x.budget);
+  const globalBudget=getBudgetLimit();
+
+  let budgetStatus='No category or monthly budget is set.';
+  if(globalBudget>0){
+    const pct=(mStats.totalExpense/globalBudget)*100;
+    const state=mStats.totalExpense>globalBudget?'over budget':mStats.totalExpense===globalBudget?'at the budget limit':'within budget';
+    budgetStatus=`Monthly budget: ${fmt(globalBudget)} | Spent: ${fmt(mStats.totalExpense)} | ${Math.round(pct)}% used — ${state}.`;
+    if(getRolloverEnabled()){
+      const rollover=getRolloverAmount();
+      if(rollover>0)budgetStatus+=` Rollover available: ${fmt(rollover)}.`;
+    }
+  }
+  if(budgetTotal>0){
+    const pct=(budgetSpent/budgetTotal)*100;
+    budgetStatus+=` Category budgets: ${fmt(budgetSpent)} of ${fmt(budgetTotal)} used (${Math.round(pct)}%).`;
+    if(overBudget.length)budgetStatus+=` ${overBudget.length} ${overBudget.length===1?'category is':'categories are'} over budget: ${overBudget.map(x=>x.category).join(', ')}.`;
+    else budgetStatus+=' No category budget was exceeded.';
+  }
+
+  const remaining=(mStats.totalIncome||0)-(mStats.totalExpense||0);
+  let spendingInsight='';
+  if(!expenses.length){
+    spendingInsight='No expenses were recorded during this period.';
+  }else if(mStats.totalIncome>0&&remaining<0){
+    spendingInsight=`Expenses exceeded income by ${fmt(Math.abs(remaining))}. Consider reviewing ${top?top[0]:'your largest spending areas'} next month.`;
+  }else if(mStats.totalIncome>0&&remaining>0){
+    const rate=(mStats.totalExpense/mStats.totalIncome)*100;
+    spendingInsight=`You spent ${Math.round(rate)}% of your recorded income this period and retained ${fmt(remaining)}.`;
+  }else if(top){
+    spendingInsight=`${top[0]} was your largest spending area at ${fmt(top[1])}.`;
+  }else{
+    spendingInsight='Review your expense categories regularly to keep spending on track.';
+  }
+
+  return {
+    top_category:topCategory,
+    no_spend_categories:noSpendCategories,
+    transaction_count:String(rows.length),
+    highest_expense:highestExpense,
+    budget_status:budgetStatus,
+    spending_insight:spendingInsight
+  };
+}
+
+async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,catSlots,reportInsights){
   const remaining=(mStats.totalIncome||0)-(mStats.totalExpense||0);
   const slots=catSlots||{cat_line_1:'',cat_line_2:'',cat_line_3:'',cat_line_4:'',cat_line_5:'',cat_line_6:''};
+  const insights=reportInsights||{};
   return await sendEmailViaEmailJS(EMAILJS_CONFIG.statementTemplateId,{
     to_email:acc.email,
     to_name:acc.name||uname,
@@ -5233,6 +5310,12 @@ async function sendStatementEmail(acc,uname,monthName,year,mStats,yStats,catSlot
     avg_daily_spend:fmt(mStats.avgDaily),
     year_total_expense:fmt(yStats.totalExpense),
     year_avg_monthly_spend:fmt(yStats.avgMonthly),
+    top_category:insights.top_category||'Not available',
+    no_spend_categories:insights.no_spend_categories||'Not available',
+    transaction_count:insights.transaction_count||String(mStats.count||0),
+    highest_expense:insights.highest_expense||'Not available',
+    budget_status:insights.budget_status||'No budget information available.',
+    spending_insight:insights.spending_insight||'Review your spending regularly.',
     ...slots,
     app_name:'Expenses Tracker',
     brand_name:'ProjectVault',
@@ -5253,7 +5336,8 @@ async function sendTestStatementNow(){
   showToast('Sending test statement…','#6c63ff');
   const periodData=data.filter(e=>e.month===monthName&&e.year===year);
   const catBreakdown=buildCategoryBreakdownSlots(periodData);
-  const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown);
+  const reportInsights=buildReportInsights(periodData,monthName,year,mStats);
+    const result=await sendStatementEmail(acc,CU,monthName,year,mStats,yStats,catBreakdown,reportInsights);
   if(result.ok){
     showToast('📧 Statement emailed to '+acc.email,'#00d084');
   } else if(result.reason==='send_failed'){
