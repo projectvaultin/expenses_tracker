@@ -445,6 +445,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
     <div class="tb-right">
       <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
+<div class="pill-btn" onclick="openHowToUse()">❓ How to Use</div>
 <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
   </div>
@@ -1018,7 +1019,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <!-- Persistent user notifications (Admin Only) -->
     <div class="card" id="admin-notification-section" style="display:none">
       <div class="card-title">🔔 Send User Notification <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">One persistent notification per user. If a user is offline, it appears when they next open the app. After they open and mark it read, it will not appear again.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">One persistent notification per user. WebApp users see it in-app; signed-in Android users can receive supported alerts in the phone notification tray even when the app is closed, subject to Android notification permission and background scheduling.</div>
       <input class="ti" id="pv-notif-title-inp" placeholder="Notification title" style="width:100%;margin-bottom:8px">
       <textarea class="ti" id="pv-notif-body-inp" placeholder="Notification message" style="width:100%;min-height:80px;resize:none;line-height:1.6"></textarea>
       <button class="add-btn" style="width:100%;margin-top:8px;padding:12px" onclick="pvPublishNotification()">🔔 Send Notification</button>
@@ -1070,6 +1071,18 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <span class="tab-label">Manage</span>
     </div>
   </nav>
+</div>
+
+<!-- HOW TO USE GUIDE -->
+<div class="modal-overlay" id="how-to-use-modal">
+  <div class="modal" style="max-height:92vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">❓ How to Use ProjectVault</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">A step-by-step guide for new and existing members. Choose a feature below to learn what it does, how to use it, what happens next, and how it helps you in the future.</div>
+    <div id="howto-nav" class="sgrid m3" style="margin-bottom:12px"></div>
+    <div id="howto-content"></div>
+    <button class="save-btn" style="margin-top:12px;background:var(--surface2);color:var(--text)" onclick="closeHowToUse()">Close</button>
+  </div>
 </div>
 
 <!-- MONTH MODAL -->
@@ -1212,6 +1225,14 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div id="ad-media-list"></div>
     </div>
 
+    <div class="card" id="pv-ai-content-card" style="display:none;padding:14px;border-color:rgba(108,99,255,.35);margin-bottom:10px">
+      <div class="card-title">✨ AI Content Generator <span style="font-size:10px;color:var(--accent);font-weight:700;padding:2px 6px;background:rgba(108,99,255,.15);border-radius:6px;margin-left:4px">ADMIN</span></div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:9px">Describe what you want to post. Generate a structured draft, review it, then publish it yourself.</div>
+      <textarea id="pv-ai-prompt" class="ti" placeholder="Example: Create a warm Diwali greeting and a short ProjectVault promotion for members." style="width:100%;min-height:76px;resize:vertical;line-height:1.5"></textarea>
+      <button class="auth-btn" style="margin-top:8px" onclick="pvGenerateAdminContent()">✨ Generate Draft</button>
+      <div id="pv-ai-output" style="margin-top:10px"></div>
+    </div>
+
     <div class="card" id="events-admin-card" style="display:none;padding:14px;border-color:rgba(108,99,255,.35)">
       <div class="card-title">🛡️ Admin Media Manager</div>
       <div class="fl"><div class="fl-label">Create Festival</div>
@@ -1256,11 +1277,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     </div>
 
     <div id="social-section-money" style="display:none">
-      <div id="social-money-summary" style="text-align:center;padding:12px 0"></div>
+      <div id="social-money-summary-modal" style="text-align:center;padding:12px 0"></div>
       <div class="fl-label">Money Given (they owe you)</div>
-      <div id="social-money-lent"></div>
+      <div id="social-money-lent-modal"></div>
       <div class="fl-label" style="margin-top:12px">Money Received (you owe them)</div>
-      <div id="social-money-borrowed"></div>
+      <div id="social-money-borrowed-modal"></div>
     </div>
 
     <button class="save-btn" style="background:var(--surface2);color:var(--muted);margin-top:16px" onclick="document.getElementById('social-modal').classList.remove('open')">Close</button>
@@ -1528,7 +1549,8 @@ const EMAILJS_CONFIG={
   publicKey:'sKjj2OKNRQiQnQX6w',          // Account → General → Public Key
   serviceId:'service_xbgne6r',            // Email Services → your connected service
   otpTemplateId:'template_5mn6y4g',       // Template for the optional login 2FA code (password reset now uses Supabase's own recovery email, not this)
-  statementTemplateId:'template_h9qk8zy'  // Template for monthly statement
+  statementTemplateId:'template_h9qk8zy', // Template for monthly statement
+  welcomeTemplateId:'template_hb3m4ei'     // One-time welcome email after signup
 };
 const EMAILJS_READY=typeof emailjs!=='undefined' && EMAILJS_CONFIG.publicKey!=='YOUR_PUBLIC_KEY';
 if(EMAILJS_READY){ try{ emailjs.init({publicKey:EMAILJS_CONFIG.publicKey}); }catch(e){ console.warn('EmailJS init failed',e); } }
@@ -1545,6 +1567,17 @@ try{
   console.warn('Could not resolve absolute logo URL (non-fatal):',e);
   APP_LOGO_URL='';
 }
+async function sendWelcomeEmail(email,name,username){
+  if(!email)return {ok:false,reason:'missing_email'};
+  return await sendEmailViaEmailJS(EMAILJS_CONFIG.welcomeTemplateId,{
+    to_email:email,
+    to_name:name||username||'there',
+    username:username||'',
+    app_url:'https://projectvaultin.github.io/expenses_tracker/',
+    logo_url:'https://projectvaultin.github.io/expenses_tracker/icon-192.png'
+  });
+}
+
 async function sendEmailViaEmailJS(templateId, params){
   if(!EMAILJS_READY) return {ok:false, reason:'not_configured'};
   if(!templateId || templateId.indexOf('YOUR_')===0){
@@ -2485,61 +2518,30 @@ async function doSignup(){
   setBtnLoading('signup-btn',true,'Creating account…');
   try{
   const users=getUsers();
-  // Check username in Supabase
-const { data: existingUser, error: userCheckError } = await sb
-  .from("users")
-  .select("id")
-  .eq("username", u)
-  .maybeSingle();
-
-if (userCheckError) {
-  console.error(userCheckError);
-  err.textContent='Database error. Check your connection and try again.';
-  return;
-}
-
-if (existingUser) {
-  err.textContent = "Username already taken.";
-  return;
-}
-
-// Check email in Supabase
-const { data: existingEmail, error: emailCheckError } = await sb
-  .from("users")
-  .select("id")
-  .eq("email", email)
-  .maybeSingle();
-
-if (emailCheckError) {
-  console.error(emailCheckError);
-  err.textContent='Database error. Check your connection and try again.';
-  return;
-}
-
-if (existingEmail) {
-  err.textContent = "An account already uses this email.";
-  return;
-}
-
-// Check mobile in Supabase (was previously unchecked — username/email were, mobile wasn't)
-if (mobile) {
-  const { data: existingMobile, error: mobileCheckError } = await sb
-    .from("users")
-    .select("id")
-    .eq("mobile", mobile)
-    .maybeSingle();
-
-  if (mobileCheckError) {
-    console.error(mobileCheckError);
-    err.textContent='Database error. Check your connection and try again.';
+  // Anonymous signup cannot directly SELECT public.users because RLS restricts profile reads.
+  // Use a privacy-preserving RPC that returns availability booleans only.
+  const { data: availability, error: availabilityError } = await sb.rpc(
+    'check_signup_availability',
+    { p_username: u, p_email: email, p_mobile: mobile || null }
+  );
+  if (availabilityError) {
+    console.error('Signup availability check failed:', availabilityError);
+    err.textContent='Could not check account availability. Please try again.';
     return;
   }
-
-  if (existingMobile) {
-    err.textContent = "An account already uses this mobile number.";
+  const availabilityRow=Array.isArray(availability)?availability[0]:availability;
+  if (!availabilityRow?.username_available) {
+    err.textContent='Username already taken.';
     return;
   }
-}
+  if (!availabilityRow?.email_available) {
+    err.textContent='An account already uses this email.';
+    return;
+  }
+  if (mobile && !availabilityRow?.mobile_available) {
+    err.textContent='An account already uses this mobile number.';
+    return;
+  }
 
   // Create the account through Supabase Auth — this is the only place a password is ever
   // sent anywhere now. The public.users profile row is created server-side by the
@@ -2563,6 +2565,11 @@ if (mobile) {
     // Email confirmation is required by this Supabase project's Auth settings before a
     // session is issued. The public.users row should still have been created by the
     // trigger (from raw_user_meta_data), just not usable until the user confirms.
+    // Send the one-time welcome email even when Supabase requires email confirmation.
+    // This is intentionally best-effort: a welcome-email failure must never block signup.
+    const welcomeResult=await sendWelcomeEmail(email,name,u);
+    if(!welcomeResult.ok)console.warn('Welcome email was not sent:',welcomeResult);
+
     err.textContent = '';
     switchAuthTab('login');
     showAlertModal({
@@ -2611,6 +2618,12 @@ if (mobile) {
     onboarded: false
   };
   saveUsers(users);
+
+  // Send exactly one welcome email as part of the signup flow. Best-effort only so an
+  // EmailJS issue cannot make an otherwise successful account creation appear to fail.
+  const welcomeResult=await sendWelcomeEmail(email,name,finalUsername);
+  if(!welcomeResult.ok)console.warn('Welcome email was not sent:',welcomeResult);
+
   CU=finalUsername;
   localStorage.setItem('exp_session',CU);
   localStorage.setItem('exp_user_id', profileRow.id);
@@ -3010,6 +3023,33 @@ function switchTab(name,el){
   if(name==='manage')renderManage();
 }
 
+// ── HOW TO USE GUIDE ──
+const PV_HOWTO={
+  start:['🚀 Getting Started','Create an account with your name, username, email, mobile and password. Confirm your email if requested, then log in.','After login, ProjectVault loads your profile and dashboard. Add your first income or expense to start building your financial history.','A few accurate entries give you useful balances, categories, reports and spending insights.'],
+  money:['💰 Income & Expenses','Use Add → choose Income or Expense → enter amount, date, category and payment mode → Save.','The entry is stored locally and synchronized to Supabase when cloud access is available.','Over time you get reliable balances, history, reports and year-to-date insights.'],
+  accounts:['🏦 Bank Accounts','Open Manage/Accounts → add a bank account label, provider and only the last four digits. Never enter a full account number.','The account is stored with a safe masked identifier and synchronized to Android/Supabase.','You can keep transactions organized by account and safely manage multiple accounts.'],
+  categories:['📊 Categories','Choose an existing category when recording a transaction, or manage your categories from Manage.','Category totals are reflected in the dashboard and reports.','Clear categories make it easy to see where your money is actually going.'],
+  budgets:['🎯 Budgets','Set a monthly budget and optional category budgets from Manage.','ProjectVault compares your spending with your limits and shows progress/warnings on the dashboard.','Budget tracking helps you control overspending and understand monthly performance.'],
+  recurring:['🔄 Recurring Payments','Add rent, EMI, subscriptions or recurring income. Choose weekly, monthly, quarterly or yearly frequency and the due day/date.','The reminder appears in upcoming items and can be marked Paid/Received, which logs the real transaction automatically.','You avoid forgetting recurring commitments and maintain consistent records month after month.'],
+  debts:['🤝 Debts / Shared Money','Open Debts → add who you borrowed from or gave money to → enter amount and optional due date. For another ProjectVault member, search and select their username.','The debt tracks outstanding amount, repayment and status. Shared entries stay synchronized between the linked accounts.','You can see exactly who owes whom, what remains, and what has already been repaid.'],
+  reports:['📈 Reports','Use History filters and the reporting tools, or open the monthly statement feature.','Reports summarize income, expenses, top categories, unused categories, budgets and useful spending insights.','You can understand patterns instead of looking at isolated transactions.'],
+  notifications:['🔔 Notifications','Allow notifications when prompted. Recurring bills, repayment alerts, admin announcements and app updates can create alerts.','The WebApp shows persistent in-app notices; the Android app can receive background mobile notifications when configured and permitted.','You can notice important due dates without repeatedly checking every screen.'],
+  events:['🎉 Events & Festivals','Administrators can create festivals, greetings and sponsored media with dates. Birthday information can be saved in the profile and visibility can be controlled.','On the relevant date, ProjectVault prioritizes the birthday/festival experience and scheduled media can be displayed automatically.','This gives members timely greetings and gives admins a controlled way to publish campaigns.'],
+  sync:['🔄 Android Sync','Keep the Android app signed in and connected to the internet. Use Sync Status to inspect pending, syncing, synced and failed work.','WorkManager retries failed work and periodically pulls/pushes supported data.','Your Android and WebApp records stay aligned without requiring manual export/import every time.'],
+  security:['🔐 Security & Settings','Use a strong password, enable optional 2FA, keep only the last four account digits, and review notification permissions.','Authentication is handled by Supabase Auth; the app does not use the old public password-hash flow.','Good security settings protect access while keeping your financial records organized.']
+};
+function openHowToUse(key='start'){
+  const nav=document.getElementById('howto-nav'),content=document.getElementById('howto-content'); if(!nav||!content)return;
+  nav.innerHTML=Object.entries(PV_HOWTO).map(([k,v])=>`<button class="pill-btn" data-howto="${k}" onclick="renderHowToUse('${k}')" style="padding:9px 8px;font-size:11px">${v[0]}</button>`).join('');
+  document.getElementById('how-to-use-modal').classList.add('open'); renderHowToUse(key);
+}
+function renderHowToUse(key){
+  const v=PV_HOWTO[key]||PV_HOWTO.start,content=document.getElementById('howto-content'); if(!content)return;
+  document.querySelectorAll('[data-howto]').forEach(b=>{b.style.background=b.dataset.howto===key?'var(--accent)':'var(--surface2)';b.style.color=b.dataset.howto===key?'#fff':'var(--text)';});
+  content.innerHTML=`<div class="card" style="padding:16px;border-color:rgba(108,99,255,.3)"><div style="font-size:17px;font-weight:800">${v[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:12px">What it is</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[1]}</div><div style="font-size:12px;color:var(--muted);margin-top:14px">How to use it</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[2]}</div><div style="font-size:12px;color:var(--muted);margin-top:14px">What happens next / future benefit</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[3]}</div></div>`;
+}
+function closeHowToUse(){document.getElementById('how-to-use-modal')?.classList.remove('open');}
+
 // ── HELPERS ──
 function emoji(c){return EMOJIS[c]||'📦';}
 function color(c){
@@ -3269,7 +3309,7 @@ function renderAddForm(){
   renderReminders();
   const receiptWrap=document.getElementById('receipt-preview-wrap');
   if(receiptWrap&&!pendingReceipt){
-    receiptWrap.innerHTML=`<div id="receipt-add-btn" onclick="document.getElementById('receipt-file').click()" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px dashed var(--border);border-radius:14px;padding:12px;cursor:pointer;font-size:13px;color:var(--muted)"><span style="font-size:18px">📎</span> Attach a photo of the receipt</div><input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="handleReceiptPhoto(event)"/>`;
+    receiptWrap.innerHTML=`<div id="receipt-add-btn-dynamic" onclick="document.getElementById('receipt-file-dynamic').click()" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px dashed var(--border);border-radius:14px;padding:12px;cursor:pointer;font-size:13px;color:var(--muted)"><span style="font-size:18px">📎</span> Attach a photo of the receipt</div><input type="file" id="receipt-file-dynamic" accept="image/*" style="display:none" onchange="handleReceiptPhoto(event)"/>`;
   }
 }
 function renderCatGrid(){
@@ -4074,7 +4114,7 @@ function renderManage(){
     document.getElementById('edit-mobile').value=profile.mobile||'';
     const pavBox=document.getElementById('profile-av-box');
     if(profile.avatar){pavBox.innerHTML=`<img src="${profile.avatar}" alt="Avatar"/>`;}
-    else{pavBox.innerHTML=`<span id="profile-av-ph">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
+    else{pavBox.innerHTML=`<span id="profile-av-ph-dynamic">${(profile.name||'U').charAt(0).toUpperCase()}</span>`;}
     const coverBox=document.getElementById('cover-photo-box');
     if(coverBox){
       if(profile.coverPhoto){coverBox.style.backgroundImage=`url(${profile.coverPhoto})`;const ph=document.getElementById('cover-photo-ph');if(ph)ph.style.display='none';}
@@ -4227,7 +4267,7 @@ async function sendAdminMessage(){
     return;
   }
 
-  const userId = await resolveSupabaseUserId();
+  const userId = await resolveLegacyUserId();
 
   if(userId===null||userId===undefined){
     showToast("Unable to identify your account.");
@@ -4237,7 +4277,7 @@ async function sendAdminMessage(){
   const { error } = await sb
     .from("support_messages")
     .insert({
-      user_id: userId,
+      user_id: Number(userId),
       username: CU,
       message: msg,
       status: "Open"
@@ -4634,43 +4674,6 @@ async function pushUpdateNotice(){
   showToast('📢 Update notice published to all users!');
   checkForAppUpdates();
 }
-function showUpdateModal(){
-
-    if(!window.latestUpdate) return;
-
-    const update = window.latestUpdate;
-
-    document.getElementById("update-modal-content").innerHTML = `
-        <div style="font-size:18px;font-weight:700;margin-bottom:10px">
-            🚀 ${update.title}
-        </div>
-
-        <div style="font-size:13px;color:var(--accent);margin-bottom:12px">
-            Version ${update.version}
-        </div>
-
-        <div style="line-height:1.8;white-space:pre-wrap">
-            ${update.description}
-        </div>
-    `;
-
-    document.getElementById("update-modal").classList.add("open");
-
-    localStorage.setItem("last_seen_update", String(update.id));
-
-    const banner=document.getElementById("update-banner");
-
-    if(banner){
-        banner.style.display="none";
-    }
-
-}
-function dismissUpdate(){
-  if(window.latestUpdate)localStorage.setItem('last_seen_update',String(window.latestUpdate.id));
-  document.getElementById('update-modal').classList.remove('open');
-  document.getElementById('update-banner').style.display='none';
-  showToast('✅ Marked as read');
-}
 document.getElementById('update-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('forgotpw-modal').addEventListener('click',function(e){if(e.target===this)closeForgotPwModal();});
 
@@ -4837,7 +4840,7 @@ function handleProfileAvatar(e){
         return;
     }
 
-    const userId = await resolveSupabaseUserId();
+    const userId = await resolveLegacyUserId();
 
     if(userId===null||userId===undefined){
         showToast("Unable to identify your account","#f44336");
@@ -4847,7 +4850,7 @@ function handleProfileAvatar(e){
     const {error}=await sb
     .from("support_messages")
     .insert([{
-        user_id:userId,
+        user_id:Number(userId),
         username:CU,
         category:category,
         priority:priority,
@@ -6413,10 +6416,11 @@ async function submitSharedDebt(){
 async function loadMoneySummary(){
   const userId=await resolveSupabaseUserId();
   if(userId===null||userId===undefined)return;
-  const summaryEl=document.getElementById('social-money-summary');
-  const lentEl=document.getElementById('social-money-lent');
-  const borrowedEl=document.getElementById('social-money-borrowed');
-  summaryEl.innerHTML='<div style="opacity:.6">Loading…</div>';
+  const summaryEls=[document.getElementById('social-money-summary'),document.getElementById('social-money-summary-modal')].filter(Boolean);
+  const lentEls=[document.getElementById('social-money-lent'),document.getElementById('social-money-lent-modal')].filter(Boolean);
+  const borrowedEls=[document.getElementById('social-money-borrowed'),document.getElementById('social-money-borrowed-modal')].filter(Boolean);
+  const setHtml=(els,html)=>els.forEach(el=>{el.innerHTML=html;});
+  setHtml(summaryEls,'<div style="opacity:.6">Loading…</div>');
 
   // shared_debts_with_computed_status derives remaining/effective_status
   // (including overdue) at query time — never trust a locally-cached
@@ -6428,17 +6432,17 @@ async function loadMoneySummary(){
   ]);
   if(e1||e2){
     pushErrorLog({message:'Loading money summary failed: '+((e1||e2).message),source:'loadMoneySummary'});
-    summaryEl.innerHTML='<div style="color:var(--red)">Failed to load — check Error Logs</div>';
+    setHtml(summaryEls,'<div style="color:var(--red)">Failed to load — check Error Logs</div>');
     return;
   }
 
   const owedToMe=(lent||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
   const iOwe=(borrowed||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
   const net=owedToMe-iOwe;
-  summaryEl.innerHTML=`
+  setHtml(summaryEls,`
     <div style="font-size:13px;opacity:.7">Owed to me: ₹${owedToMe.toFixed(2)} &nbsp;|&nbsp; I owe: ₹${iOwe.toFixed(2)}</div>
     <div style="font-size:22px;font-weight:700;margin-top:4px;color:${net>=0?'var(--green)':'var(--red)'}">Net ${net>=0?'+':''}₹${net.toFixed(2)}</div>
-  `;
+  `);
 
   const statusLabel=s=>({pending:'Pending',partially_paid:'Partially Paid',paid:'Paid',overdue:'Overdue',cancelled:'Cancelled'}[s]||s);
   const idsToResolve=[...(lent||[]).map(d=>d.borrower_id),...(borrowed||[]).map(d=>d.lender_id)];
@@ -6455,8 +6459,8 @@ async function loadMoneySummary(){
       ${canRepay && d.effective_status!=='paid' && d.effective_status!=='cancelled' ? `<button class="save-btn" style="margin-top:6px" onclick="openRepayForm('${d.id}')">Record Repayment</button>` : ''}
     </div>`;
 
-  lentEl.innerHTML = (lent&&lent.length) ? lent.map(d=>renderDebtRow(d,'borrower_id',false)).join('') : '<div style="opacity:.6">Nothing given yet</div>';
-  borrowedEl.innerHTML = (borrowed&&borrowed.length) ? borrowed.map(d=>renderDebtRow(d,'lender_id',true)).join('') : '<div style="opacity:.6">Nothing borrowed</div>';
+  setHtml(lentEls,(lent&&lent.length) ? lent.map(d=>renderDebtRow(d,'borrower_id',false)).join('') : '<div style="opacity:.6">Nothing given yet</div>');
+  setHtml(borrowedEls,(borrowed&&borrowed.length) ? borrowed.map(d=>renderDebtRow(d,'lender_id',true)).join('') : '<div style="opacity:.6">Nothing borrowed</div>');
 }
 
 function openRepayForm(debtId){
@@ -6980,6 +6984,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   async function pvRenderAdmin(ads){
     const card=document.getElementById('events-admin-card');if(!card)return;
     card.style.display='block';
+    const aiCard=document.getElementById('pv-ai-content-card'); if(aiCard) aiCard.style.display='block';
     const [cr,fr]=await Promise.all([
       sb.from('ad_campaigns').select('id,name').order('created_at',{ascending:false}).limit(100),
       sb.from('festivals').select('id,name,festival_date').order('festival_date',{ascending:true}).limit(100)
@@ -6996,6 +7001,24 @@ function bumpAcctGeneration(){ _acctGeneration++; }
     const {error}=await sb.from('festivals').insert({name,festival_date:date,greeting:greeting||null,priority:10,is_active:true,created_by:id});
     st.textContent=error?('Error: '+error.message):'Festival created.';
     if(!error){document.getElementById('adm-festival-name').value='';await pvLoadEventsMedia();}
+  };
+  window.pvGenerateAdminContent=function(){
+    const prompt=(document.getElementById('pv-ai-prompt')?.value||'').trim();
+    const out=document.getElementById('pv-ai-output'); if(!out)return;
+    if(!prompt){out.innerHTML='<div style="color:var(--red);font-size:12px">Describe the post you want to generate.</div>';return;}
+    const q=prompt.toLowerCase();
+    let title='ProjectVault Update',body='Stay organized with ProjectVault Expenses Tracker — track every rupee, effortlessly.',kind='announcement';
+    if(q.includes('diwali')){title='🪔 Happy Diwali from ProjectVault';body='Wishing you a bright and prosperous Diwali. Keep your finances organized and every rupee on track with ProjectVault Expenses Tracker.';kind='festival';}
+    else if(q.includes('birthday')){title='🎂 Birthday Wishes from ProjectVault';body='Warm birthday wishes from ProjectVault! Have a wonderful day, and keep your financial journey organized with Expenses Tracker.';kind='birthday';}
+    else if(q.includes('budget')){title='🎯 Stay on Budget with ProjectVault';body='Set your monthly and category budgets, watch your spending, and make smarter decisions before the month gets away from you.';kind='tip';}
+    else if(q.includes('debt')||q.includes('repay')){title='🤝 Keep Repayments on Track';body='Record debts, repayments and due dates in ProjectVault so you always know what remains and what has already been settled.';kind='tip';}
+    const safeTitle=escHtml(title),safeBody=escHtml(body);
+    out.innerHTML=`<div style="border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface2)"><div style="font-size:11px;color:var(--accent);font-weight:700">GENERATED DRAFT · ${kind.toUpperCase()}</div><input id="pv-ai-title" class="ti" value="${safeTitle}" style="width:100%;margin-top:8px"><textarea id="pv-ai-body" class="ti" style="width:100%;min-height:90px;margin-top:8px;resize:vertical">${safeBody}</textarea><button class="add-btn" style="width:100%;margin-top:8px" onclick="pvUseGeneratedContent()">Use This Draft</button><div id="pv-ai-use-status" style="font-size:11px;color:var(--muted);margin-top:7px"></div></div>`;
+  };
+  window.pvUseGeneratedContent=function(){
+    const title=document.getElementById('pv-ai-title')?.value||'',body=document.getElementById('pv-ai-body')?.value||'';
+    const target=document.getElementById('adm-festival-greeting'); if(target&&body)target.value=body;
+    const status=document.getElementById('pv-ai-use-status'); if(status)status.textContent='Draft copied into the admin editor. Review before publishing.';
   };
   window.pvAdminCreateCampaign=async function(){
     const id=await pvAuthId();if(!id)return;

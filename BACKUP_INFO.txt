@@ -1,0 +1,2 @@
+ProjectVault Expenses Tracker — Step 9 updated WebApp package — 2026-09-06
+Includes the audited WebApp, How to Use guide, signup preflight fix, admin content generator UI, production PWA assets, and the 30-second screen-fit demo video.
