@@ -758,6 +758,12 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div id="shared-debt-save-error" class="auth-err" style="margin-top:8px"></div>
     </div>
 
+    <div class="card" id="shared-money-confirmations" style="display:none">
+      <div class="card-title">🔔 Money Received — Confirmation Required</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px">A friend says they sent you money. Confirm it is correct before it becomes an active debt.</div>
+      <div id="shared-money-confirmation-list"></div>
+    </div>
+
     <div class="card">
       <div class="card-title">💳 Shared Money Summary</div>
       <div id="social-money-summary" style="text-align:center;padding:6px 0 12px"></div>
@@ -1080,8 +1086,13 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="modal-title">❓ How to Use ProjectVault</div>
     <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">A step-by-step guide for new and existing members. Choose a feature below to learn what it does, how to use it, what happens next, and how it helps you in the future.</div>
     <div id="howto-nav" class="sgrid m3" style="margin-bottom:12px"></div>
+    <div id="howto-progress" style="height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:10px"><i id="howto-progress-bar" style="display:block;height:100%;width:0%;background:var(--accent);transition:width .35s"></i></div>
     <div id="howto-content"></div>
-    <button class="save-btn" style="margin-top:12px;background:var(--surface2);color:var(--text)" onclick="closeHowToUse()">Close</button>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="save-btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="howToPrev()">‹ Previous</button>
+      <button class="save-btn" style="flex:1" id="howto-next-btn" onclick="howToNext()">Next ›</button>
+    </div>
+    <button class="save-btn" style="margin-top:8px;background:var(--surface2);color:var(--text)" onclick="closeHowToUse()">Close</button>
   </div>
 </div>
 
@@ -3038,17 +3049,43 @@ const PV_HOWTO={
   sync:['🔄 Android Sync','Keep the Android app signed in and connected to the internet. Use Sync Status to inspect pending, syncing, synced and failed work.','WorkManager retries failed work and periodically pulls/pushes supported data.','Your Android and WebApp records stay aligned without requiring manual export/import every time.'],
   security:['🔐 Security & Settings','Use a strong password, enable optional 2FA, keep only the last four account digits, and review notification permissions.','Authentication is handled by Supabase Auth; the app does not use the old public password-hash flow.','Good security settings protect access while keeping your financial records organized.']
 };
+let _howToKey='start';
+let _howToAutoTimer=null;
+function howToKeys(){return Object.keys(PV_HOWTO);}
 function openHowToUse(key='start'){
   const nav=document.getElementById('howto-nav'),content=document.getElementById('howto-content'); if(!nav||!content)return;
-  nav.innerHTML=Object.entries(PV_HOWTO).map(([k,v])=>`<button class="pill-btn" data-howto="${k}" onclick="renderHowToUse('${k}')" style="padding:9px 8px;font-size:11px">${v[0]}</button>`).join('');
-  document.getElementById('how-to-use-modal').classList.add('open'); renderHowToUse(key);
+  nav.innerHTML=Object.entries(PV_HOWTO).map(([k,v],i)=>`<button class="pill-btn" data-howto="${k}" onclick="renderHowToUse('${k}')" style="padding:9px 8px;font-size:11px">${i+1}. ${v[0]}</button>`).join('');
+  document.getElementById('how-to-use-modal').classList.add('open');
+  _howToKey=key;
+  renderHowToUse(key);
+  clearTimeout(_howToAutoTimer);
+  _howToAutoTimer=setTimeout(howToNext,7000);
 }
 function renderHowToUse(key){
   const v=PV_HOWTO[key]||PV_HOWTO.start,content=document.getElementById('howto-content'); if(!content)return;
+  _howToKey=key;
+  const keys=howToKeys(),idx=Math.max(0,keys.indexOf(key));
   document.querySelectorAll('[data-howto]').forEach(b=>{b.style.background=b.dataset.howto===key?'var(--accent)':'var(--surface2)';b.style.color=b.dataset.howto===key?'#fff':'var(--text)';});
-  content.innerHTML=`<div class="card" style="padding:16px;border-color:rgba(108,99,255,.3)"><div style="font-size:17px;font-weight:800">${v[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:12px">What it is</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[1]}</div><div style="font-size:12px;color:var(--muted);margin-top:14px">How to use it</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[2]}</div><div style="font-size:12px;color:var(--muted);margin-top:14px">What happens next / future benefit</div><div style="font-size:13px;line-height:1.65;margin-top:4px">${v[3]}</div></div>`;
+  const pb=document.getElementById('howto-progress-bar'); if(pb)pb.style.width=((idx+1)/keys.length*100)+'%';
+  const next=document.getElementById('howto-next-btn'); if(next)next.textContent=idx===keys.length-1?'Finish ✓':'Next ›';
+  content.innerHTML=`<div style="border:1px solid rgba(108,99,255,.28);border-radius:18px;padding:16px;background:linear-gradient(180deg,rgba(108,99,255,.10),var(--surface));animation:fadeIn .35s ease">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="font-size:32px">${v[0].slice(0,2)}</div><div><div style="font-size:17px;font-weight:800">${v[0].slice(2)}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">STEP ${idx+1} OF ${keys.length} · WATCH & FOLLOW</div></div></div>
+    <div style="display:flex;gap:7px;align-items:flex-start;margin:12px 0"><b style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;text-align:center;padding-top:3px">1</b><div><b>What it is</b><div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:3px">${v[1]}</div></div></div>
+    <div style="display:flex;gap:7px;align-items:flex-start;margin:12px 0"><b style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;text-align:center;padding-top:3px">2</b><div><b>Do this</b><div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:3px">${v[2]}</div></div></div>
+    <div style="display:flex;gap:7px;align-items:flex-start;margin:12px 0 0"><b style="min-width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;text-align:center;padding-top:3px">3</b><div><b>Then you get</b><div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:3px">${v[3]}</div></div></div>
+  </div>`;
+  clearTimeout(_howToAutoTimer);
+  _howToAutoTimer=setTimeout(howToNext,7000);
 }
-function closeHowToUse(){document.getElementById('how-to-use-modal')?.classList.remove('open');}
+function howToNext(){
+  const keys=howToKeys(),idx=keys.indexOf(_howToKey);
+  if(idx<keys.length-1)renderHowToUse(keys[idx+1]); else clearTimeout(_howToAutoTimer);
+}
+function howToPrev(){
+  const keys=howToKeys(),idx=keys.indexOf(_howToKey);
+  renderHowToUse(keys[Math.max(0,idx-1)]);
+}
+function closeHowToUse(){clearTimeout(_howToAutoTimer);document.getElementById('how-to-use-modal')?.classList.remove('open');}
 
 // ── HELPERS ──
 function emoji(c){return EMOJIS[c]||'📦';}
@@ -3884,7 +3921,8 @@ async function saveDebt(){
   const lenderId=selDebtType==='profit' ? userId : otherId;
   const borrowerId=selDebtType==='profit' ? otherId : userId;
   const {data:shared,error}=await sb.from('shared_debts').insert({
-    lender_id:lenderId, borrower_id:borrowerId, amount:amt, reason:reason||null, due_date:dueDate||null, status:'pending'
+    lender_id:lenderId, borrower_id:borrowerId, amount:amt, reason:reason||null, due_date:dueDate||null,
+    status:selDebtType==='profit'?'awaiting_confirmation':'pending'
   }).select().single();
   if(error){
     console.error('Failed to save shared debt:',error);
@@ -3895,8 +3933,12 @@ async function saveDebt(){
 
   // Keep a local mirror so the existing debt dashboard also reflects the entry.
   const ts=Date.now();
-  const local={name,amount:amt,type:selDebtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null,repaid:0,sharedDebtId:shared.id,sharedUserId:otherId};
-  const debts=getDebts();debts.push(local);saveDebts(debts);
+  // Money given to a friend is not added to the local debt list until the
+  // recipient confirms it. The sender gets a pending shared record only.
+  if(selDebtType!=='profit'){
+    const local={name,amount:amt,type:selDebtType,ts,cleared:false,dueDate:dueDate||null,interestRate:interestRate||null,installments:installments||null,repaid:0,sharedDebtId:shared.id,sharedUserId:otherId};
+    const debts=getDebts();debts.push(local);saveDebts(debts);
+  }
   const ids=['shared-debt-user-search','debt-amount','debt-due-date','debt-interest','debt-installments','debt-reason'];
   ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   clearDebtUser();
@@ -6436,8 +6478,26 @@ async function loadMoneySummary(){
     return;
   }
 
-  const owedToMe=(lent||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
-  const iOwe=(borrowed||[]).filter(d=>d.effective_status!=='cancelled').reduce((s,d)=>s+Number(d.remaining),0);
+  const pendingConfirmations=(borrowed||[]).filter(d=>d.status==='awaiting_confirmation');
+  const confirmCard=document.getElementById('shared-money-confirmations');
+  const confirmList=document.getElementById('shared-money-confirmation-list');
+  if(confirmCard&&confirmList){
+    confirmCard.style.display=pendingConfirmations.length?'block':'none';
+    if(pendingConfirmations.length){
+      const ids= pendingConfirmations.map(d=>d.lender_id);
+      const senderNames=await fetchProfileNames(ids);
+      confirmList.innerHTML=pendingConfirmations.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="font-weight:700">${escHtml(senderNames[d.lender_id]||'ProjectVault user')} sent you ₹${Number(d.amount).toFixed(2)}</div>
+        <div style="font-size:12px;color:var(--muted);margin:4px 0 10px">${d.reason?escHtml(d.reason)+' · ':''}${d.due_date?'Due '+escHtml(d.due_date):'No due date'}</div>
+        <div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="confirmIncomingSharedDebt('${d.id}')">✅ Yes, this is correct</button><button class="save-btn" style="flex:1;background:var(--surface2);color:var(--red)" onclick="rejectIncomingSharedDebt('${d.id}')">❌ Not correct</button></div>
+      </div>`).join('');
+    }
+  }
+
+  const activeLent=(lent||[]).filter(d=>d.effective_status!=='cancelled'&&d.status!=='awaiting_confirmation');
+  const activeBorrowed=(borrowed||[]).filter(d=>d.effective_status!=='cancelled'&&d.status!=='awaiting_confirmation');
+  const owedToMe=activeLent.reduce((s,d)=>s+Number(d.remaining),0);
+  const iOwe=activeBorrowed.reduce((s,d)=>s+Number(d.remaining),0);
   const net=owedToMe-iOwe;
   setHtml(summaryEls,`
     <div style="font-size:13px;opacity:.7">Owed to me: ₹${owedToMe.toFixed(2)} &nbsp;|&nbsp; I owe: ₹${iOwe.toFixed(2)}</div>
@@ -6459,8 +6519,30 @@ async function loadMoneySummary(){
       ${canRepay && d.effective_status!=='paid' && d.effective_status!=='cancelled' ? `<button class="save-btn" style="margin-top:6px" onclick="openRepayForm('${d.id}')">Record Repayment</button>` : ''}
     </div>`;
 
-  setHtml(lentEls,(lent&&lent.length) ? lent.map(d=>renderDebtRow(d,'borrower_id',false)).join('') : '<div style="opacity:.6">Nothing given yet</div>');
-  setHtml(borrowedEls,(borrowed&&borrowed.length) ? borrowed.map(d=>renderDebtRow(d,'lender_id',true)).join('') : '<div style="opacity:.6">Nothing borrowed</div>');
+  setHtml(lentEls,(activeLent.length) ? activeLent.map(d=>renderDebtRow(d,'borrower_id',false)).join('') : '<div style="opacity:.6">Nothing given yet</div>');
+  setHtml(borrowedEls,(activeBorrowed.length) ? activeBorrowed.map(d=>renderDebtRow(d,'lender_id',true)).join('') : '<div style="opacity:.6">Nothing borrowed</div>');
+}
+
+async function confirmIncomingSharedDebt(debtId){
+  const {data,error}=await sb.rpc('confirm_shared_debt',{p_shared_debt_id:debtId});
+  if(error||data!==true){showToast('⚠️ Could not confirm this amount','#e53935');return;}
+  // It now becomes an active local debt entry only after the recipient confirms.
+  const {data:row}=await sb.from('shared_debts').select('*').eq('id',debtId).maybeSingle();
+  if(row){
+    const senderNames=await fetchProfileNames([row.lender_id]);
+    const userId=await resolveSupabaseUserId();
+    const debts=getDebts();
+    if(!debts.some(d=>String(d.sharedDebtId)===String(row.id))){
+      debts.push({name:senderNames?.[row.lender_id]||row.reason||'Money received',amount:Number(row.amount),type:'debt',ts:new Date(row.created_at).getTime(),cleared:false,dueDate:row.due_date||null,repaid:0,sharedDebtId:row.id,sharedUserId:row.lender_id});
+      saveDebts(debts);
+    }
+  }
+  renderDebtPage();renderHome();loadMoneySummary();showToast('✅ Confirmed and added to Debts');
+}
+async function rejectIncomingSharedDebt(debtId){
+  const {data,error}=await sb.rpc('reject_shared_debt',{p_shared_debt_id:debtId});
+  if(error||data!==true){showToast('⚠️ Could not reject this amount','#e53935');return;}
+  loadMoneySummary();showToast('❌ Marked as not correct');
 }
 
 function openRepayForm(debtId){
