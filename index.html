@@ -823,6 +823,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       </div>
       <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="sendTestStatementNow()">📤 Send Last Month's Statement Now</button>
     </div>
+    <div class="card" id="projectvault-install-guide" style="display:block">
+      <div class="card-title">📲 ProjectVault Mobile Setup</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">Install the WebApp to your Home Screen from this page. The native Android app is a separate Android package and cannot be silently installed by a website; Android requires a separate user-approved APK/Play Store install.</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5">✅ One tap here can install the WebApp when your browser supports PWA installation. <br>📱 Native Android installation remains a separate, user-approved step.</div>
+    </div>
     <div class="card" id="install-card" style="display:none">
       <div class="card-title">📲 Install App</div>
       <div id="install-card-body">
@@ -3011,7 +3016,6 @@ if(supportCard){
   document.getElementById('admin-database-section').style.display=isAdmin?'block':'none';
   if(isAdmin){renderAdminStats();renderErrorLogs();updateAnnouncementSyncNote();}
   setTimeout(checkAndSendMonthlyStatement,1500);
-  setTimeout(checkAndSendWeeklyDigest,1700);
   setTimeout(checkAndSendAnnualSummary,1900);
   setTimeout(maybeCelebrateBudgetWin,2000);
   setTimeout(maybeCelebrateSavingsMilestone,2200);
@@ -4626,6 +4630,19 @@ async function getAnnouncement(){
   const local=JSON.parse(localStorage.getItem('exp_announcement')||'null');
   return local;
 }
+async function hasViewedAnnouncement(id){
+  if(!id||String(id).startsWith('local-')) return false;
+  const uid=await pvGetAuthId(); if(!uid)return false;
+  try{
+    const{data,error}=await sb.from('announcement_view_receipts').select('announcement_id').eq('announcement_id',id).eq('user_id',uid).maybeSingle();
+    return !error&&!!data;
+  }catch(e){return false;}
+}
+async function recordAnnouncementViewed(id){
+  if(!id||String(id).startsWith('local-'))return;
+  const uid=await pvGetAuthId();if(!uid)return;
+  try{await sb.from('announcement_view_receipts').upsert({announcement_id:Number(id),user_id:uid,viewed_at:new Date().toISOString()},{onConflict:'announcement_id,user_id'});}catch(e){console.warn('announcement view receipt failed',e);}
+}
 async function pushAnnouncement(){
   const text=document.getElementById('announcement-text-inp').value.trim();
   if(!text){showToast('Type an announcement first','#ffb300');return;}
@@ -4656,12 +4673,13 @@ async function checkAnnouncement(){
   if(!notice){banner.style.display='none';return;}
   const dismissedId=localStorage.getItem('exp_announcement_dismissed');
   if(dismissedId===notice.id){banner.style.display='none';return;}
+  if(await hasViewedAnnouncement(notice.id)){localStorage.setItem('exp_announcement_dismissed',notice.id);banner.style.display='none';return;}
   document.getElementById('announcement-text').textContent=notice.text;
   banner.style.display='flex';
 }
 async function dismissAnnouncement(){
   const notice=await getAnnouncement();
-  if(notice)localStorage.setItem('exp_announcement_dismissed',notice.id);
+  if(notice){localStorage.setItem('exp_announcement_dismissed',notice.id);await recordAnnouncementViewed(notice.id);}
   document.getElementById('announcement-banner').style.display='none';
 }
 
@@ -5244,7 +5262,14 @@ async function checkAndSendMonthlyStatement(){
   if(!acc||!acc.email||acc.isAdmin)return;
   const {monthName,year}=getPreviousMonthInfo();
   const key=monthKey(monthName,year);
-  if(acc.lastStatementSent===key)return; // already sent for that month
+  if(acc.lastStatementSent===key)return; // fast local guard
+  try{
+    const uid=await pvGetAuthId();
+    if(uid){
+      const {data:receipt}=await sb.from('pv_statement_receipts').select('period_key').eq('user_id',uid).eq('period_key',key).maybeSingle();
+      if(receipt){acc.lastStatementSent=key;saveUsers(users);return;}
+    }
+  }catch(e){console.warn('Statement receipt lookup failed; continuing with local guard',e);}
   const data=getData();
   const mStats=computeStatsForMonth(data,monthName,year);
   if(mStats.count===0)return; // nothing to report — don't send an empty statement
@@ -5258,6 +5283,7 @@ async function checkAndSendMonthlyStatement(){
     if(result.ok){
       acc.lastStatementSent=key;
       saveUsers(users);
+      try{const uid=await pvGetAuthId();if(uid)await sb.from('pv_statement_receipts').upsert({user_id:uid,period_key:key,sent_at:new Date().toISOString()},{onConflict:'user_id,period_key'});}catch(e){console.warn('Statement receipt save failed',e);}
     } else if(result.reason==='send_failed'){
       console.warn('Monthly statement auto-send failed, will retry next app open:', result.detail);
     }
@@ -6494,6 +6520,26 @@ async function loadMoneySummary(){
     }
   }
 
+  // Keep accepted friend debts in the same main Debts list as manually-created debts.
+  // Reconcile every confirmed/active borrowed shared debt into the local mirror so the
+  // entry cannot disappear simply because the Shared Money card was refreshed.
+  const localDebts=getDebts();
+  let localChanged=false;
+  const borrowedLenderIds=(borrowed||[]).filter(d=>d.status!=='awaiting_confirmation'&&d.effective_status!=='cancelled').map(d=>d.lender_id);
+  const borrowedNameMap=await fetchProfileNames(borrowedLenderIds);
+  (borrowed||[]).filter(d=>d.status!=='awaiting_confirmation'&&d.effective_status!=='cancelled').forEach(row=>{
+    let local=localDebts.find(x=>String(x.sharedDebtId)===String(row.id));
+    if(!local){
+      local={name:borrowedNameMap?.[row.lender_id]||row.reason||'Money received',amount:Number(row.amount),type:'debt',ts:new Date(row.created_at).getTime(),cleared:row.effective_status==='paid',dueDate:row.due_date||null,repaid:Math.max(0,Number(row.amount)-Number(row.remaining||0)),repayLog:[],sharedDebtId:row.id,sharedUserId:row.lender_id};
+      localDebts.push(local);localChanged=true;
+    }else{
+      const nextRepaid=Math.max(0,Number(row.amount)-Number(row.remaining||0));
+      if(local.amount!==Number(row.amount)||local.repaid!==nextRepaid||local.cleared!==(row.effective_status==='paid')){local.amount=Number(row.amount);local.repaid=nextRepaid;local.cleared=row.effective_status==='paid';localChanged=true;}
+      if(row.due_date&&local.dueDate!==row.due_date){local.dueDate=row.due_date;localChanged=true;}
+    }
+  });
+  if(localChanged){saveDebts(localDebts);renderDebtPage();renderHome();}
+
   const activeLent=(lent||[]).filter(d=>d.effective_status!=='cancelled'&&d.status!=='awaiting_confirmation');
   const activeBorrowed=(borrowed||[]).filter(d=>d.effective_status!=='cancelled'&&d.status!=='awaiting_confirmation');
   const owedToMe=activeLent.reduce((s,d)=>s+Number(d.remaining),0);
@@ -6532,8 +6578,14 @@ async function confirmIncomingSharedDebt(debtId){
     const senderNames=await fetchProfileNames([row.lender_id]);
     const userId=await resolveSupabaseUserId();
     const debts=getDebts();
-    if(!debts.some(d=>String(d.sharedDebtId)===String(row.id))){
-      debts.push({name:senderNames?.[row.lender_id]||row.reason||'Money received',amount:Number(row.amount),type:'debt',ts:new Date(row.created_at).getTime(),cleared:false,dueDate:row.due_date||null,repaid:0,sharedDebtId:row.id,sharedUserId:row.lender_id});
+    const existing=debts.find(d=>String(d.sharedDebtId)===String(row.id));
+    if(existing){
+      existing.name=senderNames?.[row.lender_id]||existing.name||row.reason||'Money received';
+      existing.amount=Number(row.amount); existing.type='debt'; existing.cleared=false;
+      existing.dueDate=row.due_date||existing.dueDate||null; existing.sharedUserId=row.lender_id;
+      saveDebts(debts);
+    }else{
+      debts.push({name:senderNames?.[row.lender_id]||row.reason||'Money received',amount:Number(row.amount),type:'debt',ts:new Date(row.created_at).getTime(),cleared:false,dueDate:row.due_date||null,repaid:0,repayLog:[],sharedDebtId:row.id,sharedUserId:row.lender_id});
       saveDebts(debts);
     }
   }
@@ -6951,8 +7003,14 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       sb.from('festivals').select('*').eq('is_active',true).order('priority',{ascending:true}).order('festival_date',{ascending:true}),
       sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true})
     ]);
-    const festivals=festivalRes.data||[];
-    const ads=adRes.data||[];
+    const today=new Date(); today.setHours(0,0,0,0);
+    const dayKey=today.toISOString().slice(0,10);
+    const festivals=(festivalRes.data||[]).filter(f=>!f.festival_date||String(f.festival_date).slice(0,10)>=dayKey);
+    const ads=(adRes.data||[]).filter(a=>{
+      const start=a.start_date?String(a.start_date).slice(0,10):null;
+      const end=a.end_date?String(a.end_date).slice(0,10):null;
+      return (!start||start<=dayKey)&&(!end||end>=dayKey);
+    });
     pvCurrentFestival=pvPickFestival(festivals);
     await Promise.all([pvRenderPriority(festivals,ads),pvRenderBirthdays(),pvRenderFestivals(festivals),pvRenderAds(ads)]);
     if(await pvIsAdmin()) await pvRenderAdmin(ads);
