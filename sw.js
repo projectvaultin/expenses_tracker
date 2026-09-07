@@ -5,7 +5,7 @@
 // Navigation requests are always network-first so GitHub Pages updates
 // become visible without users remaining permanently stuck on old HTML.
 
-const CACHE_NAME = 'expensestracker-cache-v8';
+const CACHE_NAME = 'expensestracker-cache-v10';
 
 const FILES_TO_CACHE = [
   './index.html',
@@ -85,3 +85,5 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('message', (event) => { if (event.data?.type === 'PV_REFRESH_CACHE') { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))); } });

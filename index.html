@@ -326,6 +326,10 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .pv-fd-status-inline{position:absolute;left:6px;bottom:2px;z-index:6;font-size:7px;color:rgba(255,255,255,.6);display:none}
 .pv-fd-btn{backdrop-filter:blur(8px)}
 @media(min-width:701px){#pv-full-display{height:180px}}
+
+.pv-ad-frame{width:100%;aspect-ratio:3.2/1;min-height:120px;max-height:260px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(255,179,0,.10));display:flex;align-items:center;justify-content:center;position:relative}.pv-ad-frame img,.pv-ad-frame video{width:100%;height:100%;object-fit:cover;display:block}.pv-notif-row{display:flex;gap:12px;padding:15px;border-bottom:1px solid var(--border);cursor:pointer}.pv-notif-row.unread{background:linear-gradient(90deg,rgba(108,99,255,.10),transparent)}.pv-notif-icon{width:40px;height:40px;border-radius:13px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}.pv-unread-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:7px;flex:none}.notif-filter.active{background:var(--accent);color:#fff}
+@media(max-width:700px){.topbar{padding:10px 10px}.tb-right .pill-btn{font-size:10px;padding:6px 8px}.cloud-status-pill{display:none}.page{padding:10px 10px 82px}.card{border-radius:16px;padding:14px}.hero{padding:20px 14px}.dp-grid{gap:8px}.dp-card{padding:12px 10px}.dp-amt{font-size:20px}.tabs .tab{min-width:0}.tab-label{font-size:9px}.tabs svg{width:20px;height:20px}.pv-ad-frame{aspect-ratio:1.7/1;min-height:150px}.pv-fd-stage{padding:0 28px 0 6px}.pv-fd-title{font-size:13px}.pv-fd-sub{font-size:10px}.section-head{gap:8px;flex-wrap:wrap}}
+@media(min-width:701px){#app-screen{max-width:1180px;margin:0 auto}.page{max-width:1050px;margin:0 auto;padding-left:24px;padding-right:24px}.pv-ad-frame{aspect-ratio:3.2/1}}
 </style>
 <!-- EmailJS — used to actually send monthly statement + password-reset OTP emails from the browser. -->
 <!-- Setup (one-time, ~5 min): 1) Create a free account at https://www.emailjs.com  -->
@@ -515,6 +519,18 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
       </div>
       <span style="color:var(--muted);font-size:16px">✕</span>
+    </div>
+    <div class="card pv-quick-guide" style="background:linear-gradient(135deg,rgba(108,99,255,.10),rgba(0,208,132,.06));border-color:rgba(108,99,255,.25)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">📖</span><div style="flex:1"><div class="card-title" style="margin:0">How to Use</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Quick guide to expenses, debts, sync and reports</div></div><button class="pill-btn" onclick="openHowToUse()">Open Guide</button></div>
+    </div>
+    <div class="card pv-home-sponsored-card" id="pv-home-sponsored-card" style="display:none;padding:14px;border-color:rgba(255,179,0,.28)">
+      <div class="card-title">📢 Advertisement</div>
+      <div class="pv-ad-frame" id="pv-home-sponsored-stage"></div>
+      <div id="pv-home-sponsored-meta" style="font-size:11px;color:var(--muted);margin-top:7px"></div>
+      <button class="pill-btn" style="margin-top:8px;width:100%;background:var(--surface2);color:var(--text)" onclick="openEventsMediaModal()">View event & sponsored media</button>
+    </div>
+    <div class="card pv-filter-strip">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div><div class="card-title" style="margin:0">🔎 Filter</div><div style="font-size:11px;color:var(--muted);margin-top:2px" id="home-filter-label">Showing all months</div></div><button class="pill-btn" onclick="showMonthPicker()">Change</button></div>
     </div>
     <div class="card" id="pv-notifications-card" style="display:none;border-color:rgba(108,99,255,.3)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:21px">🔔</span><div style="font-weight:800;font-size:14px">Notifications</div></div>
@@ -719,6 +735,20 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card"><div id="history-list"></div></div>
   </div>
 
+  <!-- NOTIFICATIONS CENTER -->
+  <div id="page-notifications" class="page">
+    <div class="card" style="background:linear-gradient(135deg,rgba(108,99,255,.14),rgba(0,208,132,.06));border-color:rgba(108,99,255,.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><div class="card-title" style="margin-bottom:3px">🔔 Notification Center</div><div style="font-size:11px;color:var(--muted)">Everything important in one place.</div></div><button class="pill-btn" onclick="pvMarkAllNotificationsRead()">✓ Read all</button></div>
+    </div>
+    <div style="display:flex;gap:7px;overflow-x:auto;margin-bottom:12px">
+      <button class="pill-btn notif-filter active" data-nfilter="all" onclick="pvSetNotificationFilter('all')">All</button>
+      <button class="pill-btn notif-filter" data-nfilter="debt" onclick="pvSetNotificationFilter('debt')">🤝 Debts</button>
+      <button class="pill-btn notif-filter" data-nfilter="announcement" onclick="pvSetNotificationFilter('announcement')">📢 Announcements</button>
+      <button class="pill-btn notif-filter" data-nfilter="update" onclick="pvSetNotificationFilter('update')">✨ Updates</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden"><div id="pv-notifications-inbox"></div></div>
+  </div>
+
   <!-- DEBT / MONEY WITH USERS — merged into one section -->
   <div id="page-debt" class="page">
     <div class="card">
@@ -818,7 +848,7 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
     <div class="card">
       <div class="card-title">📧 Monthly Email Statement</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
-        A summary of last month's income, expenses, and your average spend for the month &amp; year is emailed to your registered address automatically the next time you open the app after month-end.
+        A summary of last month's income, expenses, and your average spend for the month &amp; year is emailed to your registered address automatically for the previous month on the first monthly processing run. Duplicate sends are blocked per user/month.
         <span id="emailjs-status-note"></span>
       </div>
       <button class="save-btn" style="background:var(--surface2);color:var(--text)" onclick="sendTestStatementNow()">📤 Send Last Month's Statement Now</button>
@@ -840,6 +870,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <div id="install-card-installed" style="display:none;font-size:13px;color:var(--green);font-weight:600;align-items:center;gap:8px">
         ✅ Already installed on this device
       </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧹 App Cache & Updates</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">ProjectVault automatically removes old application caches when a new version is detected while preserving financial data and unsynced entries.</div>
+      <button class="exp-btn" onclick="pvRefreshAppCache()"><span style="font-size:20px">🔄</span><div><div>Refresh ProjectVault</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Load the latest app files safely</div></div></button>
     </div>
     <div class="card">
       <div class="card-title">🎯 Monthly Budget Limit</div>
@@ -1072,6 +1107,11 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span class="tab-label">History</span>
     </div>
+    <div class="tab" onclick="switchTab('notifications',this)" role="tab" aria-selected="false" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+      <span id="notifications-tab-badge" class="tab-badge" style="display:none"></span>
+      <span class="tab-label">Alerts</span>
+    </div>
     <div class="tab" onclick="switchTab('debt',this)" role="tab" aria-selected="false" aria-label="Debts">
       <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       <span class="tab-label">Debts</span>
@@ -1218,11 +1258,9 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
       <button class="pill-btn" style="margin-top:10px;width:100%;background:var(--accent);color:#fff" onclick="openEventsMediaModal()">🎉 Open Events & Media</button>
     </div>
 
-    <div class="card pv-home-sponsored-card" id="pv-home-sponsored-card" style="display:none;padding:14px;border-color:rgba(255,179,0,.28)">
-      <div class="card-title">📢 Sponsored Media</div>
-      <div id="pv-home-sponsored-stage" style="margin-top:8px;border-radius:14px;overflow:hidden;background:var(--surface2);"></div>
-      <div id="pv-home-sponsored-meta" style="font-size:11px;color:var(--muted);margin-top:7px"></div>
-      <button class="pill-btn" style="margin-top:8px;width:100%;background:var(--surface2);color:var(--text)" onclick="openEventsMediaModal()">View all sponsored media</button>
+    <div class="card" style="padding:14px">
+      <div class="card-title">📢 Sponsored Media Preview</div>
+      <div id="pv-modal-sponsored-preview" style="margin-top:8px"></div>
     </div>
 
     <div class="card" style="padding:14px">
@@ -1763,7 +1801,7 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 const COLORS=['#6c63ff','#ff6584','#00d084','#ffb300','#00bcd4','#e91e63','#ff9800','#4caf50','#9c27b0','#f44336','#2196f3','#ff5722'];
 const EMOJIS={Rent:'🏠',Travel:'✈️',Food:'🍔',Medical:'💊',Debt:'💳',Savings:'🐷',Salary:'💰',Other:'📦'};
 const DEFAULT_CATS=['Salary','Rent','Travel','Food','Medical','Debt','Savings','Other'];
-const APP_VERSION='3.0';
+const APP_VERSION='4.0.0';
 
 // ── ERROR LOGS (Admin Panel) — captures runtime errors on this device so an admin can review
 // what's actually going wrong for users, instead of relying on people accurately describing bugs.
@@ -3024,6 +3062,33 @@ if(supportCard){
   setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
 }
 
+// ── NOTIFICATION CENTER ──
+let _pvNotificationFilter='all';
+let _pvNotificationCache=[];
+function pvNotificationIcon(kind){return kind==='debt'?'🤝':kind==='announcement'?'📢':kind==='update'?'✨':'🔔';}
+function pvNotificationKind(n){const k=String(n.kind||'').toLowerCase(); if(k.includes('debt')||k.includes('payment'))return 'debt'; if(k.includes('announcement'))return 'announcement'; if(k.includes('update')||k.includes('admin'))return 'update'; return 'all';}
+async function pvLoadNotificationCenter(){
+  const uid=await pvGetAuthId(); if(!uid)return [];
+  const now=new Date().toISOString();
+  const [nr,ar]=await Promise.all([
+    sb.from('pv_notifications').select('*').eq('active',true).lte('scheduled_at',now).order('created_at',{ascending:false}).limit(100),
+    sb.from('announcements').select('*').order('created_at',{ascending:false}).limit(100)
+  ]);
+  const notes=(nr.data||[]).map(n=>({...n,source:'notification',read:false,kind:pvNotificationKind(n)}));
+  const anns=(ar.data||[]).map(a=>({id:'ann-'+a.id,title:'📢 Announcement',body:a.text,created_at:a.created_at,kind:'announcement',source:'announcement',announcement_id:a.id,read:false}));
+  const all=[...notes,...anns].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const ids=notes.map(n=>n.id);
+  if(ids.length){const {data:r}=await sb.from('pv_notification_receipts').select('notification_id,read_at').eq('user_id',uid).in('notification_id',ids);const rm=new Map((r||[]).map(x=>[String(x.notification_id),x]));notes.forEach(n=>{n.read=!!rm.get(String(n.id))?.read_at;});}
+  const aid=anns.map(a=>Number(a.announcement_id)).filter(Number.isFinite);
+  if(aid.length){const {data:r}=await sb.from('announcement_view_receipts').select('announcement_id,viewed_at').eq('user_id',uid).in('announcement_id',aid);const rm=new Map((r||[]).map(x=>[String(x.announcement_id),x]));anns.forEach(a=>{a.read=!!rm.get(String(a.announcement_id))?.viewed_at;});}
+  _pvNotificationCache=all; return all;
+}
+async function pvRenderNotificationCenter(){const el=document.getElementById('pv-notifications-inbox');if(!el)return;el.innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Loading notifications…</p></div>';const all=await pvLoadNotificationCenter();const rows=_pvNotificationFilter==='all'?all:all.filter(n=>pvNotificationKind(n)===_pvNotificationFilter);if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔕</div><p>No notifications here.</p></div>';return;}el.innerHTML=rows.map(n=>`<div class="pv-notif-row ${n.read?'read':'unread'}" onclick="pvOpenNotification('${escJsAttr(String(n.id))}','${escJsAttr(n.source)}','${escJsAttr(String(n.announcement_id||''))}')"><div class="pv-notif-icon">${pvNotificationIcon(pvNotificationKind(n))}</div><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px">${escHtml(n.title)}</div><div style="font-size:12px;color:var(--muted);line-height:1.45;margin-top:3px">${escHtml(n.body)}</div><div style="font-size:10px;color:var(--muted);margin-top:5px">${new Date(n.created_at).toLocaleString('en-IN')}</div></div>${n.read?'':'<span class="pv-unread-dot"></span>'}</div>`).join('');await pvUpdateNotificationBadge();}
+function pvSetNotificationFilter(f){_pvNotificationFilter=f;document.querySelectorAll('.notif-filter').forEach(b=>{b.classList.toggle('active',b.dataset.nfilter===f);});pvRenderNotificationCenter();}
+async function pvOpenNotification(id,source,announcementId){const uid=await pvGetAuthId();if(!uid)return;if(source==='announcement'&&announcementId){await recordAnnouncementViewed(announcementId);}else if(id&&!String(id).startsWith('ann-')){await sb.from('pv_notification_receipts').upsert({notification_id:id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'notification_id,user_id'});}await pvRenderNotificationCenter();}
+async function pvMarkAllNotificationsRead(){const uid=await pvGetAuthId();if(!uid)return;const notes=await pvLoadNotificationCenter();for(const n of notes){if(n.read)continue;if(n.source==='announcement'&&n.announcement_id)await recordAnnouncementViewed(n.announcement_id);else if(n.id)await sb.from('pv_notification_receipts').upsert({notification_id:n.id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'notification_id,user_id'});}await pvRenderNotificationCenter();showToast('✓ All notifications marked read');}
+async function pvUpdateNotificationBadge(){const notes=await pvLoadNotificationCenter();const unread=notes.filter(n=>!n.read).length;const b=document.getElementById('notifications-tab-badge');if(b){b.textContent=unread>99?'99+':String(unread);b.style.display=unread?'inline-flex':'none';}const home=document.getElementById('pv-notifications-card');if(home){const top=notes.filter(n=>!n.read).slice(0,3);home.style.display=top.length?'block':'none';const list=document.getElementById('pv-notifications-list');if(list)list.innerHTML=top.map(n=>`<div style="padding:9px 0;border-top:1px solid var(--border)"><b>${pvNotificationIcon(pvNotificationKind(n))} ${escHtml(n.title)}</b><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(n.body)}</div></div>`).join('');}}
+
 // ── TABS ──
 function switchTab(name,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -3036,6 +3101,7 @@ function switchTab(name,el){
   if(name==='history')renderHistory();
   if(name==='debt'){renderDebtPage();if(typeof loadMoneySummary==='function')loadMoneySummary();}
   if(name==='manage')renderManage();
+  if(name==='notifications')pvRenderNotificationCenter();
 }
 
 // ── HOW TO USE GUIDE ──
@@ -3214,11 +3280,27 @@ function renderUpcomingWeek(){
     </div>`;
   }).join('');
 }
+async function pvApplySharedNetBalance(baseNet){
+  try{
+    const uid=await resolveSupabaseUserId(); if(!uid)return;
+    const [{data:lent},{data:borrowed}]=await Promise.all([
+      sb.from('shared_debts_with_computed_status').select('remaining,effective_status,status').eq('lender_id',uid),
+      sb.from('shared_debts_with_computed_status').select('remaining,effective_status,status').eq('borrower_id',uid)
+    ]);
+    const owedToMe=(lent||[]).filter(d=>d.status!=='awaiting_confirmation'&&d.effective_status!=='cancelled').reduce((a,d)=>a+Number(d.remaining||0),0);
+    const iOwe=(borrowed||[]).filter(d=>d.status!=='awaiting_confirmation'&&d.effective_status!=='cancelled').reduce((a,d)=>a+Number(d.remaining||0),0);
+    const adjusted=baseNet+owedToMe-iOwe;
+    const el=document.getElementById('grand-total'); if(!el)return;
+    animateNet(el,adjusted); el.style.color=adjusted<0?'var(--red)':adjusted>0?'var(--green)':'var(--text)';
+    const period=document.getElementById('total-period'); if(period)period.textContent=filterMonth==='All'?'Income − Expenses + Active Shared Money':filterMonth+' + active shared money';
+  }catch(e){console.warn('shared net balance update failed',e);}
+}
 function renderHome(){
   maybeShowNotifPrompt();
   checkForAppUpdates();
   checkAnnouncement();
   checkUnreadReplies();
+  pvUpdateNotificationBadge();
   const data=getData();
   const filtered=filterMonth==='All'?data:data.filter(e=>e.month===filterMonth);
   const income=filtered.filter(e=>e.type==='income');
@@ -3230,6 +3312,8 @@ function renderHome(){
   animateNet(netEl,net);
   netEl.style.color=net<0?'var(--red)':net>0?'var(--green)':'var(--text)';
   document.getElementById('total-period').textContent=filterMonth==='All'?'All time':filterMonth+' net balance';
+  pvApplySharedNetBalance(net);
+  const hfl=document.getElementById('home-filter-label'); if(hfl)hfl.textContent=filterMonth==='All'?'Showing all months':'Showing '+filterMonth;
   animateAmount(document.getElementById('home-income'),incomeAmt);
   document.getElementById('home-income-c').textContent=income.length+' entr'+(income.length===1?'y':'ies');
   animateAmount(document.getElementById('home-expense'),expenseAmt);
@@ -6019,6 +6103,15 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{/* offline/file:// — ignore */});
   });
+}
+
+async function pvRefreshAppCache(){
+  try{
+    if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k!=='expensestracker-cache-v10').map(k=>caches.delete(k)));}
+    if(navigator.serviceWorker?.controller){navigator.serviceWorker.controller.postMessage({type:'PV_REFRESH_CACHE'});}
+    showToast('🔄 Refreshing ProjectVault…');
+    setTimeout(()=>location.reload(),350);
+  }catch(e){console.warn('cache refresh failed',e);location.reload();}
 }
 
 // ── INIT ──
