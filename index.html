@@ -2710,10 +2710,17 @@ async function doSignup(){
   // sent anywhere now. The public.users profile row is created server-side by the
   // handle_new_auth_user trigger (already deployed per the DB audit), seeded from the
   // metadata passed in `options.data` below.
+  // Always return the confirmation link to the actual ProjectVault app URL.
+  // This prevents Supabase email confirmation from redirecting to an old/non-existent
+  // path (which previously produced a 404 after the account was confirmed).
+  const projectVaultRedirect = window.location.origin + window.location.pathname;
   const { data: signUpData, error: signUpError } = await sb.auth.signUp({
     email,
     password: p,
-    options: { data: { username: u, name, mobile: mobile || null } }
+    options: {
+      emailRedirectTo: projectVaultRedirect,
+      data: { username: u, name, mobile: mobile || null }
+    }
   });
 
   if (signUpError) {
