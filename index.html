@@ -341,12 +341,9 @@ pv-signup-art .pv-bag{}
 .pv-hi-tech-notif>span svg{position:absolute;inset:0;width:100%;height:100%;}
 @media(max-width:560px){.pv-hi-tech-notif-wrap{padding:9px 12px}.pv-hi-tech-notif{width:58px!important;height:58px!important}.pv-hi-tech-notif>i>svg{width:31px;height:31px}.pv-hi-tech-notif>span{width:25px;height:25px;top:-3px;right:-4px}}
 .notif-banner{background:linear-gradient(135deg,rgba(255,179,0,.12),rgba(108,99,255,.1));border:1px solid rgba(255,179,0,.3);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;cursor:pointer;}
-.pv-home-sponsored-card{background:linear-gradient(135deg,rgba(255,179,0,.08),rgba(108,99,255,.05));}
-.pv-home-sponsored-card img,.pv-home-sponsored-card video{display:block;width:100%;max-height:220px;object-fit:cover;background:#111;}
-.pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 .pv-display-top-btn{display:none!important}
-#pv-full-display{position:relative;width:100%;height:180px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
+#pv-full-display{position:relative;width:100%;height:180px;display:none;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
 .pv-fd-bg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(108,99,255,.15),rgba(0,208,132,.08),rgba(255,179,0,.10)),#05060a}
 .pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 34px 0 8px;box-sizing:border-box;overflow:hidden}
 .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -388,6 +385,7 @@ pv-signup-art .pv-bag{}
 <style id="projectvault-final-ui-fix">
 /* FINAL UI FIX: robot login + compact notification + interactive signup */
 .pv-robot-login{padding:2px 0 0}.pv-robot-stage{height:150px;display:flex;justify-content:center;align-items:flex-end;position:relative}.pv-robot{position:relative;animation:pvFloat 3s ease-in-out infinite}.pv-robot-antenna{position:absolute;left:50%;top:-22px;transform:translateX(-50%);height:25px}.pv-robot-antenna:before{content:"";display:block;width:3px;height:17px;background:#23252d;margin:auto}.pv-robot-antenna span{display:block;width:12px;height:12px;border-radius:50%;background:#ff6b4b;border:2px solid #23252d;position:absolute;top:-3px;left:-4px;box-shadow:0 0 12px rgba(255,107,75,.55);animation:pvBob 1.8s ease-in-out infinite}.pv-robot-head{width:126px;height:112px;background:#fffdf8;border:3px solid #23252d;border-radius:28px;position:relative;box-shadow:7px 8px 0 rgba(35,37,45,.14);transition:.35s cubic-bezier(.5,-.3,.25,1.35)}.pv-robot-ear{position:absolute;top:39px;width:13px;height:31px;background:#fffdf8;border:3px solid #23252d;border-radius:8px}.pv-robot-ear.l{left:-10px}.pv-robot-ear.r{right:-10px}.pv-robot-visor{position:absolute;inset:18px 14px 16px;background:#23252d;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}.pv-robot-eyes{display:flex;gap:25px;transition:.2s}.pv-robot-eyes i{width:15px;height:21px;border-radius:8px;background:#fffdf8;display:block;transition:.2s}.pv-robot-visor b{width:23px;height:6px;background:#fffdf8;border-radius:0 0 12px 12px}.pv-robot-bubble{position:absolute;left:50%;bottom:119px;transform:translateX(-50%);background:#fffdf8;color:#23252d;border:2px solid #23252d;border-radius:13px;padding:8px 11px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:3px 4px 0 rgba(35,37,45,.12);transition:.25s;z-index:2}.pv-robot-card{position:relative;margin:-4px auto 0;padding:20px 18px 17px;max-width:350px;background:#fffdf8;border:2px solid #23252d;border-radius:22px;box-shadow:8px 9px 0 rgba(35,37,45,.12)}.pv-robot-card h2{font-size:18px;text-align:center;color:#23252d;margin:0}.pv-robot-sub{text-align:center;color:#77736b;font-size:11px;margin:5px 0 15px}.pv-robot-field{display:flex;align-items:center;gap:8px;background:#faf7f0;border:2px solid #23252d;border-radius:13px;padding:0 10px;margin:9px 0;transition:.22s;box-shadow:0 2px 0 rgba(35,37,45,.06)}.pv-robot-field:focus-within{transform:translateY(-2px);box-shadow:0 5px 0 rgba(35,37,45,.10);border-color:#ff6b4b}.pv-robot-field>span{font-size:16px}.pv-robot-field input{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;width:100%;margin:0!important;color:#23252d!important}.pv-robot-field button{border:0;background:none;font-size:15px;cursor:pointer;color:#777;transition:.2s}.pv-robot-field button:hover{color:#ff6b4b;transform:scale(1.15)}.pv-robot-btn{width:100%;border:2px solid #23252d;border-radius:13px;background:#ff6b4b;color:#fff;padding:12px 14px;font:800 13px 'Sora','Segoe UI',sans-serif;cursor:pointer;box-shadow:4px 5px 0 #23252d;transition:.18s cubic-bezier(.2,.8,.2,1);margin-top:8px}.pv-robot-btn:hover{background:#ff7e62;transform:translate(-2px,-2px);box-shadow:6px 7px 0 #23252d}.pv-robot-btn:active{transform:translate(2px,3px);box-shadow:2px 2px 0 #23252d}.pv-robot-btn span{display:inline-block;transition:.2s}.pv-robot-btn:hover span{transform:rotate(12deg) scale(1.2)}.pv-robot-forgot{text-align:center;margin-top:11px}.pv-robot-forgot span{font-size:12px;color:#6c63ff;font-weight:700;cursor:pointer}.pv-robot-forgot span:hover{text-decoration:underline}.pv-robot-login .auth-err{color:#e5532f}.pv-robot-login:has(#lerr:not(:empty)) .pv-robot-head{animation:pvShake .4s ease}.pv-robot-login:focus-within .pv-robot-bubble{transform:translateX(-50%) translateY(-2px)}
+.pv-lock-robot .pv-robot-stage{height:150px}.pv-lock-robot .pv-robot-card{max-width:390px}.pv-lock-robot .bio-btn{width:100%;border:1px solid var(--border);border-radius:13px;background:var(--surface2);color:var(--text);padding:10px;cursor:pointer}.pv-lock-robot .bio-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(108,99,255,.15)}
 .pv-robot-login input:hover{background:rgba(255,255,255,.55)!important}.pv-robot-login .ai::placeholder{color:#9a948a}.pv-robot-login .pv-robot-stage{pointer-events:none}.pv-visme-signup{position:relative}.pv-signup-card{overflow:visible}.pv-signup-intro{transition:.25s;box-shadow:0 5px 18px rgba(108,99,255,.06)}.pv-signup-intro:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(108,99,255,.13)}.pv-signup-btn{transition:.2s!important}.pv-signup-btn:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 18px rgba(108,99,255,.25)}.pv-signup-btn:active{transform:translateY(1px)}.pv-signup-btn span{display:inline-block;transition:.2s}.pv-signup-btn:hover span{transform:rotate(15deg) scale(1.2)}.pv-visme-signup .ai{transition:.2s!important}.pv-visme-signup .ai:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.12)!important}.pv-visme-signup .ai:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(108,99,255,.12)!important;border-color:var(--accent)!important}.pv-visme-signup .fl{transition:.2s}.pv-visme-signup .fl:hover .fl-label{color:var(--accent)}
 .pv-top-notif{position:relative;width:36px;height:36px;min-width:36px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:var(--chip-shadow);padding:0}.pv-top-notif:hover{transform:translateY(-2px) scale(1.05);border-color:#6c63ff;box-shadow:0 6px 16px rgba(108,99,255,.2)}.pv-top-notif:active{transform:scale(.94)}.pv-top-notif-bell{font-size:17px;line-height:1;transition:.2s}.pv-top-notif:hover .pv-top-notif-bell{animation:pvBell .55s ease-in-out}.pv-top-notif-count{position:absolute;right:-6px;top:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:#ff4d67;color:#fff;border:2px solid var(--topbar-bg);font:800 9px/13px 'DM Sans',sans-serif;text-align:center}.pv-top-notif-count:empty{display:none}@keyframes pvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes pvBob{50%{transform:translateY(-3px)}}@keyframes pvBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}@keyframes pvShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
 @media(max-width:620px){.tb-right{gap:6px}.cloud-status-pill{max-width:90px}.pv-top-notif{width:33px;height:33px;min-width:33px}.pv-top-notif-bell{font-size:15px}.pv-robot-stage{height:138px}.pv-robot-head{transform:scale(.92)}.pv-robot-bubble{font-size:9px;bottom:111px}.pv-robot-card{padding:18px 14px}.pv-robot-card h2{font-size:16px}}
@@ -422,21 +420,24 @@ pv-signup-art .pv-bag{}
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
   <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
-  <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
-    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
-    <div class="fl">
-      <div class="fl-label">Password</div>
-      <input aria-label="Password" class="ai" id="lock-pw" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-sub" id="lock-subtitle">Welcome back — unlock your ProjectVault</div>
+  <div class="pv-robot-login pv-lock-robot" style="width:100%;max-width:390px;">
+    <div class="pv-robot-stage">
+      <div class="pv-robot" aria-hidden="true">
+        <div class="pv-robot-antenna"><span></span></div>
+        <div class="pv-robot-head"><div class="pv-robot-ear l"></div><div class="pv-robot-ear r"></div><div class="pv-robot-visor"><div class="pv-robot-eyes"><i></i><i></i></div><b></b></div></div>
+        <div class="pv-robot-bubble">Welcome back. One more password check.</div>
+      </div>
     </div>
-    <button class="auth-btn" onclick="doUnlock()">Unlock →</button>
-    <div class="auth-err" id="lock-err"></div>
-    <button class="bio-btn" id="bio-btn" onclick="doBiometric()" style="margin-top:10px">
-      <span style="font-size:20px">🔐</span> Use Fingerprint / Face ID
-    </button>
-    <div style="text-align:center;margin-top:14px;">
-      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
+    <div class="pv-robot-card">
+      <h2 id="lock-user-display">Welcome back</h2>
+      <p class="pv-robot-sub">Verify your password to continue.</p>
+      <label class="pv-robot-field"><span>🔒</span><input aria-label="Password" class="ai" id="lock-pw" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doUnlock();}"/></label>
+      <button class="pv-robot-btn" type="button" onclick="doUnlock()"><span>🔓</span> UNLOCK PROJECTVAULT</button>
+      <div class="auth-err" id="lock-err"></div>
+      <button class="bio-btn" id="bio-btn" onclick="doBiometric()" style="margin-top:10px"><span style="font-size:18px">🔐</span> Use Fingerprint / Face ID</button>
+      <div class="pv-robot-forgot"><span onclick="doLogout()">Not you? Switch account</span></div>
     </div>
   </div>
   <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
@@ -473,7 +474,7 @@ pv-signup-art .pv-bag{}
         <div class="auth-err" id="lerr"></div>
         <div class="pv-robot-forgot"><span onclick="showForgotPw()">Forgot Password?</span></div>
       </div>
-    </div>div>
+    </div>
     <!-- SIGNUP -->
     <div id="form-signup" class="pv-visme-signup" style="display:none">
       <div class="pv-signup-intro" aria-label="ProjectVault sign up introduction">
@@ -482,7 +483,7 @@ pv-signup-art .pv-bag{}
           <span class="pv-spark s1">✦</span><span class="pv-spark s2">✧</span><span class="pv-spark s3">•</span>
         </div>
         <div class="pv-signup-title">Create your ProjectVault</div>
-        <div class="pv-signup-copy">Create your account with the ProjectVault system — same real Supabase signup underneath.</div>
+        <div class="pv-signup-copy">Create your ProjectVault account and keep your finances organized in one secure place.</div>
       </div>
       <div class="av-wrap">
         <div class="av-box" id="av-box" onclick="document.getElementById('av-file').click()"><span id="av-ph">📷</span></div>
@@ -588,16 +589,6 @@ pv-signup-art .pv-bag{}
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
       </div>
       <span style="color:var(--muted);font-size:16px">✕</span>
-    </div>
-    <div class="card pv-home-sponsored-card" id="pv-home-sponsored-card" style="display:none;padding:14px;border-color:rgba(255,179,0,.28)">
-      <div class="card-title">📢 Advertisement</div>
-      <div class="pv-ad-frame" id="pv-home-sponsored-stage"></div>
-      <div id="pv-home-sponsored-meta" style="font-size:11px;color:var(--muted);margin-top:7px"></div>
-      <button class="pill-btn" style="margin-top:8px;width:100%;background:var(--surface2);color:var(--text)" onclick="openEventsMediaModal()">View event & sponsored media</button>
-    </div>
-    <div class="card" id="pv-notifications-card" style="display:none;border-color:rgba(108,99,255,.3)">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:21px">🔔</span><div style="font-weight:800;font-size:14px">Notifications</div></div>
-      <div id="pv-notifications-list"></div>
     </div>
     <div class="card" id="notif-prompt-card" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,208,132,.08));">
       <div style="display:flex;align-items:center;gap:10px">
@@ -3122,7 +3113,7 @@ if(supportCard){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   runCloudSyncAfterLogin();
-  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
+  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
 }
 
 function pvOpenNotificationCenterFromHome(){
@@ -3159,12 +3150,14 @@ async function pvUpdateNotificationBadge(){const notes=await pvLoadNotificationC
 
 // ── TABS ──
 function switchTab(name,el){
+  // Home-only automatic display: never leave the birthday/festival display visible on other pages.
+  if(typeof pvCloseDisplay==='function') pvCloseDisplay();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false');});
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
   el.setAttribute('aria-selected','true');
-  if(name==='home')renderHome();
+  if(name==='home'){renderHome();setTimeout(()=>{if(typeof pvOpenDisplay==='function')pvOpenDisplay();},250);}
   if(name==='add')renderAddForm();
   if(name==='history')renderHistory();
   if(name==='debt'){renderDebtPage();if(typeof loadMoneySummary==='function')loadMoneySummary();}
@@ -7209,13 +7202,9 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       title.textContent='📅 '+pvCurrentFestival.name;
       sub.textContent=(pvCurrentFestival.greeting||'Upcoming festival')+' · '+days+' day'+(days===1?'':'s')+' remaining';
       pvMediaItems=await pvLoadFestivalMedia(pvCurrentFestival.id);
-    }else if(ads.length){
-      title.textContent='📢 Sponsored media';
-      sub.textContent='Rotating media selected by campaign priority.';
-      pvMediaItems=await pvLoadCampaignMedia(ads);
     }else{
       title.textContent='✨ ProjectVault';
-      sub.textContent='No active event or sponsored media right now.';
+      sub.textContent='No active birthday or festival media right now.';
     }
     pvRenderStage();
   }
@@ -7402,17 +7391,7 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       return out;
     }catch(e){console.warn('[display] festival exception:',e);return []}
   }
-  async function loadAds(){
-    try{
-      const {data,error}=await sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true});
-      if(error)return [];
-      const now=new Date();const campaigns=(data||[]).filter(c=>{const st=c.start_date?new Date(c.start_date+'T00:00:00'):null,en=c.end_date?new Date(c.end_date+'T23:59:59'):null;return (!st||st<=now)&&(!en||en>=now)});
-      if(!campaigns.length)return [];
-      const {data:ms}=await sb.from('ad_media').select('*').in('campaign_id',campaigns.map(c=>c.id)).eq('is_active',true).order('sort_order',{ascending:true});
-      const names=Object.fromEntries(campaigns.map(c=>[String(c.id),c.name]));
-      return (ms||[]).map(m=>({kind:'ad',name:names[String(m.campaign_id)]||'Sponsored',media:m}));
-    }catch(e){console.warn('[display] ads exception:',e);return []}
-  }
+  async function loadAds(){ return []; }
   async function build(){
     const [bs,fs,ads]=await Promise.all([loadBirthdays(),loadFestivals(),loadAds()]);
     items=[...bs,...fs,...ads];
@@ -7440,10 +7419,12 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   async function next(){
     if(!started)return;
     if(!items.length)await build();
-    if(!items.length){const c=document.getElementById('pv-fd-content');if(c)c.innerHTML='<div class="pv-fd-card"><div class="pv-fd-copy" style="text-align:center"><div class="pv-fd-title">ProjectVault</div><div class="pv-fd-sub">No birthday, festival or active admin advertisement is scheduled right now.</div></div></div>';document.getElementById('pv-fd-status').textContent='Nothing scheduled right now';return;}
+    if(!items.length){const c=document.getElementById('pv-fd-content');if(c)c.innerHTML='<div class="pv-fd-card"><div class="pv-fd-copy" style="text-align:center"><div class="pv-fd-title">ProjectVault</div><div class="pv-fd-sub">No birthday or festival media is scheduled right now.</div></div></div>';document.getElementById('pv-fd-status').textContent='Nothing scheduled right now';return;}
     index=index%items.length;render(items[index++]);clearTimeout(timer);timer=setTimeout(next,DISPLAY_MS);
   }
   window.pvOpenDisplay=async function(){
+    const home=document.getElementById('page-home');
+    if(!home || !home.classList.contains('active')) return;
     const el=document.getElementById('pv-full-display');if(!el)return;el.style.display='block';el.setAttribute('aria-hidden','false');started=true;index=0;items=[];await build();await next();
   };
   window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.style.display='none';el.setAttribute('aria-hidden','true');}};
