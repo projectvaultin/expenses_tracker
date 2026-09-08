@@ -1,0 +1,76 @@
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,900");
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  background-color: #09334f;
+  position: relative;
+}
+
+#yetiSVG {
+  width: 600px;
+  height: 470px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+#lightSVG {
+  width: 600px;
+  height: 470px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
+.content {
+  padding: 5rem 3rem 0 25rem;
+  position: relative;
+  z-index: 10;
+  font-family: "Source Sans Pro", sans-serif;
+  color: #FFF;
+}
+
+.content h3 {
+  margin: 0 0 0.8rem;
+  font-size: 2.625rem;
+  font-weight: 900;
+  line-height: 120%;
+}
+
+.content p {
+  font-size: 1.25rem;
+  font-weight: normal;
+  line-height: 150%;
+  color: #d1e2ed;
+}
+
+.content p span {
+  text-decoration: line-through;
+}
+/* ProjectVault 404 additions */
+.pv-home {
+  display: inline-block;
+  margin-top: 1.4rem;
+  padding: .75rem 1.1rem;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  color: #fff;
+  background: #265D85;
+  text-decoration: none;
+  font-weight: 900;
+  transition: transform .18s ease, background .18s ease;
+}
+.pv-home:hover,
+.pv-home:focus-visible { transform: translateY(-2px); background: #67B1E0; }
+@media (max-width: 760px) {
+  #yetiSVG, #lightSVG { width: 100vw; height: auto; max-height: 72vh; }
+  .content { padding: min(70vh, 34rem) 1.5rem 2rem; text-align: center; }
+  .content h3 { font-size: 2rem; }
+  .content p { font-size: 1.05rem; }
+}
