@@ -66,21 +66,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .auth-logo span{color:var(--accent);}
 .auth-sub{color:var(--muted);font-size:14px;margin-bottom:32px;}
 .auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:26px 22px;}
-/* Visme-inspired signup experience: visual treatment only; native ProjectVault fields remain functional */
-.pv-signup-card{position:relative;overflow:hidden;}
-.pv-signup-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--accent),#ff7ab6,#7afcff);}
-.pv-signup-intro{position:relative;text-align:center;margin:-2px 0 18px;padding:14px 12px 12px;border-radius:18px;background:linear-gradient(145deg,rgba(108,99,255,.10),rgba(255,255,255,.02));border:1px solid var(--border);}
-.pv-signup-art{width:76px;height:58px;margin:0 auto 8px;position:relative;}
-.pv-signup-art .pv-bag{position:absolute;left:12px;right:12px;bottom:2px;height:42px;border:2px solid var(--accent);border-radius:10px 10px 14px 14px;background:var(--surface2);transform:rotate(-2deg);}
-pv-signup-art .pv-bag{}
-.pv-signup-art .pv-handle{position:absolute;left:28px;top:2px;width:22px;height:20px;border:2px solid var(--accent);border-bottom:0;border-radius:14px 14px 0 0;}
-.pv-signup-art .pv-spark{position:absolute;font-size:14px;color:var(--accent);animation:pvSignupFloat 2.2s ease-in-out infinite;}
-.pv-signup-art .s1{left:2px;top:13px}.pv-signup-art .s2{right:0;top:6px;animation-delay:.5s}.pv-signup-art .s3{right:10px;bottom:8px;font-size:10px;animation-delay:1s}
-.pv-signup-title{font-size:17px;font-weight:800;letter-spacing:-.2px;}
-.pv-signup-copy{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45;}
-@keyframes pvSignupFloat{0%,100%{transform:translateY(0) rotate(0deg);opacity:.75}50%{transform:translateY(-4px) rotate(8deg);opacity:1}}
-@media(max-width:420px){.pv-signup-intro{padding:12px 10px}.pv-signup-art{transform:scale(.92)}}
-
 .auth-tabs{display:flex;gap:0;margin-bottom:22px;background:var(--surface2);border-radius:12px;padding:4px;}
 .auth-tab{flex:1;text-align:center;padding:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);border-radius:10px;cursor:pointer;transition:all .2s;}
 .auth-tab.active{background:var(--accent);color:#fff;}
@@ -384,14 +369,6 @@ pv-signup-art .pv-bag{}
 .pv-event-pill{font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;background:rgba(108,99,255,.15);color:var(--accent)}
 .pv-admin-file{font-size:12px;color:var(--muted)}
 </style>
-
-<style id="projectvault-final-ui-fix">
-/* FINAL UI FIX: robot login + compact notification + interactive signup */
-.pv-robot-login{padding:2px 0 0}.pv-robot-stage{height:150px;display:flex;justify-content:center;align-items:flex-end;position:relative}.pv-robot{position:relative;animation:pvFloat 3s ease-in-out infinite}.pv-robot-antenna{position:absolute;left:50%;top:-22px;transform:translateX(-50%);height:25px}.pv-robot-antenna:before{content:"";display:block;width:3px;height:17px;background:#23252d;margin:auto}.pv-robot-antenna span{display:block;width:12px;height:12px;border-radius:50%;background:#ff6b4b;border:2px solid #23252d;position:absolute;top:-3px;left:-4px;box-shadow:0 0 12px rgba(255,107,75,.55);animation:pvBob 1.8s ease-in-out infinite}.pv-robot-head{width:126px;height:112px;background:#fffdf8;border:3px solid #23252d;border-radius:28px;position:relative;box-shadow:7px 8px 0 rgba(35,37,45,.14);transition:.35s cubic-bezier(.5,-.3,.25,1.35)}.pv-robot-ear{position:absolute;top:39px;width:13px;height:31px;background:#fffdf8;border:3px solid #23252d;border-radius:8px}.pv-robot-ear.l{left:-10px}.pv-robot-ear.r{right:-10px}.pv-robot-visor{position:absolute;inset:18px 14px 16px;background:#23252d;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}.pv-robot-eyes{display:flex;gap:25px;transition:.2s}.pv-robot-eyes i{width:15px;height:21px;border-radius:8px;background:#fffdf8;display:block;transition:.2s}.pv-robot-visor b{width:23px;height:6px;background:#fffdf8;border-radius:0 0 12px 12px}.pv-robot-bubble{position:absolute;left:50%;bottom:119px;transform:translateX(-50%);background:#fffdf8;color:#23252d;border:2px solid #23252d;border-radius:13px;padding:8px 11px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:3px 4px 0 rgba(35,37,45,.12);transition:.25s;z-index:2}.pv-robot-card{position:relative;margin:-4px auto 0;padding:20px 18px 17px;max-width:350px;background:#fffdf8;border:2px solid #23252d;border-radius:22px;box-shadow:8px 9px 0 rgba(35,37,45,.12)}.pv-robot-card h2{font-size:18px;text-align:center;color:#23252d;margin:0}.pv-robot-sub{text-align:center;color:#77736b;font-size:11px;margin:5px 0 15px}.pv-robot-field{display:flex;align-items:center;gap:8px;background:#faf7f0;border:2px solid #23252d;border-radius:13px;padding:0 10px;margin:9px 0;transition:.22s;box-shadow:0 2px 0 rgba(35,37,45,.06)}.pv-robot-field:focus-within{transform:translateY(-2px);box-shadow:0 5px 0 rgba(35,37,45,.10);border-color:#ff6b4b}.pv-robot-field>span{font-size:16px}.pv-robot-field input{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;width:100%;margin:0!important;color:#23252d!important}.pv-robot-field button{border:0;background:none;font-size:15px;cursor:pointer;color:#777;transition:.2s}.pv-robot-field button:hover{color:#ff6b4b;transform:scale(1.15)}.pv-robot-btn{width:100%;border:2px solid #23252d;border-radius:13px;background:#ff6b4b;color:#fff;padding:12px 14px;font:800 13px 'Sora','Segoe UI',sans-serif;cursor:pointer;box-shadow:4px 5px 0 #23252d;transition:.18s cubic-bezier(.2,.8,.2,1);margin-top:8px}.pv-robot-btn:hover{background:#ff7e62;transform:translate(-2px,-2px);box-shadow:6px 7px 0 #23252d}.pv-robot-btn:active{transform:translate(2px,3px);box-shadow:2px 2px 0 #23252d}.pv-robot-btn span{display:inline-block;transition:.2s}.pv-robot-btn:hover span{transform:rotate(12deg) scale(1.2)}.pv-robot-forgot{text-align:center;margin-top:11px}.pv-robot-forgot span{font-size:12px;color:#6c63ff;font-weight:700;cursor:pointer}.pv-robot-forgot span:hover{text-decoration:underline}.pv-robot-login .auth-err{color:#e5532f}.pv-robot-login:has(#lerr:not(:empty)) .pv-robot-head{animation:pvShake .4s ease}.pv-robot-login:focus-within .pv-robot-bubble{transform:translateX(-50%) translateY(-2px)}
-.pv-robot-login input:hover{background:rgba(255,255,255,.55)!important}.pv-robot-login .ai::placeholder{color:#9a948a}.pv-robot-login .pv-robot-stage{pointer-events:none}.pv-visme-signup{position:relative}.pv-signup-card{overflow:visible}.pv-signup-intro{transition:.25s;box-shadow:0 5px 18px rgba(108,99,255,.06)}.pv-signup-intro:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(108,99,255,.13)}.pv-signup-btn{transition:.2s!important}.pv-signup-btn:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 18px rgba(108,99,255,.25)}.pv-signup-btn:active{transform:translateY(1px)}.pv-signup-btn span{display:inline-block;transition:.2s}.pv-signup-btn:hover span{transform:rotate(15deg) scale(1.2)}.pv-visme-signup .ai{transition:.2s!important}.pv-visme-signup .ai:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.12)!important}.pv-visme-signup .ai:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(108,99,255,.12)!important;border-color:var(--accent)!important}.pv-visme-signup .fl{transition:.2s}.pv-visme-signup .fl:hover .fl-label{color:var(--accent)}
-.pv-top-notif{position:relative;width:36px;height:36px;min-width:36px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:var(--chip-shadow);padding:0}.pv-top-notif:hover{transform:translateY(-2px) scale(1.05);border-color:#6c63ff;box-shadow:0 6px 16px rgba(108,99,255,.2)}.pv-top-notif:active{transform:scale(.94)}.pv-top-notif-bell{font-size:17px;line-height:1;transition:.2s}.pv-top-notif:hover .pv-top-notif-bell{animation:pvBell .55s ease-in-out}.pv-top-notif-count{position:absolute;right:-6px;top:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:#ff4d67;color:#fff;border:2px solid var(--topbar-bg);font:800 9px/13px 'DM Sans',sans-serif;text-align:center}.pv-top-notif-count:empty{display:none}@keyframes pvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes pvBob{50%{transform:translateY(-3px)}}@keyframes pvBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}@keyframes pvShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
-@media(max-width:620px){.tb-right{gap:6px}.cloud-status-pill{max-width:90px}.pv-top-notif{width:33px;height:33px;min-width:33px}.pv-top-notif-bell{font-size:15px}.pv-robot-stage{height:138px}.pv-robot-head{transform:scale(.92)}.pv-robot-bubble{font-size:9px;bottom:111px}.pv-robot-card{padding:18px 14px}.pv-robot-card h2{font-size:16px}}
-</style>
 </head>
 <body>
 <!-- SPLASH INTRO SCREEN -->
@@ -447,43 +424,21 @@ pv-signup-art .pv-bag{}
   <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
   <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
-  <div class="auth-card pv-signup-card">
+  <div class="auth-card">
     <div class="auth-tabs">
       <div class="auth-tab active" id="atab-login" onclick="switchAuthTab('login')">Login</div>
       <div class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
     </div>
     <!-- LOGIN -->
-    <div id="form-login" class="pv-robot-login">
-      <div class="pv-robot-stage" id="pv-robot-stage">
-        <div class="pv-robot" id="pv-robot" data-mood="idle" aria-hidden="true">
-          <div class="pv-robot-antenna"><span></span></div>
-          <div class="pv-robot-head">
-            <div class="pv-robot-ear l"></div><div class="pv-robot-ear r"></div>
-            <div class="pv-robot-visor"><div class="pv-robot-eyes" id="pv-robot-eyes"><i></i><i></i></div><b></b></div>
-          </div>
-          <div class="pv-robot-bubble" id="pv-robot-bubble">Hi. I'm Volty. I guard this form.</div>
-        </div>
-      </div>
-      <div class="pv-robot-card" id="pv-robot-card">
-        <h2>Beep boop. Who goes there?</h2>
-        <p class="pv-robot-sub">Sign in securely to your ProjectVault account.</p>
-        <label class="pv-robot-field"><span>👤</span><input aria-label="Username or Email" class="ai" id="lu" type="text" placeholder="Username or email" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></label>
-        <label class="pv-robot-field"><span>🔒</span><input aria-label="Password" class="ai" id="lp" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/><button type="button" id="pv-robot-peek" aria-label="Show password">◉</button></label>
-        <button class="pv-robot-btn" id="pv-robot-login-btn" type="button" onclick="doLogin()"><span>⚡</span> LOG ME IN</button>
-        <div class="auth-err" id="lerr"></div>
-        <div class="pv-robot-forgot"><span onclick="showForgotPw()">Forgot Password?</span></div>
-      </div>
-    </div>div>
+    <div id="form-login">
+      <div class="fl"><div class="fl-label">Username</div><input aria-label="Username" class="ai" id="lu" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="lp" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Login →</button>
+      <div class="auth-err" id="lerr"></div>
+      <div style="text-align:center;margin-top:12px"><span style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600" onclick="showForgotPw()">Forgot Password?</span></div>
+    </div>
     <!-- SIGNUP -->
-    <div id="form-signup" class="pv-visme-signup" style="display:none">
-      <div class="pv-signup-intro" aria-label="ProjectVault sign up introduction">
-        <div class="pv-signup-art" aria-hidden="true">
-          <div class="pv-bag"></div><div class="pv-handle"></div>
-          <span class="pv-spark s1">✦</span><span class="pv-spark s2">✧</span><span class="pv-spark s3">•</span>
-        </div>
-        <div class="pv-signup-title">Create your ProjectVault</div>
-        <div class="pv-signup-copy">Create your account with the ProjectVault system — same real Supabase signup underneath.</div>
-      </div>
+    <div id="form-signup" style="display:none">
       <div class="av-wrap">
         <div class="av-box" id="av-box" onclick="document.getElementById('av-file').click()"><span id="av-ph">📷</span></div>
         <div class="av-hint">Tap to add profile photo</div>
@@ -494,7 +449,7 @@ pv-signup-art .pv-bag{}
       <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input aria-label="Email (Gmail) — for statements & OTP" class="ai" id="se" type="email" placeholder="you@gmail.com" autocomplete="email" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
       <div class="fl"><div class="fl-label">Mobile Number (for your records)</div><input aria-label="Mobile Number (for your records)" class="ai" id="sm" type="tel" placeholder="10-digit mobile number" maxlength="10" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
       <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="sp" type="password" placeholder="Min 4 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
-      <button class="auth-btn pv-signup-btn" id="signup-btn" onclick="doSignup()"><span>✨</span> Create Account →</button>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create Account →</button>
       <div class="auth-err" id="serr"></div>
     </div>
   </div>
@@ -516,9 +471,6 @@ pv-signup-art .pv-bag{}
     <div class="tb-right">
       <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
 <div class="pill-btn" onclick="openHowToUse()">❓ How to Use</div>
-<button type="button" class="pv-top-notif" id="pv-hi-tech-notif" onclick="pvOpenNotificationCenterFromHome()" aria-label="Open notifications" title="Notifications">
-  <span class="pv-top-notif-bell">🔔</span><span class="pv-top-notif-count" id="pv-hi-tech-notif-count">0</span>
-</button>
 <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
   </div>
@@ -589,11 +541,84 @@ pv-signup-art .pv-bag{}
       </div>
       <span style="color:var(--muted);font-size:16px">✕</span>
     </div>
+    <div class="card pv-quick-guide" style="background:linear-gradient(135deg,rgba(108,99,255,.10),rgba(0,208,132,.06));border-color:rgba(108,99,255,.25)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">📖</span><div style="flex:1"><div class="card-title" style="margin:0">How to Use</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Quick guide to expenses, debts, sync and reports</div></div><button class="pill-btn" onclick="openHowToUse()">Open Guide</button></div>
+    </div>
+    <div class="pv-hi-tech-notif-wrap" aria-label="Notifications">
+      <div class="pv-hi-tech-notif-copy"><span class="pv-hi-tech-notif-label">NOTIFICATIONS</span><span class="pv-hi-tech-notif-sub">Important updates, reminders and alerts</span></div>
+      <button type="button" class="pv-hi-tech-notif" id="pv-hi-tech-notif" onclick="pvOpenNotificationCenterFromHome()" aria-label="Open notifications">
+	<i>
+		<svg viewBox="0 0 56 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M9.3999 44.0002V39.2102C9.3999 39.2102 14.2299 38.9702 14.2299 34.3802V19.1002C14.2299 19.1002 14.1799 6.43018 27.8599 6.43018C39.9199 6.43018 42.8599 13.4302 42.8599 18.6402V35.2302C42.8599 35.2302 42.4999 39.2302 47.6599 39.2302V44.0002H9.3999Z" stroke="black" stroke-width="3" stroke-dasharray="0,0,109.7099609375,27.427490234374993">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,109.7099609375,27.427490234374993; 
+          0,27.427490234374993,109.7099609375,0; 
+          109.7099609375,27.427490234374993,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M32.24 6.78998V5.46998C32.24 4.47807 31.846 3.52679 31.1446 2.8254C30.4432 2.12402 29.4919 1.72998 28.5 1.72998C27.5081 1.72998 26.5568 2.12402 25.8554 2.8254C25.154 3.52679 24.76 4.47807 24.76 5.46998V6.66998" stroke="black" stroke-width="3" stroke-dasharray="0,0,11.415697479248047,2.853924369812011">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,11.415697479248047,2.853924369812011; 
+          0,2.853924369812011,11.415697479248047,0; 
+          11.415697479248047,2.853924369812011,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M32.33 44C32.275 45.1738 31.77 46.2812 30.92 47.0925C30.0699 47.9037 28.94 48.3563 27.7649 48.3563C26.5899 48.3563 25.46 47.9037 24.6099 47.0925C23.7599 46.2812 23.2549 45.1738 23.2 44" stroke="black" stroke-width="3" stroke-dasharray="0,0,11.143664550781251,2.785916137695312">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,11.143664550781251,2.785916137695312; 
+          0,2.785916137695312,11.143664550781251,0; 
+          11.143664550781251,2.785916137695312,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M46.5 26.4902C47.2034 26.7872 47.8233 27.2522 48.3053 27.8444C48.7874 28.4366 49.1168 29.138 49.2649 29.887C49.4129 30.6361 49.375 31.4101 49.1545 32.1411C48.934 32.8721 48.5376 33.538 48 34.0802" stroke="black" stroke-width="3" stroke-dasharray="0,0,7.293882751464844,1.8234706878662106">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,7.293882751464844,1.8234706878662106; 
+          0,1.8234706878662106,7.293882751464844,0; 
+          7.293882751464844,1.8234706878662106,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M49.3 23C50.5062 23.5068 51.5697 24.3017 52.3973 25.315C53.2249 26.3283 53.7913 27.5292 54.0469 28.8123C54.3026 30.0954 54.2396 31.4216 53.8636 32.6747C53.4875 33.9279 52.8099 35.0696 51.89 36" stroke="black" stroke-width="3" stroke-dasharray="0,0,12.497595977783204,3.1243989944458">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,12.497595977783204,3.1243989944458; 
+          0,3.1243989944458,12.497595977783204,0; 
+          12.497595977783204,3.1243989944458,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M9.99992 26.7402C9.29398 27.0343 8.67126 27.4976 8.1867 28.0892C7.70214 28.6808 7.37062 29.3826 7.22141 30.1327C7.07219 30.8827 7.10985 31.6579 7.33108 32.39C7.5523 33.122 7.95028 33.7884 8.48992 34.3302" stroke="black" stroke-width="3" stroke-dasharray="0,0,7.304747772216797,1.8261869430541988">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,7.304747772216797,1.8261869430541988; 
+          0,1.8261869430541988,7.304747772216797,0; 
+          7.304747772216797,1.8261869430541988,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+			<path d="M7.17011 23.2598C5.96393 23.7666 4.90046 24.5615 4.07288 25.5748C3.2453 26.5881 2.67887 27.7889 2.42324 29.072C2.1676 30.3552 2.23056 31.6814 2.6066 32.9345C2.98263 34.1876 3.66026 35.3294 4.58011 36.2598" stroke="black" stroke-width="3" stroke-dasharray="0,0,12.497511291503907,3.1243778228759758">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="1.4705882352941178s" values="0,0,12.497511291503907,3.1243778228759758; 
+          0,3.1243778228759758,12.497511291503907,0; 
+          12.497511291503907,3.1243778228759758,0,0" keyTimes="0; 0.19999999999999996; 1"></animate>
+			</path>
+		</svg>
+	</i>
+	<span>
+		<p id="pv-hi-tech-notif-count">0</p>
+		<svg viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<circle cx="37" cy="37" r="36" stroke="#7afffb" stroke-width="2" stroke-dasharray="0,0,0,0,0,225.8292694091797">
+				<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="5.43653642049062s" values="0,0,0,0,0,225.8292694091797; 
+          0,0,0,45.59790218816986,89.0355628446701,91.19580437633972; 
+          0,0,75.27642313639323,0,150.55284627278647,225.8292694091797; 
+          0,0,150.55284627278647,0,75.27642313639323,225.8292694091797; 
+          0,0,188.19105784098306,37.63821156819662,0,0; 
+          0,225.8292694091797,0,75.27642313639323,0,225.8292694091797" keyTimes="0; 0.16666666666666666; 0.3333; 0.6666; 0.8333; 1" begin="0.935907495683864s"></animate>
+			</circle>
+		</svg>
+	</span>
+	<svg viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<circle cx="37" cy="37" r="36" stroke="black" stroke-width="2" stroke-dasharray="0,0,0,0,0,225.8292694091797">
+			<animate attributeType="XML" attributeName="stroke-dasharray" repeatCount="indefinite" dur="5.43653642049062s" values="0,0,0,0,0,225.8292694091797; 
+          0,0,0,45.59790218816986,89.0355628446701,91.19580437633972; 
+          0,0,75.27642313639323,0,150.55284627278647,225.8292694091797; 
+          0,0,150.55284627278647,0,75.27642313639323,225.8292694091797; 
+          0,0,188.19105784098306,37.63821156819662,0,0; 
+          0,225.8292694091797,0,75.27642313639323,0,225.8292694091797" keyTimes="0; 0.16666666666666666; 0.3333; 0.6666; 0.8333; 1" begin="0.935907495683864s"></animate>
+		</circle>
+	</svg>
+</button>
+    </div>
     <div class="card pv-home-sponsored-card" id="pv-home-sponsored-card" style="display:none;padding:14px;border-color:rgba(255,179,0,.28)">
       <div class="card-title">📢 Advertisement</div>
       <div class="pv-ad-frame" id="pv-home-sponsored-stage"></div>
       <div id="pv-home-sponsored-meta" style="font-size:11px;color:var(--muted);margin-top:7px"></div>
       <button class="pill-btn" style="margin-top:8px;width:100%;background:var(--surface2);color:var(--text)" onclick="openEventsMediaModal()">View event & sponsored media</button>
+    </div>
+    <div class="card pv-filter-strip">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div><div class="card-title" style="margin:0">🔎 Filter</div><div style="font-size:11px;color:var(--muted);margin-top:2px" id="home-filter-label">Showing all months</div></div><button class="pill-btn" onclick="showMonthPicker()">Change</button></div>
     </div>
     <div class="card" id="pv-notifications-card" style="display:none;border-color:rgba(108,99,255,.3)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:21px">🔔</span><div style="font-weight:800;font-size:14px">Notifications</div></div>
@@ -7449,25 +7474,6 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.style.display='none';el.setAttribute('aria-hidden','true');}};
   window.pvToggleDisplaySound=function(){sound=!sound;const b=document.getElementById('pv-fd-sound');if(b)b.textContent=sound?'🔊 Sound on':'🔇 Sound off';const v=document.querySelector('#pv-fd-content video');if(v){v.muted=!sound;if(sound)v.play().catch(()=>{});}};
   document.addEventListener('fullscreenchange',()=>{const el=document.getElementById('pv-full-display');if(el&&!document.fullscreenElement&&el.classList.contains('open')){/* keep in-app overlay open */}});
-})();
-</script>
-
-<script id="projectvault-final-ui-fix-js">
-(function(){
- const robot=document.getElementById('pv-robot'), bubble=document.getElementById('pv-robot-bubble'), eyes=document.getElementById('pv-robot-eyes'), user=document.getElementById('lu'), pass=document.getElementById('lp'), peek=document.getElementById('pv-robot-peek');
- if(!robot||!user||!pass)return;
- const say=t=>{if(bubble) bubble.textContent=t};
- const look=(x,y)=>{if(eyes){eyes.style.transform=`translate(${x}px,${y}px)`}};
- user.addEventListener('focus',()=>{robot.dataset.mood='watching';say('Typing detected. I am watching.');});
- user.addEventListener('input',()=>{look(Math.min(7,user.value.length*.35),3); if(user.value.trim())say('Identity received. Nice.');});
- pass.addEventListener('focus',()=>{robot.dataset.mood='shy';say('A secret? Say no more.');eyes.style.opacity='.25';});
- pass.addEventListener('blur',()=>{eyes.style.opacity='1';});
- pass.addEventListener('input',()=>{if(pass.value.length>=8){robot.dataset.mood='happy';say('Strong password. Access looks promising.')}else if(pass.value) say('Keep going. I am not judging.');});
- if(peek) peek.addEventListener('click',()=>{pass.type=pass.type==='password'?'text':'password';peek.textContent=pass.type==='password'?'◉':'◉';pass.focus();});
- const btn=document.getElementById('pv-robot-login-btn');
- if(btn){btn.addEventListener('mouseenter',()=>{robot.dataset.mood='excited';say('Ooh. Press it.');});btn.addEventListener('mouseleave',()=>{if(robot.dataset.mood==='excited')robot.dataset.mood='idle';});btn.addEventListener('pointerdown',()=>{robot.style.transform='translateY(4px) scale(.97)';});btn.addEventListener('pointerup',()=>{robot.style.transform='';});}
- document.addEventListener('mousemove',e=>{if(document.getElementById('form-login')?.style.display==='none')return; const r=robot.getBoundingClientRect(); look(Math.max(-7,Math.min(7,(e.clientX-(r.left+r.width/2))/35)),Math.max(-5,Math.min(5,(e.clientY-(r.top+r.height/2))/45)));});
- const form=document.getElementById('form-login'); if(form){new MutationObserver(()=>{const err=document.getElementById('lerr'); if(err&&err.textContent.trim()){robot.dataset.mood='watching';say(err.textContent.trim().slice(0,60));}}).observe(form,{subtree:true,childList:true,characterData:true});}
 })();
 </script>
 </body>
