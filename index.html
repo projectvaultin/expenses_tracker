@@ -451,55 +451,6 @@ pv-signup-art .pv-bag{}
 @keyframes splashOrbPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
 @keyframes splashRevealAnim{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .splash-reveal{animation:splashRevealAnim .6s cubic-bezier(.4,0,.2,1);}
-
-/* FINAL DANCING-BAG SIGNUP: show ONLY the supplied animated Visme experience. */
-.pv-bag-visme-shell{
-  width:min(100%,1100px);
-  min-height:clamp(520px,78vh,820px);
-  margin:0 auto;
-  border-radius:clamp(18px,2.4vw,30px);
-  background:transparent;
-  border:0;
-  box-shadow:none;
-  overflow:hidden;
-}
-.pv-bag-visme-layer{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  background:transparent;
-}
-.pv-bag-visme-embed{
-  display:block!important;
-  width:100%!important;
-  height:100%!important;
-  min-height:clamp(520px,78vh,820px)!important;
-  border:0!important;
-}
-.pv-bag-visme-shade{display:none!important}
-.pv-native-signup-compat{
-  display:none!important;
-}
-#form-signup > .pv-bag-visme-shell + div,
-#form-signup + div[style*="Powered by"]{
-  display:none!important;
-}
-@media (max-width:900px){
-  .pv-bag-visme-shell{min-height:clamp(520px,82vh,760px)}
-  .pv-bag-visme-embed{min-height:clamp(520px,82vh,760px)!important}
-}
-@media (max-width:650px){
-  .pv-bag-visme-shell{
-    width:100%;
-    min-height:clamp(560px,86vh,900px);
-    border-radius:16px;
-  }
-  .pv-bag-visme-embed{min-height:clamp(560px,86vh,900px)!important}
-}
-@media (max-width:420px){
-  .pv-bag-visme-shell{min-height:620px}
-  .pv-bag-visme-embed{min-height:620px!important}
-}
 </style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
@@ -525,6 +476,7 @@ pv-signup-art .pv-bag{}
       <div class="pv-robot-forgot"><span onclick="doLogout()">Not you? Switch account</span></div>
     </div>
   </div>
+  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ AUTH ═══════════ -->
@@ -572,10 +524,8 @@ pv-signup-art .pv-bag{}
             data-form-id="192189"></div>
           <script src="https://static-bundles.visme.co/forms/vismeforms-embed.js"></script>
         </div>
-        <!-- ProjectVault native signup controls are retained in the DOM for compatibility/auth logic,
-             but the duplicate visual form is intentionally hidden so the supplied dancing/dragging
-             Visme experience is the only visible signup UI. -->
-        <div class="pv-bag-project-form pv-native-signup-compat" aria-hidden="true">
+        <div class="pv-bag-visme-shade" aria-hidden="true"></div>
+        <div class="pv-bag-project-form">
           <div class="pv-bag-project-brand">
             <div class="pv-bag-project-logo">PV</div>
             <div>
