@@ -409,26 +409,22 @@ pv-signup-art .pv-bag{}
 <style id="projectvault-final-ui-fix">
 /* Exact Visme-style dancing/dragging signup shell — Visme supplies the animated character; ProjectVault supplies the real fields/auth. */
 .pv-bag-visme-shell{position:relative;min-height:590px;margin:0 auto;border-radius:26px;overflow:hidden;background:#f0f0f0;border:1px solid rgba(108,99,255,.18);box-shadow:0 20px 55px rgba(20,20,30,.16);isolation:isolate}
-.pv-bag-visme-layer{position:absolute;inset:0;z-index:1;overflow:hidden;background:#f0f0f0;clip-path:inset(0 52% 0 0);pointer-events:none}
+.pv-bag-visme-layer{position:absolute;inset:0;z-index:1;overflow:hidden;background:#f0f0f0}
 .pv-bag-visme-embed{width:100%!important;height:100%!important;min-height:590px!important}
 .pv-bag-visme-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,rgba(240,240,240,.08),rgba(240,240,240,.16) 44%,rgba(255,255,255,.38));pointer-events:none}
-.pv-bag-project-form{position:relative;z-index:5;width:min(590px,calc(52% - 28px));margin:22px 14px 22px auto;padding:20px;border-radius:22px;background:rgba(255,255,255,.94);border:1px solid rgba(108,99,255,.18);box-shadow:0 18px 45px rgba(30,30,40,.20),0 2px 0 rgba(255,255,255,.8) inset;backdrop-filter:blur(10px)}
+.pv-bag-project-form{position:relative;z-index:5;width:min(640px,calc(100% - 28px));margin:22px auto;padding:20px;border-radius:22px;background:rgba(255,255,255,.94);border:1px solid rgba(108,99,255,.18);box-shadow:0 18px 45px rgba(30,30,40,.20),0 2px 0 rgba(255,255,255,.8) inset;backdrop-filter:blur(10px)}
 .pv-bag-project-brand{display:flex;align-items:center;gap:11px;margin-bottom:15px}.pv-bag-project-logo{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#6c63ff,#ff4fc3);box-shadow:0 8px 20px rgba(108,99,255,.25)}
 .pv-bag-project-title{font-size:18px;font-weight:900;color:#24212b}.pv-bag-project-copy{font-size:11px;color:#706b78;margin-top:3px}
 .pv-bag-project-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv-bag-wide{grid-column:1/-1}.pv-bag-project-grid .fl-label{color:#57515f}.pv-bag-project-grid .ai{background:rgba(255,255,255,.98)!important;border:1px solid #ddd7e5!important;color:#27232d!important}.pv-bag-project-grid .ai:hover{border-color:#8a82ff!important;transform:translateY(-1px);box-shadow:0 6px 14px rgba(108,99,255,.10)!important}.pv-bag-project-grid .ai:focus{border-color:#6c63ff!important;box-shadow:0 0 0 3px rgba(108,99,255,.12)!important}
 .pv-bag-project-bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:13px}.pv-bag-avatar-row{display:flex;align-items:center;gap:8px;min-width:0}.pv-bag-avatar-row .av-box{width:42px;height:42px;min-width:42px}.pv-bag-avatar-row .av-hint{font-size:10px}.pv-bag-mini-copy{font-size:9px;color:#88818e;margin-top:2px;max-width:235px;line-height:1.3}.pv-bag-project-bottom .pv-signup-btn{margin:0;min-width:220px}
 .pv-bag-project-form .auth-err{margin-top:8px}.pv-bag-project-form .pv-signup-powered{margin-top:9px;text-align:center;font-size:10px;color:#77717e}.pv-bag-project-form .pv-signup-powered b{color:#6c63ff}
-@media(max-width:650px){.pv-bag-visme-shell{min-height:700px;border-radius:20px}.pv-bag-visme-layer{clip-path:inset(0 0 55% 0)}.pv-bag-visme-embed{min-height:700px!important}.pv-bag-project-form{width:calc(100% - 18px);margin:10px auto;padding:14px;border-radius:18px}.pv-bag-project-grid{grid-template-columns:1fr}.pv-bag-wide{grid-column:auto}.pv-bag-project-bottom{flex-direction:column;align-items:stretch}.pv-bag-project-bottom .pv-signup-btn{width:100%;min-width:0}.pv-bag-avatar-row{justify-content:flex-start}.pv-bag-project-title{font-size:16px}}
+@media(max-width:650px){.pv-bag-visme-shell{min-height:700px;border-radius:20px}.pv-bag-visme-embed{min-height:700px!important}.pv-bag-project-form{width:calc(100% - 18px);margin:10px auto;padding:14px;border-radius:18px}.pv-bag-project-grid{grid-template-columns:1fr}.pv-bag-wide{grid-column:auto}.pv-bag-project-bottom{flex-direction:column;align-items:stretch}.pv-bag-project-bottom .pv-signup-btn{width:100%;min-width:0}.pv-bag-avatar-row{justify-content:flex-start}.pv-bag-project-title{font-size:16px}}
 /* FINAL UI FIX: robot login + compact notification + interactive signup */
 .pv-robot-login{padding:2px 0 0}.pv-robot-stage{height:150px;display:flex;justify-content:center;align-items:flex-end;position:relative}.pv-robot{position:relative;animation:pvFloat 3s ease-in-out infinite}.pv-robot-antenna{position:absolute;left:50%;top:-22px;transform:translateX(-50%);height:25px}.pv-robot-antenna:before{content:"";display:block;width:3px;height:17px;background:#23252d;margin:auto}.pv-robot-antenna span{display:block;width:12px;height:12px;border-radius:50%;background:#ff6b4b;border:2px solid #23252d;position:absolute;top:-3px;left:-4px;box-shadow:0 0 12px rgba(255,107,75,.55);animation:pvBob 1.8s ease-in-out infinite}.pv-robot-head{width:126px;height:112px;background:#fffdf8;border:3px solid #23252d;border-radius:28px;position:relative;box-shadow:7px 8px 0 rgba(35,37,45,.14);transition:.35s cubic-bezier(.5,-.3,.25,1.35)}.pv-robot-ear{position:absolute;top:39px;width:13px;height:31px;background:#fffdf8;border:3px solid #23252d;border-radius:8px}.pv-robot-ear.l{left:-10px}.pv-robot-ear.r{right:-10px}.pv-robot-visor{position:absolute;inset:18px 14px 16px;background:#23252d;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}.pv-robot-eyes{display:flex;gap:25px;transition:.2s}.pv-robot-eyes i{width:15px;height:21px;border-radius:8px;background:#fffdf8;display:block;transition:.2s}.pv-robot-visor b{width:23px;height:6px;background:#fffdf8;border-radius:0 0 12px 12px}.pv-robot-bubble{position:absolute;left:50%;bottom:119px;transform:translateX(-50%);background:#fffdf8;color:#23252d;border:2px solid #23252d;border-radius:13px;padding:8px 11px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:3px 4px 0 rgba(35,37,45,.12);transition:.25s;z-index:2}.pv-robot-card{position:relative;margin:-4px auto 0;padding:20px 18px 17px;max-width:350px;background:#fffdf8;border:2px solid #23252d;border-radius:22px;box-shadow:8px 9px 0 rgba(35,37,45,.12)}.pv-robot-card h2{font-size:18px;text-align:center;color:#23252d;margin:0}.pv-robot-sub{text-align:center;color:#77736b;font-size:11px;margin:5px 0 15px}.pv-robot-field{display:flex;align-items:center;gap:8px;background:#faf7f0;border:2px solid #23252d;border-radius:13px;padding:0 10px;margin:9px 0;transition:.22s;box-shadow:0 2px 0 rgba(35,37,45,.06)}.pv-robot-field:focus-within{transform:translateY(-2px);box-shadow:0 5px 0 rgba(35,37,45,.10);border-color:#ff6b4b}.pv-robot-field>span{font-size:16px}.pv-robot-field input{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;width:100%;margin:0!important;color:#23252d!important}.pv-robot-field button{border:0;background:none;font-size:15px;cursor:pointer;color:#777;transition:.2s}.pv-robot-field button:hover{color:#ff6b4b;transform:scale(1.15)}.pv-robot-btn{width:100%;border:2px solid #23252d;border-radius:13px;background:#ff6b4b;color:#fff;padding:12px 14px;font:800 13px 'Sora','Segoe UI',sans-serif;cursor:pointer;box-shadow:4px 5px 0 #23252d;transition:.18s cubic-bezier(.2,.8,.2,1);margin-top:8px}.pv-robot-btn:hover{background:#ff7e62;transform:translate(-2px,-2px);box-shadow:6px 7px 0 #23252d}.pv-robot-btn:active{transform:translate(2px,3px);box-shadow:2px 2px 0 #23252d}.pv-robot-btn span{display:inline-block;transition:.2s}.pv-robot-btn:hover span{transform:rotate(12deg) scale(1.2)}.pv-robot-forgot{text-align:center;margin-top:11px}.pv-robot-forgot span{font-size:12px;color:#6c63ff;font-weight:700;cursor:pointer}.pv-robot-forgot span:hover{text-decoration:underline}.pv-robot-login .auth-err{color:#e5532f}.pv-robot-login:has(#lerr:not(:empty)) .pv-robot-head{animation:pvShake .4s ease}.pv-robot-login:focus-within .pv-robot-bubble{transform:translateX(-50%) translateY(-2px)}
 .pv-lock-robot .pv-robot-stage{height:150px}.pv-lock-robot .pv-robot-card{max-width:390px}.pv-lock-robot .bio-btn{width:100%;border:1px solid var(--border);border-radius:13px;background:var(--surface2);color:var(--text);padding:10px;cursor:pointer}.pv-lock-robot .bio-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(108,99,255,.15)}
 .pv-robot-login input:hover{background:rgba(255,255,255,.55)!important}.pv-robot-login .ai::placeholder{color:#9a948a}.pv-robot-login .pv-robot-stage{pointer-events:none}.pv-visme-signup{position:relative}.pv-signup-card{overflow:visible}.pv-signup-intro{transition:.25s;box-shadow:0 5px 18px rgba(108,99,255,.06)}.pv-signup-intro:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(108,99,255,.13)}.pv-signup-btn{transition:.2s!important}.pv-signup-btn:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 18px rgba(108,99,255,.25)}.pv-signup-btn:active{transform:translateY(1px)}.pv-signup-btn span{display:inline-block;transition:.2s}.pv-signup-btn:hover span{transform:rotate(15deg) scale(1.2)}.pv-visme-signup .ai{transition:.2s!important}.pv-visme-signup .ai:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.12)!important}.pv-visme-signup .ai:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(108,99,255,.12)!important;border-color:var(--accent)!important}.pv-visme-signup .fl{transition:.2s}.pv-visme-signup .fl:hover .fl-label{color:var(--accent)}
 .pv-top-notif{position:relative;width:36px;height:36px;min-width:36px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:var(--chip-shadow);padding:0}.pv-top-notif:hover{transform:translateY(-2px) scale(1.05);border-color:#6c63ff;box-shadow:0 6px 16px rgba(108,99,255,.2)}.pv-top-notif:active{transform:scale(.94)}.pv-top-notif-bell{font-size:17px;line-height:1;transition:.2s}.pv-top-notif:hover .pv-top-notif-bell{animation:pvBell .55s ease-in-out}.pv-top-notif-count{position:absolute;right:-6px;top:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:#ff4d67;color:#fff;border:2px solid var(--topbar-bg);font:800 9px/13px 'DM Sans',sans-serif;text-align:center}.pv-top-notif-count:empty{display:none}@keyframes pvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes pvBob{50%{transform:translateY(-3px)}}@keyframes pvBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}@keyframes pvShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
 @media(max-width:620px){.tb-right{gap:6px}.cloud-status-pill{max-width:90px}.pv-top-notif{width:33px;height:33px;min-width:33px}.pv-top-notif-bell{font-size:15px}.pv-robot-stage{height:138px}.pv-robot-head{transform:scale(.92)}.pv-robot-bubble{font-size:9px;bottom:111px}.pv-robot-card{padding:18px 14px}.pv-robot-card h2{font-size:16px}}
-<style>
-/* SINGLE SIGNUP FIX: Visme layer is animation-only; the ProjectVault form is the only visible signup form. */
-.pv-bag-visme-layer iframe,.pv-bag-visme-layer form{pointer-events:none;}
-@media(max-width:650px){.pv-bag-project-form{position:relative;z-index:5;}}
 </style>
 </head>
 <body>
@@ -455,6 +451,55 @@ pv-signup-art .pv-bag{}
 @keyframes splashOrbPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
 @keyframes splashRevealAnim{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .splash-reveal{animation:splashRevealAnim .6s cubic-bezier(.4,0,.2,1);}
+
+/* FINAL DANCING-BAG SIGNUP: show ONLY the supplied animated Visme experience. */
+.pv-bag-visme-shell{
+  width:min(100%,1100px);
+  min-height:clamp(520px,78vh,820px);
+  margin:0 auto;
+  border-radius:clamp(18px,2.4vw,30px);
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  overflow:hidden;
+}
+.pv-bag-visme-layer{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background:transparent;
+}
+.pv-bag-visme-embed{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:clamp(520px,78vh,820px)!important;
+  border:0!important;
+}
+.pv-bag-visme-shade{display:none!important}
+.pv-native-signup-compat{
+  display:none!important;
+}
+#form-signup > .pv-bag-visme-shell + div,
+#form-signup + div[style*="Powered by"]{
+  display:none!important;
+}
+@media (max-width:900px){
+  .pv-bag-visme-shell{min-height:clamp(520px,82vh,760px)}
+  .pv-bag-visme-embed{min-height:clamp(520px,82vh,760px)!important}
+}
+@media (max-width:650px){
+  .pv-bag-visme-shell{
+    width:100%;
+    min-height:clamp(560px,86vh,900px);
+    border-radius:16px;
+  }
+  .pv-bag-visme-embed{min-height:clamp(560px,86vh,900px)!important}
+}
+@media (max-width:420px){
+  .pv-bag-visme-shell{min-height:620px}
+  .pv-bag-visme-embed{min-height:620px!important}
+}
 </style>
 
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
@@ -480,7 +525,6 @@ pv-signup-art .pv-bag{}
       <div class="pv-robot-forgot"><span onclick="doLogout()">Not you? Switch account</span></div>
     </div>
   </div>
-  <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
 <!-- ═══════════ AUTH ═══════════ -->
@@ -528,8 +572,10 @@ pv-signup-art .pv-bag{}
             data-form-id="192189"></div>
           <script src="https://static-bundles.visme.co/forms/vismeforms-embed.js"></script>
         </div>
-        <div class="pv-bag-visme-shade" aria-hidden="true"></div>
-        <div class="pv-bag-project-form">
+        <!-- ProjectVault native signup controls are retained in the DOM for compatibility/auth logic,
+             but the duplicate visual form is intentionally hidden so the supplied dancing/dragging
+             Visme experience is the only visible signup UI. -->
+        <div class="pv-bag-project-form pv-native-signup-compat" aria-hidden="true">
           <div class="pv-bag-project-brand">
             <div class="pv-bag-project-logo">PV</div>
             <div>
