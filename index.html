@@ -66,33 +66,6 @@ h1,h2,h3,.tab-label,.synebody,.card-title,.form-label,.fl-label{font-family:'DM 
 .auth-logo span{color:var(--accent);}
 .auth-sub{color:var(--muted);font-size:14px;margin-bottom:32px;}
 .auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:26px 22px;}
-/* Legacy unused signup decoration classes (kept for compatibility, not rendered) */
-.pv-signup-card{position:relative;overflow:hidden;}
-.pv-signup-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--accent),#ff7ab6,#7afcff);}
-.pv-signup-intro{position:relative;text-align:center;margin:-2px 0 18px;padding:14px 12px 12px;border-radius:18px;background:linear-gradient(145deg,rgba(108,99,255,.10),rgba(255,255,255,.02));border:1px solid var(--border);}
-.pv-signup-art{width:76px;height:58px;margin:0 auto 8px;position:relative;}
-.pv-signup-art .pv-bag{position:absolute;left:12px;right:12px;bottom:2px;height:42px;border:2px solid var(--accent);border-radius:10px 10px 14px 14px;background:var(--surface2);transform:rotate(-2deg);}
-pv-signup-art .pv-bag{}
-.pv-signup-art .pv-handle{position:absolute;left:28px;top:2px;width:22px;height:20px;border:2px solid var(--accent);border-bottom:0;border-radius:14px 14px 0 0;}
-.pv-signup-art .pv-spark{position:absolute;font-size:14px;color:var(--accent);animation:pvSignupFloat 2.2s ease-in-out infinite;}
-.pv-signup-art .s1{left:2px;top:13px}.pv-signup-art .s2{right:0;top:6px;animation-delay:.5s}.pv-signup-art .s3{right:10px;bottom:8px;font-size:10px;animation-delay:1s}
-.pv-signup-title{font-size:17px;font-weight:800;letter-spacing:-.2px;}
-.pv-signup-copy{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45;}
-.pv-bag-form{background:linear-gradient(145deg,#f7f1e8,#fffaf2 52%,#eee7dc);color:#25221e;border-color:rgba(80,65,45,.16);box-shadow:0 10px 28px rgba(70,52,30,.10);}
-.pv-bag-form .pv-signup-copy{color:#6e665c;}
-.pv-bag-hero{height:74px;width:94px;margin:0 auto 10px;position:relative;}
-.pv-bag-body{position:absolute;left:18px;right:18px;bottom:2px;height:51px;border:2px solid #403a32;border-radius:8px 8px 13px 13px;background:linear-gradient(145deg,#efe7d8,#d8c9b4);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 5px 10px rgba(50,40,28,.14);display:flex;align-items:center;justify-content:center;transform:rotate(-2deg);}
-.pv-bag-body span{font:800 15px/1 'Syne',sans-serif;letter-spacing:1px;color:#6c63ff;}
-.pv-bag-handle{position:absolute;z-index:2;left:34px;top:4px;width:26px;height:27px;border:2px solid #403a32;border-bottom:0;border-radius:16px 16px 0 0;}
-.pv-bag-star{position:absolute;font-style:normal;color:#6c63ff;font-size:16px;animation:pvSignupFloat 2.2s ease-in-out infinite;}
-.pv-bag-star.a{left:5px;top:22px}.pv-bag-star.b{right:2px;top:8px;animation-delay:.45s}.pv-bag-star.c{right:10px;bottom:8px;font-size:10px;animation-delay:.9s}
-.pv-signup-powered{margin-top:9px;font-size:10px;color:#766d62;letter-spacing:.2px;}
-.pv-signup-powered b{color:#6c63ff;}
-.pv-bag-form:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(70,52,30,.16);}
-
-@keyframes pvSignupFloat{0%,100%{transform:translateY(0) rotate(0deg);opacity:.75}50%{transform:translateY(-4px) rotate(8deg);opacity:1}}
-@media(max-width:420px){.pv-signup-intro{padding:12px 10px}.pv-signup-art{transform:scale(.92)}}
-
 .auth-tabs{display:flex;gap:0;margin-bottom:22px;background:var(--surface2);border-radius:12px;padding:4px;}
 .auth-tab{flex:1;text-align:center;padding:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);border-radius:10px;cursor:pointer;transition:all .2s;}
 .auth-tab.active{background:var(--accent);color:#fff;}
@@ -164,17 +137,6 @@ pv-signup-art .pv-bag{}
 .tab.active{color:var(--accent);}
 .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .tab-label{font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
-/* ProjectVault bottom navigation hover effects */
-.tab{overflow:visible;transform:translateZ(0);}
-.tab::before{content:"";position:absolute;left:18%;right:18%;top:5px;height:34px;border-radius:14px;background:var(--accent);opacity:0;transform:scale(.72);transition:opacity .22s ease,transform .22s ease;pointer-events:none;}
-.tab svg,.tab .tab-label{position:relative;z-index:1;transition:transform .22s ease,filter .22s ease,color .22s ease;}
-.tab:hover{color:var(--text);}
-.tab:hover::before{opacity:.10;transform:scale(1);}
-.tab:hover svg{transform:translateY(-3px) scale(1.10);filter:drop-shadow(0 4px 8px rgba(108,99,255,.28));}
-.tab:hover .tab-label{transform:translateY(-1px);}
-.tab.active::before{opacity:.14;transform:scale(1);}
-.tab.active svg{transform:translateY(-2px);}
-@media (hover:none){.tab:hover::before{opacity:0;transform:scale(.72)}.tab:hover svg,.tab:hover .tab-label{transform:none;filter:none}.tab.active::before{opacity:.14;transform:scale(1)}}
 /* PAGES */
 .page{display:none;padding:14px 14px 90px;}
 .page.active{display:block;}
@@ -342,31 +304,13 @@ pv-signup-art .pv-bag{}
 .rem-row:last-child{border-bottom:none;}
 .rem-badge{font-size:10px;padding:2px 7px;border-radius:100px;background:rgba(108,99,255,.15);color:var(--accent);font-weight:700;}
 /* Notif permission banner */
-
-/* Hi-Tech notification button — ProjectVault home placement */
-.pv-hi-tech-notif-wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 11px;padding:10px 14px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(135deg,rgba(108,99,255,.09),rgba(0,208,132,.05));overflow:visible;}
-.pv-hi-tech-notif-copy{min-width:0;display:flex;flex-direction:column;gap:3px;}
-.pv-hi-tech-notif-label{font-size:11px;font-weight:800;letter-spacing:1.2px;color:var(--text);}
-.pv-hi-tech-notif-sub{font-size:10px;color:var(--muted);line-height:1.35;}
-.pv-hi-tech-notif{position:relative!important;flex:none!important;width:64px!important;height:64px!important;margin:0!important;padding:10px!important;border:1px solid rgba(108,99,255,.45)!important;border-radius:50%!important;background-image:linear-gradient(120deg,#7afffb,#79fcff,#75eaff,#6eccff,#67a4ff,#5f73ff,#7156ff,#9b4eff,#c547ff,#e940ff,#ff3cfc,#ff3bf2)!important;background-size:160%!important;background-position:top left!important;box-shadow:0 0 28px rgba(255,59,242,.30),0 0 14px rgba(122,255,251,.18)!important;color:#fff!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;transition:all .3s ease!important;z-index:2!important;}
-.pv-hi-tech-notif:hover{padding:12px!important;background-size:190%!important;box-shadow:0 0 38px rgba(122,255,251,.42),0 0 18px rgba(255,59,242,.25)!important;transform:translateY(-1px)!important;}
-.pv-hi-tech-notif:active{transform:scale(.92)!important;}
-.pv-hi-tech-notif::before{position:absolute;width:calc(100% + 10px);height:calc(100% + 10px);border:1px solid rgba(255,59,242,.45);border-radius:100%;pointer-events:none;content:"";transition:all .3s ease;}
-.pv-hi-tech-notif:hover::before{width:calc(100% + 18px);height:calc(100% + 18px);border-color:rgba(122,255,251,.5);}
-.pv-hi-tech-notif::after{position:absolute;width:calc(100% + 18px);height:calc(100% + 18px);border:1px dashed rgba(255,59,242,.28);border-radius:100%;pointer-events:none;animation:pvNotifRotate 30s linear infinite;content:"";}
-@keyframes pvNotifRotate{to{transform:rotateZ(-360deg)}}
-.pv-hi-tech-notif>i{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
-.pv-hi-tech-notif>i>svg{position:relative;width:34px;height:34px;filter:drop-shadow(0 0 4px #fff);mix-blend-mode:overlay;z-index:1;}
-.pv-hi-tech-notif:hover>i>svg{animation:pvNotifShake .5s linear infinite;}
-@keyframes pvNotifShake{0%,100%{transform:rotate(0)}25%{transform:rotate(12deg)}75%{transform:rotate(-12deg)}}
-.pv-hi-tech-notif>span{position:absolute;top:-4px;right:-5px;width:27px;height:27px;border-radius:50%;background:rgba(15,17,23,.82);backdrop-filter:blur(5px);color:#fff;display:flex;align-items:center;justify-content:center;z-index:3;border:1px solid rgba(255,255,255,.18);}
-.pv-hi-tech-notif>span p{font:600 10px/1 'DM Sans',sans-serif;color:#fff;margin:0;}
-.pv-hi-tech-notif>span svg{position:absolute;inset:0;width:100%;height:100%;}
-@media(max-width:560px){.pv-hi-tech-notif-wrap{padding:9px 12px}.pv-hi-tech-notif{width:58px!important;height:58px!important}.pv-hi-tech-notif>i>svg{width:31px;height:31px}.pv-hi-tech-notif>span{width:25px;height:25px;top:-3px;right:-4px}}
 .notif-banner{background:linear-gradient(135deg,rgba(255,179,0,.12),rgba(108,99,255,.1));border:1px solid rgba(255,179,0,.3);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.pv-home-sponsored-card{background:linear-gradient(135deg,rgba(255,179,0,.08),rgba(108,99,255,.05));}
+.pv-home-sponsored-card img,.pv-home-sponsored-card video{display:block;width:100%;max-height:220px;object-fit:cover;background:#111;}
+.pv-home-sponsored-card .pill-btn{border:none;cursor:pointer;white-space:nowrap;}
 
 .pv-display-top-btn{display:none!important}
-#pv-full-display{display:none;position:relative;width:100%;height:180px;display:none;z-index:2;background:#05060a;color:#fff;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
+#pv-full-display{position:relative;width:100%;height:180px;z-index:2;background:#05060a;color:#fff;display:block;overflow:hidden;border-bottom:1px solid var(--border);box-sizing:border-box;margin:0;padding:0}
 .pv-fd-bg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(108,99,255,.15),rgba(0,208,132,.08),rgba(255,179,0,.10)),#05060a}
 .pv-fd-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 34px 0 8px;box-sizing:border-box;overflow:hidden}
 .pv-fd-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -383,7 +327,6 @@ pv-signup-art .pv-bag{}
 .pv-fd-btn{backdrop-filter:blur(8px)}
 @media(min-width:701px){#pv-full-display{height:180px}}
 
-#pv-home-sponsored-card{display:none!important;}
 .pv-ad-frame{width:100%;aspect-ratio:3.2/1;min-height:120px;max-height:260px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(255,179,0,.10));display:flex;align-items:center;justify-content:center;position:relative}.pv-ad-frame img,.pv-ad-frame video{width:100%;height:100%;object-fit:cover;display:block}.pv-notif-row{display:flex;gap:12px;padding:15px;border-bottom:1px solid var(--border);cursor:pointer}.pv-notif-row.unread{background:linear-gradient(90deg,rgba(108,99,255,.10),transparent)}.pv-notif-icon{width:40px;height:40px;border-radius:13px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}.pv-unread-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:7px;flex:none}.notif-filter.active{background:var(--accent);color:#fff}
 @media(max-width:700px){.topbar{padding:10px 10px}.tb-right .pill-btn{font-size:10px;padding:6px 8px}.cloud-status-pill{display:none}.page{padding:10px 10px 82px}.card{border-radius:16px;padding:14px}.hero{padding:20px 14px}.dp-grid{gap:8px}.dp-card{padding:12px 10px}.dp-amt{font-size:20px}.tabs .tab{min-width:0}.tab-label{font-size:9px}.tabs svg{width:20px;height:20px}.pv-ad-frame{aspect-ratio:1.7/1;min-height:150px}.pv-fd-stage{padding:0 28px 0 6px}.pv-fd-title{font-size:13px}.pv-fd-sub{font-size:10px}.section-head{gap:8px;flex-wrap:wrap}}
 @media(min-width:701px){#app-screen{max-width:1180px;margin:0 auto}.page{max-width:1050px;margin:0 auto;padding-left:24px;padding-right:24px}.pv-ad-frame{aspect-ratio:3.2/1}}
@@ -404,23 +347,6 @@ pv-signup-art .pv-bag{}
 .pv-event-row:last-child{border-bottom:none}
 .pv-event-pill{font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;background:rgba(108,99,255,.15);color:var(--accent)}
 .pv-admin-file{font-size:12px;color:var(--muted)}
-</style>
-
-<style id="projectvault-final-ui-fix">
-/* Signup = the Visme animated form ONLY. The white native card has been removed so nothing overlaps it. */
-#auth-screen.pv-wide-mode .auth-card{max-width:600px;transition:max-width .2s}
-.pv-bag-visme-shell{position:relative;margin:0 auto;border-radius:24px;overflow:hidden;border:1px solid rgba(108,99,255,.18);box-shadow:0 16px 40px rgba(20,20,30,.14);min-height:620px}
-.pv-bag-visme-shell::before{content:"";display:block;height:4px;background:linear-gradient(90deg,#6c63ff,#ff7ab6,#7afcff)}
-.pv-bag-visme-banner{position:relative;min-height:616px;overflow:hidden;background:#f0f0f0}
-.pv-bag-visme-embed{width:100%!important;height:100%!important;min-height:616px!important}
-@media(max-width:650px){#auth-screen.pv-wide-mode .auth-card{max-width:460px}.pv-bag-visme-shell{min-height:660px}.pv-bag-visme-banner{min-height:656px}.pv-bag-visme-embed{min-height:656px!important}}
-@media(max-width:400px){#auth-screen.pv-wide-mode .auth-card{max-width:100%}}
-/* FINAL UI FIX: robot login + compact notification + interactive signup */
-.pv-robot-login{padding:2px 0 0}.pv-robot-stage{height:150px;display:flex;justify-content:center;align-items:flex-end;position:relative}.pv-robot{position:relative;animation:pvFloat 3s ease-in-out infinite}.pv-robot-antenna{position:absolute;left:50%;top:-22px;transform:translateX(-50%);height:25px}.pv-robot-antenna:before{content:"";display:block;width:3px;height:17px;background:#23252d;margin:auto}.pv-robot-antenna span{display:block;width:12px;height:12px;border-radius:50%;background:#ff6b4b;border:2px solid #23252d;position:absolute;top:-3px;left:-4px;box-shadow:0 0 12px rgba(255,107,75,.55);animation:pvBob 1.8s ease-in-out infinite}.pv-robot-head{width:126px;height:112px;background:#fffdf8;border:3px solid #23252d;border-radius:28px;position:relative;box-shadow:7px 8px 0 rgba(35,37,45,.14);transition:.35s cubic-bezier(.5,-.3,.25,1.35)}.pv-robot-ear{position:absolute;top:39px;width:13px;height:31px;background:#fffdf8;border:3px solid #23252d;border-radius:8px}.pv-robot-ear.l{left:-10px}.pv-robot-ear.r{right:-10px}.pv-robot-visor{position:absolute;inset:18px 14px 16px;background:#23252d;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}.pv-robot-eyes{display:flex;gap:25px;transition:.2s}.pv-robot-eyes i{width:15px;height:21px;border-radius:8px;background:#fffdf8;display:block;transition:.2s}.pv-robot-visor b{width:23px;height:6px;background:#fffdf8;border-radius:0 0 12px 12px}.pv-robot-bubble{position:absolute;left:50%;bottom:119px;transform:translateX(-50%);background:#fffdf8;color:#23252d;border:2px solid #23252d;border-radius:13px;padding:8px 11px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:3px 4px 0 rgba(35,37,45,.12);transition:.25s;z-index:2}.pv-robot-card{position:relative;margin:-4px auto 0;padding:20px 18px 17px;max-width:350px;background:#fffdf8;border:2px solid #23252d;border-radius:22px;box-shadow:8px 9px 0 rgba(35,37,45,.12)}.pv-robot-card h2{font-size:18px;text-align:center;color:#23252d;margin:0}.pv-robot-sub{text-align:center;color:#77736b;font-size:11px;margin:5px 0 15px}.pv-robot-field{display:flex;align-items:center;gap:8px;background:#faf7f0;border:2px solid #23252d;border-radius:13px;padding:0 10px;margin:9px 0;transition:.22s;box-shadow:0 2px 0 rgba(35,37,45,.06)}.pv-robot-field:focus-within{transform:translateY(-2px);box-shadow:0 5px 0 rgba(35,37,45,.10);border-color:#ff6b4b}.pv-robot-field>span{font-size:16px}.pv-robot-field input{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;width:100%;margin:0!important;color:#23252d!important}.pv-robot-field button{border:0;background:none;font-size:15px;cursor:pointer;color:#777;transition:.2s}.pv-robot-field button:hover{color:#ff6b4b;transform:scale(1.15)}.pv-robot-btn{width:100%;border:2px solid #23252d;border-radius:13px;background:#ff6b4b;color:#fff;padding:12px 14px;font:800 13px 'Sora','Segoe UI',sans-serif;cursor:pointer;box-shadow:4px 5px 0 #23252d;transition:.18s cubic-bezier(.2,.8,.2,1);margin-top:8px}.pv-robot-btn:hover{background:#ff7e62;transform:translate(-2px,-2px);box-shadow:6px 7px 0 #23252d}.pv-robot-btn:active{transform:translate(2px,3px);box-shadow:2px 2px 0 #23252d}.pv-robot-btn span{display:inline-block;transition:.2s}.pv-robot-btn:hover span{transform:rotate(12deg) scale(1.2)}.pv-robot-forgot{text-align:center;margin-top:11px}.pv-robot-forgot span{font-size:12px;color:#6c63ff;font-weight:700;cursor:pointer}.pv-robot-forgot span:hover{text-decoration:underline}.pv-robot-login .auth-err{color:#e5532f}.pv-robot-login:has(#lerr:not(:empty)) .pv-robot-head{animation:pvShake .4s ease}.pv-robot-login:focus-within .pv-robot-bubble{transform:translateX(-50%) translateY(-2px)}
-.pv-lock-robot .pv-robot-stage{height:150px}.pv-lock-robot .pv-robot-card{max-width:390px}.pv-lock-robot .bio-btn{width:100%;border:1px solid var(--border);border-radius:13px;background:var(--surface2);color:var(--text);padding:10px;cursor:pointer}.pv-lock-robot .bio-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(108,99,255,.15)}
-.pv-robot-login input:hover{background:rgba(255,255,255,.55)!important}.pv-robot-login .ai::placeholder{color:#9a948a}.pv-robot-login .pv-robot-stage{pointer-events:none}.pv-visme-signup{position:relative}.pv-signup-card{overflow:visible}.pv-signup-btn{transition:.2s!important}.pv-signup-btn:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 18px rgba(108,99,255,.25)}.pv-signup-btn:active{transform:translateY(1px)}.pv-signup-btn span{display:inline-block;transition:.2s}.pv-signup-btn:hover span{transform:rotate(15deg) scale(1.2)}.pv-visme-signup .ai{transition:.2s!important}.pv-visme-signup .ai:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.12)!important}.pv-visme-signup .ai:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(108,99,255,.12)!important;border-color:var(--accent)!important}.pv-visme-signup .fl{transition:.2s}.pv-visme-signup .fl:hover .fl-label{color:var(--accent)}
-.pv-top-notif{position:relative;width:36px;height:36px;min-width:36px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:var(--chip-shadow);padding:0}.pv-top-notif:hover{transform:translateY(-2px) scale(1.05);border-color:#6c63ff;box-shadow:0 6px 16px rgba(108,99,255,.2)}.pv-top-notif:active{transform:scale(.94)}.pv-top-notif-bell{font-size:17px;line-height:1;transition:.2s}.pv-top-notif:hover .pv-top-notif-bell{animation:pvBell .55s ease-in-out}.pv-top-notif-count{position:absolute;right:-6px;top:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:#ff4d67;color:#fff;border:2px solid var(--topbar-bg);font:800 9px/13px 'DM Sans',sans-serif;text-align:center}.pv-top-notif-count:empty{display:none}@keyframes pvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes pvBob{50%{transform:translateY(-3px)}}@keyframes pvBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}@keyframes pvShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
-@media(max-width:620px){.tb-right{gap:6px}.cloud-status-pill{max-width:90px}.pv-top-notif{width:33px;height:33px;min-width:33px}.pv-top-notif-bell{font-size:15px}.pv-robot-stage{height:138px}.pv-robot-head{transform:scale(.92)}.pv-robot-bubble{font-size:9px;bottom:111px}.pv-robot-card{padding:18px 14px}.pv-robot-card h2{font-size:16px}}
 </style>
 </head>
 <body>
@@ -452,24 +378,21 @@ pv-signup-art .pv-bag{}
 <!-- ═══════════ PIN/BIO LOCK SCREEN ═══════════ -->
 <div id="lock-screen" style="min-height:100vh;min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 32px;background:var(--bg);position:relative;">
   <div class="theme-toggle" id="theme-toggle-lock" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
-  <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
-  <div class="auth-sub" id="lock-subtitle">Welcome back — unlock your ProjectVault</div>
-  <div class="pv-robot-login pv-lock-robot" style="width:100%;max-width:390px;">
-    <div class="pv-robot-stage">
-      <div class="pv-robot" aria-hidden="true">
-        <div class="pv-robot-antenna"><span></span></div>
-        <div class="pv-robot-head"><div class="pv-robot-ear l"></div><div class="pv-robot-ear r"></div><div class="pv-robot-visor"><div class="pv-robot-eyes"><i></i><i></i></div><b></b></div></div>
-        <div class="pv-robot-bubble">Welcome back. One more password check.</div>
-      </div>
+  <div class="auth-logo-wrap" style="margin-bottom:6px"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
+  <div class="auth-sub" id="lock-subtitle">Verify your identity</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;">
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;" id="lock-user-display"></div>
+    <div class="fl">
+      <div class="fl-label">Password</div>
+      <input aria-label="Password" class="ai" id="lock-pw" type="password" placeholder="Enter your password" autocomplete="current-password"/>
     </div>
-    <div class="pv-robot-card">
-      <h2 id="lock-user-display">Welcome back</h2>
-      <p class="pv-robot-sub">Verify your password to continue.</p>
-      <label class="pv-robot-field"><span>🔒</span><input aria-label="Password" class="ai" id="lock-pw" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doUnlock();}"/></label>
-      <button class="pv-robot-btn" type="button" onclick="doUnlock()"><span>🔓</span> UNLOCK PROJECTVAULT</button>
-      <div class="auth-err" id="lock-err"></div>
-      <button class="bio-btn" id="bio-btn" onclick="doBiometric()" style="margin-top:10px"><span style="font-size:18px">🔐</span> Use Fingerprint / Face ID</button>
-      <div class="pv-robot-forgot"><span onclick="doLogout()">Not you? Switch account</span></div>
+    <button class="auth-btn" onclick="doUnlock()">Unlock →</button>
+    <div class="auth-err" id="lock-err"></div>
+    <button class="bio-btn" id="bio-btn" onclick="doBiometric()" style="margin-top:10px">
+      <span style="font-size:20px">🔐</span> Use Fingerprint / Face ID
+    </button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="doLogout()">Not you? Switch account</span>
     </div>
   </div>
   <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
@@ -480,51 +403,35 @@ pv-signup-art .pv-bag{}
   <div class="theme-toggle" id="theme-toggle-auth" onclick="toggleTheme()" style="position:absolute;top:18px;right:18px" role="button" aria-label="Toggle dark or light theme">🌙</div>
   <div class="auth-logo-wrap"><img src="icon-192.png" class="auth-logo-icon" alt="Expenses Tracker"/><div class="auth-logo">Expenses<span> Tracker</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:6px;opacity:.85;"><img src="brand-logo.png" alt="ProjectVault" style="height:16px;width:auto;"/><span style="font-size:11px;color:var(--muted);letter-spacing:.4px;">by <b style="color:var(--text)">ProjectVault</b></span></div></div>
   <div class="auth-sub">Track every rupee, effortlessly.</div>
-  <div class="auth-card pv-signup-card">
+  <div class="auth-card">
     <div class="auth-tabs">
       <div class="auth-tab active" id="atab-login" onclick="switchAuthTab('login')">Login</div>
       <div class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
     </div>
     <!-- LOGIN -->
-    <div id="form-login" class="pv-robot-login">
-      <div class="pv-robot-stage" id="pv-robot-stage">
-        <div class="pv-robot" id="pv-robot" data-mood="idle" aria-hidden="true">
-          <div class="pv-robot-antenna"><span></span></div>
-          <div class="pv-robot-head">
-            <div class="pv-robot-ear l"></div><div class="pv-robot-ear r"></div>
-            <div class="pv-robot-visor"><div class="pv-robot-eyes" id="pv-robot-eyes"><i></i><i></i></div><b></b></div>
-          </div>
-          <div class="pv-robot-bubble" id="pv-robot-bubble">Hi. I'm Volty. I guard this form.</div>
-        </div>
-      </div>
-      <div class="pv-robot-card" id="pv-robot-card">
-        <h2>Beep boop. Who goes there?</h2>
-        <p class="pv-robot-sub">Sign in securely to your ProjectVault account.</p>
-        <label class="pv-robot-field"><span>👤</span><input aria-label="Username or Email" class="ai" id="lu" type="text" placeholder="Username or email" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></label>
-        <label class="pv-robot-field"><span>🔒</span><input aria-label="Password" class="ai" id="lp" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/><button type="button" id="pv-robot-peek" aria-label="Show password">◉</button></label>
-        <button class="pv-robot-btn" id="pv-robot-login-btn" type="button" onclick="doLogin()"><span>⚡</span> LOG ME IN</button>
-        <div class="auth-err" id="lerr"></div>
-        <div class="pv-robot-forgot"><span onclick="showForgotPw()">Forgot Password?</span></div>
-      </div>
+    <div id="form-login">
+      <div class="fl"><div class="fl-label">Username</div><input aria-label="Username" class="ai" id="lu" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="lp" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Login →</button>
+      <div class="auth-err" id="lerr"></div>
+      <div style="text-align:center;margin-top:12px"><span style="font-size:13px;color:var(--accent);cursor:pointer;font-weight:600" onclick="showForgotPw()">Forgot Password?</span></div>
     </div>
-    <!-- SIGNUP: Visme animated form only — the previous white "Create your ProjectVault account" card has been removed so nothing overlaps it -->
-    <div id="form-signup" class="pv-visme-signup" style="display:none">
-      <div class="pv-bag-visme-shell" aria-label="ProjectVault animated signup">
-        <div class="pv-bag-visme-banner">
-          <div class="visme_d pv-bag-visme-embed"
-            data-title="ProjectVault Signup"
-            data-url="7vgjrgxy-email-capture-form-template?fullPage=true"
-            data-domain="forms"
-            data-full-page="true"
-            data-min-height="100%"
-            data-form-id="192189"></div>
-        </div>
+    <!-- SIGNUP -->
+    <div id="form-signup" style="display:none">
+      <div class="av-wrap">
+        <div class="av-box" id="av-box" onclick="document.getElementById('av-file').click()"><span id="av-ph">📷</span></div>
+        <div class="av-hint">Tap to add profile photo</div>
+        <input type="file" id="av-file" accept="image/*" style="display:none" onchange="handleAvatar(event)"/>
       </div>
-      <!-- kept empty/hidden: switchAuthTab() still references #serr, this avoids a JS error now that the native form is gone -->
-      <div class="auth-err" id="serr" style="display:none"></div>
+      <div class="fl"><div class="fl-label">Full Name</div><input aria-label="Full Name" class="ai" id="sn" type="text" placeholder="Your full name" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Username</div><input aria-label="Username" class="ai" id="su" type="text" placeholder="Choose username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Email (Gmail) — for statements &amp; OTP</div><input aria-label="Email (Gmail) — for statements & OTP" class="ai" id="se" type="email" placeholder="you@gmail.com" autocomplete="email" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Mobile Number (for your records)</div><input aria-label="Mobile Number (for your records)" class="ai" id="sm" type="tel" placeholder="10-digit mobile number" maxlength="10" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <div class="fl"><div class="fl-label">Password</div><input aria-label="Password" class="ai" id="sp" type="password" placeholder="Min 4 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doSignup();}"/></div>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create Account →</button>
+      <div class="auth-err" id="serr"></div>
     </div>
   </div>
-  <script src="https://static-bundles.visme.co/forms/vismeforms-embed.js"></script>
   <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;">Powered by <img src="brand-logo.png" alt="ProjectVault" style="height:20px;width:auto;vertical-align:middle;"/><span style="color:var(--accent);font-weight:700;">ProjectVault</span></div>
 </div>
 
@@ -543,9 +450,6 @@ pv-signup-art .pv-bag{}
     <div class="tb-right">
       <div class="cloud-status-pill" id="cloud-status-pill" data-state="offline" role="status" aria-live="polite" title="Cloud sync status"><span class="cloud-status-dot"></span><span id="cloud-status-label">Offline</span></div>
 <div class="pill-btn" onclick="openHowToUse()">❓ How to Use</div>
-<button type="button" class="pv-top-notif" id="pv-hi-tech-notif" onclick="pvOpenNotificationCenterFromHome()" aria-label="Open notifications" title="Notifications">
-  <span class="pv-top-notif-bell">🔔</span><span class="pv-top-notif-count" id="pv-hi-tech-notif-count">0</span>
-</button>
 <div class="pill-btn" onclick="showMonthPicker()">Filter ▾</div>
     </div>
   </div>
@@ -615,6 +519,22 @@ pv-signup-art .pv-bag{}
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5" id="announcement-text"></div>
       </div>
       <span style="color:var(--muted);font-size:16px">✕</span>
+    </div>
+    <div class="card pv-quick-guide" style="background:linear-gradient(135deg,rgba(108,99,255,.10),rgba(0,208,132,.06));border-color:rgba(108,99,255,.25)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">📖</span><div style="flex:1"><div class="card-title" style="margin:0">How to Use</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Quick guide to expenses, debts, sync and reports</div></div><button class="pill-btn" onclick="openHowToUse()">Open Guide</button></div>
+    </div>
+    <div class="card pv-home-sponsored-card" id="pv-home-sponsored-card" style="display:none;padding:14px;border-color:rgba(255,179,0,.28)">
+      <div class="card-title">📢 Advertisement</div>
+      <div class="pv-ad-frame" id="pv-home-sponsored-stage"></div>
+      <div id="pv-home-sponsored-meta" style="font-size:11px;color:var(--muted);margin-top:7px"></div>
+      <button class="pill-btn" style="margin-top:8px;width:100%;background:var(--surface2);color:var(--text)" onclick="openEventsMediaModal()">View event & sponsored media</button>
+    </div>
+    <div class="card pv-filter-strip">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div><div class="card-title" style="margin:0">🔎 Filter</div><div style="font-size:11px;color:var(--muted);margin-top:2px" id="home-filter-label">Showing all months</div></div><button class="pill-btn" onclick="showMonthPicker()">Change</button></div>
+    </div>
+    <div class="card" id="pv-notifications-card" style="display:none;border-color:rgba(108,99,255,.3)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:21px">🔔</span><div style="font-weight:800;font-size:14px">Notifications</div></div>
+      <div id="pv-notifications-list"></div>
     </div>
     <div class="card" id="notif-prompt-card" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,208,132,.08));">
       <div style="display:flex;align-items:center;gap:10px">
@@ -2269,7 +2189,6 @@ function switchAuthTab(t){
   document.getElementById('form-signup').style.display=t==='signup'?'block':'none';
   document.getElementById('atab-login').classList.toggle('active',t==='login');
   document.getElementById('atab-signup').classList.toggle('active',t==='signup');
-  document.getElementById('auth-screen')?.classList.toggle('pv-wide-mode',t==='signup');
   document.getElementById('lerr').textContent='';
   document.getElementById('serr').textContent='';
 }
@@ -2682,17 +2601,10 @@ async function doSignup(){
   // sent anywhere now. The public.users profile row is created server-side by the
   // handle_new_auth_user trigger (already deployed per the DB audit), seeded from the
   // metadata passed in `options.data` below.
-  // Always return the confirmation link to the actual ProjectVault app URL.
-  // This prevents Supabase email confirmation from redirecting to an old/non-existent
-  // path (which previously produced a 404 after the account was confirmed).
-  const projectVaultRedirect = window.location.origin + window.location.pathname;
   const { data: signUpData, error: signUpError } = await sb.auth.signUp({
     email,
     password: p,
-    options: {
-      emailRedirectTo: projectVaultRedirect,
-      data: { username: u, name, mobile: mobile || null }
-    }
+    options: { data: { username: u, name, mobile: mobile || null } }
   });
 
   if (signUpError) {
@@ -3147,12 +3059,7 @@ if(supportCard){
   setTimeout(maybeCelebrateSavingsMilestone,2200);
   setTimeout(maybeShowDailyNudge,2600);
   runCloudSyncAfterLogin();
-  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); const home=document.getElementById('page-home'); if(home && home.classList.contains('active') && typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
-}
-
-function pvOpenNotificationCenterFromHome(){
-  const tab=document.querySelector('.tab[aria-label="Notifications"]');
-  if(tab){switchTab('notifications',tab);}
+  setTimeout(()=>{ if(typeof pvLoadEventsMedia==='function') pvLoadEventsMedia(); if(typeof pvRenderHomeSponsoredMedia==='function') pvRenderHomeSponsoredMedia(); if(typeof pvOpenDisplay==='function') pvOpenDisplay(); },1300);
 }
 
 // ── NOTIFICATION CENTER ──
@@ -3180,19 +3087,16 @@ async function pvRenderNotificationCenter(){const el=document.getElementById('pv
 function pvSetNotificationFilter(f){_pvNotificationFilter=f;document.querySelectorAll('.notif-filter').forEach(b=>{b.classList.toggle('active',b.dataset.nfilter===f);});pvRenderNotificationCenter();}
 async function pvOpenNotification(id,source,announcementId){const uid=await pvGetAuthId();if(!uid)return;if(source==='announcement'&&announcementId){await recordAnnouncementViewed(announcementId);}else if(id&&!String(id).startsWith('ann-')){await sb.from('pv_notification_receipts').upsert({notification_id:id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'notification_id,user_id'});}await pvRenderNotificationCenter();}
 async function pvMarkAllNotificationsRead(){const uid=await pvGetAuthId();if(!uid)return;const notes=await pvLoadNotificationCenter();for(const n of notes){if(n.read)continue;if(n.source==='announcement'&&n.announcement_id)await recordAnnouncementViewed(n.announcement_id);else if(n.id)await sb.from('pv_notification_receipts').upsert({notification_id:n.id,user_id:uid,delivered_at:new Date().toISOString(),read_at:new Date().toISOString()},{onConflict:'notification_id,user_id'});}await pvRenderNotificationCenter();showToast('✓ All notifications marked read');}
-async function pvUpdateNotificationBadge(){const notes=await pvLoadNotificationCenter();const unread=notes.filter(n=>!n.read).length;const hi=document.getElementById('pv-hi-tech-notif-count');if(hi)hi.textContent=unread>99?'99+':String(unread);const b=document.getElementById('notifications-tab-badge');if(b){b.textContent=unread>99?'99+':String(unread);b.style.display=unread?'inline-flex':'none';}const home=document.getElementById('pv-notifications-card');if(home){const top=notes.filter(n=>!n.read).slice(0,3);home.style.display=top.length?'block':'none';const list=document.getElementById('pv-notifications-list');if(list)list.innerHTML=top.map(n=>`<div style="padding:9px 0;border-top:1px solid var(--border)"><b>${pvNotificationIcon(pvNotificationKind(n))} ${escHtml(n.title)}</b><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(n.body)}</div></div>`).join('');}}
+async function pvUpdateNotificationBadge(){const notes=await pvLoadNotificationCenter();const unread=notes.filter(n=>!n.read).length;const b=document.getElementById('notifications-tab-badge');if(b){b.textContent=unread>99?'99+':String(unread);b.style.display=unread?'inline-flex':'none';}const home=document.getElementById('pv-notifications-card');if(home){const top=notes.filter(n=>!n.read).slice(0,3);home.style.display=top.length?'block':'none';const list=document.getElementById('pv-notifications-list');if(list)list.innerHTML=top.map(n=>`<div style="padding:9px 0;border-top:1px solid var(--border)"><b>${pvNotificationIcon(pvNotificationKind(n))} ${escHtml(n.title)}</b><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(n.body)}</div></div>`).join('');}}
 
 // ── TABS ──
 function switchTab(name,el){
-  // Home-only automatic display: never leave the birthday/festival display visible on other pages.
-  if(typeof pvCloseDisplay==='function') pvCloseDisplay();
-  const fd=document.getElementById('pv-full-display'); if(fd){fd.style.setProperty('display','none','important');fd.setAttribute('aria-hidden','true');}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false');});
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
   el.setAttribute('aria-selected','true');
-  if(name==='home'){renderHome();setTimeout(()=>{if(typeof pvOpenDisplay==='function')pvOpenDisplay();},250);}
+  if(name==='home')renderHome();
   if(name==='add')renderAddForm();
   if(name==='history')renderHistory();
   if(name==='debt'){renderDebtPage();if(typeof loadMoneySummary==='function')loadMoneySummary();}
@@ -7237,9 +7141,13 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       title.textContent='📅 '+pvCurrentFestival.name;
       sub.textContent=(pvCurrentFestival.greeting||'Upcoming festival')+' · '+days+' day'+(days===1?'':'s')+' remaining';
       pvMediaItems=await pvLoadFestivalMedia(pvCurrentFestival.id);
+    }else if(ads.length){
+      title.textContent='📢 Sponsored media';
+      sub.textContent='Rotating media selected by campaign priority.';
+      pvMediaItems=await pvLoadCampaignMedia(ads);
     }else{
       title.textContent='✨ ProjectVault';
-      sub.textContent='No active birthday or festival media right now.';
+      sub.textContent='No active event or sponsored media right now.';
     }
     pvRenderStage();
   }
@@ -7426,7 +7334,17 @@ function bumpAcctGeneration(){ _acctGeneration++; }
       return out;
     }catch(e){console.warn('[display] festival exception:',e);return []}
   }
-  async function loadAds(){ return []; }
+  async function loadAds(){
+    try{
+      const {data,error}=await sb.from('ad_campaigns').select('*').eq('status','active').order('priority',{ascending:true});
+      if(error)return [];
+      const now=new Date();const campaigns=(data||[]).filter(c=>{const st=c.start_date?new Date(c.start_date+'T00:00:00'):null,en=c.end_date?new Date(c.end_date+'T23:59:59'):null;return (!st||st<=now)&&(!en||en>=now)});
+      if(!campaigns.length)return [];
+      const {data:ms}=await sb.from('ad_media').select('*').in('campaign_id',campaigns.map(c=>c.id)).eq('is_active',true).order('sort_order',{ascending:true});
+      const names=Object.fromEntries(campaigns.map(c=>[String(c.id),c.name]));
+      return (ms||[]).map(m=>({kind:'ad',name:names[String(m.campaign_id)]||'Sponsored',media:m}));
+    }catch(e){console.warn('[display] ads exception:',e);return []}
+  }
   async function build(){
     const [bs,fs,ads]=await Promise.all([loadBirthdays(),loadFestivals(),loadAds()]);
     items=[...bs,...fs,...ads];
@@ -7454,36 +7372,15 @@ function bumpAcctGeneration(){ _acctGeneration++; }
   async function next(){
     if(!started)return;
     if(!items.length)await build();
-    if(!items.length){const c=document.getElementById('pv-fd-content');if(c)c.innerHTML='<div class="pv-fd-card"><div class="pv-fd-copy" style="text-align:center"><div class="pv-fd-title">ProjectVault</div><div class="pv-fd-sub">No birthday or festival media is scheduled right now.</div></div></div>';document.getElementById('pv-fd-status').textContent='Nothing scheduled right now';return;}
+    if(!items.length){const c=document.getElementById('pv-fd-content');if(c)c.innerHTML='<div class="pv-fd-card"><div class="pv-fd-copy" style="text-align:center"><div class="pv-fd-title">ProjectVault</div><div class="pv-fd-sub">No birthday, festival or active admin advertisement is scheduled right now.</div></div></div>';document.getElementById('pv-fd-status').textContent='Nothing scheduled right now';return;}
     index=index%items.length;render(items[index++]);clearTimeout(timer);timer=setTimeout(next,DISPLAY_MS);
   }
   window.pvOpenDisplay=async function(){
-    const home=document.getElementById('page-home');
-    if(!home || !home.classList.contains('active')) return;
-    const el=document.getElementById('pv-full-display');if(!el)return; if(document.getElementById('page-home')?.classList.contains('active')){el.style.setProperty('display','block','important');el.setAttribute('aria-hidden','false');}else{el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');} started=true;index=0;items=[];await build(); if(document.getElementById('page-home')?.classList.contains('active')) await next();
+    const el=document.getElementById('pv-full-display');if(!el)return;el.style.display='block';el.setAttribute('aria-hidden','false');started=true;index=0;items=[];await build();await next();
   };
   window.pvCloseDisplay=function(){started=false;clearTimeout(timer);clearInterval(progressTimer);const el=document.getElementById('pv-full-display');if(el){el.style.display='none';el.setAttribute('aria-hidden','true');}};
   window.pvToggleDisplaySound=function(){sound=!sound;const b=document.getElementById('pv-fd-sound');if(b)b.textContent=sound?'🔊 Sound on':'🔇 Sound off';const v=document.querySelector('#pv-fd-content video');if(v){v.muted=!sound;if(sound)v.play().catch(()=>{});}};
   document.addEventListener('fullscreenchange',()=>{const el=document.getElementById('pv-full-display');if(el&&!document.fullscreenElement&&el.classList.contains('open')){/* keep in-app overlay open */}});
-})();
-</script>
-
-<script id="projectvault-final-ui-fix-js">
-(function(){
- const robot=document.getElementById('pv-robot'), bubble=document.getElementById('pv-robot-bubble'), eyes=document.getElementById('pv-robot-eyes'), user=document.getElementById('lu'), pass=document.getElementById('lp'), peek=document.getElementById('pv-robot-peek');
- if(!robot||!user||!pass)return;
- const say=t=>{if(bubble) bubble.textContent=t};
- const look=(x,y)=>{if(eyes){eyes.style.transform=`translate(${x}px,${y}px)`}};
- user.addEventListener('focus',()=>{robot.dataset.mood='watching';say('Typing detected. I am watching.');});
- user.addEventListener('input',()=>{look(Math.min(7,user.value.length*.35),3); if(user.value.trim())say('Identity received. Nice.');});
- pass.addEventListener('focus',()=>{robot.dataset.mood='shy';say('A secret? Say no more.');eyes.style.opacity='.25';});
- pass.addEventListener('blur',()=>{eyes.style.opacity='1';});
- pass.addEventListener('input',()=>{if(pass.value.length>=8){robot.dataset.mood='happy';say('Strong password. Access looks promising.')}else if(pass.value) say('Keep going. I am not judging.');});
- if(peek) peek.addEventListener('click',()=>{pass.type=pass.type==='password'?'text':'password';peek.textContent=pass.type==='password'?'◉':'◉';pass.focus();});
- const btn=document.getElementById('pv-robot-login-btn');
- if(btn){btn.addEventListener('mouseenter',()=>{robot.dataset.mood='excited';say('Ooh. Press it.');});btn.addEventListener('mouseleave',()=>{if(robot.dataset.mood==='excited')robot.dataset.mood='idle';});btn.addEventListener('pointerdown',()=>{robot.style.transform='translateY(4px) scale(.97)';});btn.addEventListener('pointerup',()=>{robot.style.transform='';});}
- document.addEventListener('mousemove',e=>{if(document.getElementById('form-login')?.style.display==='none')return; const r=robot.getBoundingClientRect(); look(Math.max(-7,Math.min(7,(e.clientX-(r.left+r.width/2))/35)),Math.max(-5,Math.min(5,(e.clientY-(r.top+r.height/2))/45)));});
- const form=document.getElementById('form-login'); if(form){new MutationObserver(()=>{const err=document.getElementById('lerr'); if(err&&err.textContent.trim()){robot.dataset.mood='watching';say(err.textContent.trim().slice(0,60));}}).observe(form,{subtree:true,childList:true,characterData:true});}
 })();
 </script>
 </body>
