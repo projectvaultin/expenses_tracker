@@ -2,8 +2,8 @@
   "product": "ProjectVault Expenses Tracker",
   "platform": "android",
   "version": "1.0.1",
-  "status": "preparing",
-  "apk_url": "",
-  "sha256": "",
-  "release_url": "https://github.com/projectvaultin/expenses_tracker/releases"
+  "status": "available",
+  "apk_url": "https://github.com/projectvaultin/expenses_tracker/releases/download/v1.0.1/app-release.apk",
+  "sha256": "ce6663c7c3475b9b321324f92f13bfc24dcf15ae30835c7a68c65e51b633b995",
+  "release_url": "https://github.com/projectvaultin/expenses_tracker/releases/tag/v1.0.1"
 }
