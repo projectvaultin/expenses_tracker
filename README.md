@@ -1,22 +1,49 @@
-# ProjectVault Expenses Tracker — WebApp
+# EXPENSES TRACKER — ProjectVault
 
-This WebApp is the supplied `index (4).html`, integrated into the complete ProjectVault source package.
+This is the existing ProjectVault Expenses Tracker application. Release 4.1.0 is an in-place upgrade candidate: same app, repository, Supabase project, accounts and records.
 
-## Included
-- Supabase Auth client integration already present in the supplied app
-- Existing expenses, accounts, debts, reminders, budgets, sync and admin functionality
-- Social Money / connection / shared-debt UI already present in the supplied app
-- Events & Media layer added for festivals, birthdays, festival media and sponsored media
-- Admin event/media controls using the existing `pv-media` Supabase Storage bucket
-- PWA manifest + service worker
+## Product direction
 
-## Supabase
-The WebApp uses the Supabase project configured in `index.html`. The browser uses the publishable/anon key only; no service-role key is included.
+- Premium, responsive, mobile-first UI with smooth and restrained animations.
+- Top bar: menu, profile, app name/username, sync status, notifications and How to Use.
+- Bottom navigation: Home, Add, History, Debts and Manage.
+- Dashboard: Net Balance, Combined Total (Income + Expenses), Top Spending Category, Income and Expenses side by side, I Borrowed / I Gave, and By Category.
+- Finance tools: income/expense records, search and filters, budgets, category budgets, savings insights, recurring reminders, debts and repayment history, reports and analytics.
+- Account/admin: Supabase authentication, profile/security, announcements, notifications, support, admin tools, events and media.
+- Delivery: installable PWA/web app; Android APK/WebAPK compatibility is verified against the actual Android source and a device separately.
 
-The live project was checked during packaging: the feature tables for festivals, festival media, advertisements and Social Money exist, RLS is enabled on the public tables, and the `pv-media` storage bucket exists.
+## 4.1.0 candidate changes
 
-## Run
-Serve this folder from a static HTTP server (not `file://`). For example, use GitHub Pages, Netlify, Vercel static hosting, or any local static server.
+- Corrected PWA manifest icon paths to use existing PNG assets.
+- Added app description, stable ID/scope, and 192/512 icons.
+- Bumped service-worker cache to v11.
+- Corrected Supabase hostname matching and excluded cross-origin/Supabase traffic from service-worker caching.
+- Added offline shell fallback and static smoke tests.
+- Bumped in-app version label to 4.1.0.
 
-## Admin media
-An authenticated admin can open **Events & Media** from the drawer to create festivals/campaigns and upload supported JPG/PNG/GIF/MP4/WebM media to Supabase Storage.
+## Existing data architecture
+
+Supabase Auth authenticates accounts. Supabase tables store transactions, debts, reminders, categories, category budgets, settings, shared money, notifications, announcements, and event/media data. Browser `localStorage` remains a local cache/mirror for several durable records and preferences; some failure paths keep local-only records.
+
+The next major engineering phase is a zero-loss, idempotent per-user migration:
+1. Inventory and classify all local keys.
+2. Assign stable IDs/idempotency keys to every durable record.
+3. Upload without overwriting or duplicating existing cloud records.
+4. Read records back and compare counts/field hashes.
+5. Keep a recoverable backup until verification passes.
+6. Switch reads/writes to Supabase, retaining a compatibility mirror during rollout.
+7. Retire durable local keys only after every account is verified.
+
+This release does not perform that migration or delete local data. Do not clear browser data during installation.
+
+## Supabase safety
+
+- Existing Supabase project remains the backend.
+- No SQL migrations, DDL or database writes are part of this release candidate.
+- Never expose service-role/secret keys in browser code.
+- Current username/mobile login depends on RPCs that resolve identifiers to auth emails. Supabase security advisors flag these as anonymous-executable SECURITY DEFINER functions. Do not simply revoke access: replace them with a rate-limited server-side login flow and update web and Android callers together.
+- Enable Supabase leaked-password protection and review security/performance findings before production sign-off.
+
+## Validation
+
+Run `node --test TESTS/release-smoke.test.js`. Then manually test hosted sign-in/signup/recovery/logout, transaction and debt CRUD, reminders, budgets, shared debts, notifications, admin-only actions, realtime sync, offline/online behavior, and Android PWA update. This is a candidate, not a production certification.
