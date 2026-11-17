@@ -35,7 +35,13 @@ test('all inline classic JavaScript blocks parse', () => {
 });
 
 test('service worker uses a new cache name', () => {
-  assert.match(sw, /projectvault-expenses-cache-v11/);
+  assert.match(sw, /projectvault-expenses-cache-v12/);
+});
+
+
+test('release metadata is explicitly fetched without cache', () => {
+  assert.ok(sw.includes("url.pathname.endsWith('/latest.json')"));
+  assert.ok(sw.includes("fetch(request, { cache: 'no-store' })"));
 });
 
 test('service worker identifies Supabase hosts correctly', () => {
