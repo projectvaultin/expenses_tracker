@@ -39,7 +39,11 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isSupabase = /\.supabase\.co$/i.test(url.hostname);
   if (!sameOrigin || isSupabase) return;
-  if (isReleaseMetadata) { event.respondWith(fetch(request, { cache: 'no-store' })); return; }
+  // Release metadata must always be fetched fresh; never serve a cached APK URL or status.
+  if (url.pathname.endsWith('/latest.json')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
 
   const isNavigation = request.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
