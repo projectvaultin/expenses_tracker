@@ -1,38 +1,49 @@
-# ProjectVault Expenses Tracker
+# EXPENSES TRACKER — ProjectVault
 
-This is the existing ProjectVault Expenses Tracker application, upgraded in place. It remains a static single-page web app hosted from this repository and uses the existing Supabase project configured in `index.html`.
+This is the existing ProjectVault Expenses Tracker application. Release 4.1.0 is an in-place upgrade candidate: same app, repository, Supabase project, accounts and records.
 
-## Release 4.1.0 candidate
+## Product direction
 
-- Existing single application and route model retained.
-- Supabase Auth client and existing Supabase table/API calls retained.
-- No database migrations, table drops, data deletes, or Supabase writes are part of this GitHub release.
-- PWA manifest icon paths corrected to the PNG assets already present in the repository.
-- Service-worker cache version incremented and caching narrowed to same-origin static resources. Supabase API/auth/storage traffic is never cached.
-- Static release smoke tests added.
+- Premium, responsive, mobile-first UI with smooth and restrained animations.
+- Top bar: menu, profile, app name/username, sync status, notifications and How to Use.
+- Bottom navigation: Home, Add, History, Debts and Manage.
+- Dashboard: Net Balance, Combined Total (Income + Expenses), Top Spending Category, Income and Expenses side by side, I Borrowed / I Gave, and By Category.
+- Finance tools: income/expense records, search and filters, budgets, category budgets, savings insights, recurring reminders, debts and repayment history, reports and analytics.
+- Account/admin: Supabase authentication, profile/security, announcements, notifications, support, admin tools, events and media.
+- Delivery: installable PWA/web app; Android APK/WebAPK compatibility is verified against the actual Android source and a device separately.
 
-## Deploy
+## 4.1.0 candidate changes
 
-GitHub Pages can serve this repository as a static site. Do not replace or recreate the Supabase project. Publish by merging the reviewed release branch into `main` after the existing GitHub Pages workflow/configuration is confirmed.
+- Corrected PWA manifest icon paths to use existing PNG assets.
+- Added app description, stable ID/scope, and 192/512 icons.
+- Bumped service-worker cache to v11.
+- Corrected Supabase hostname matching and excluded cross-origin/Supabase traffic from service-worker caching.
+- Added offline shell fallback and static smoke tests.
+- Bumped in-app version label to 4.1.0.
 
-## Important existing architecture
+## Existing data architecture
 
-The current app is a hybrid client:
-- Supabase Auth is used for account authentication.
-- Several tables (including Android transactions, debts and profile-related features) have explicit Supabase read/write/sync operations.
-- Some app state and user-facing records also use per-user browser `localStorage`.
+Supabase Auth authenticates accounts. Supabase tables store transactions, debts, reminders, categories, category budgets, settings, shared money, notifications, announcements, and event/media data. Browser `localStorage` remains a local cache/mirror for several durable records and preferences; some failure paths keep local-only records.
 
-This update does not silently migrate local records or change their cloud ownership. Full local/cloud reconciliation requires a separate, schema-verified compatibility pass and should not be done using destructive SQL.
+The next major engineering phase is a zero-loss, idempotent per-user migration:
+1. Inventory and classify all local keys.
+2. Assign stable IDs/idempotency keys to every durable record.
+3. Upload without overwriting or duplicating existing cloud records.
+4. Read records back and compare counts/field hashes.
+5. Keep a recoverable backup until verification passes.
+6. Switch reads/writes to Supabase, retaining a compatibility mirror during rollout.
+7. Retire durable local keys only after every account is verified.
 
-## Manual release validation
+This release does not perform that migration or delete local data. Do not clear browser data during installation.
 
-1. Open the deployed site in a fresh browser profile and confirm the manifest loads.
-2. Confirm both icon paths return HTTP 200.
-3. Confirm the service worker activates with cache `projectvault-expenses-cache-v11`.
-4. Sign in with an existing test account; check dashboard, add/edit/delete transaction, debts, history, settings, profile and logout.
-5. Confirm Supabase Auth session and existing data still load.
-6. Confirm network requests to the Supabase hostname are not served from Cache Storage.
-7. Test offline shell fallback and online revalidation.
-8. Test Android Chrome install/update and an existing installed PWA after refreshing site data.
+## Supabase safety
 
-Do not treat this candidate as production-certified until the real hosted app and actual Supabase session/RLS flows have been exercised.
+- Existing Supabase project remains the backend.
+- No SQL migrations, DDL or database writes are part of this release candidate.
+- Never expose service-role/secret keys in browser code.
+- Current username/mobile login depends on RPCs that resolve identifiers to auth emails. Supabase security advisors flag these as anonymous-executable SECURITY DEFINER functions. Do not simply revoke access: replace them with a rate-limited server-side login flow and update web and Android callers together.
+- Enable Supabase leaked-password protection and review security/performance findings before production sign-off.
+
+## Validation
+
+Run `node --test TESTS/release-smoke.test.js`. Then manually test hosted sign-in/signup/recovery/logout, transaction and debt CRUD, reminders, budgets, shared debts, notifications, admin-only actions, realtime sync, offline/online behavior, and Android PWA update. This is a candidate, not a production certification.

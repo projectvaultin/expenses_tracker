@@ -35,7 +35,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isSupabase = /\\.supabase\\.co$/i.test(url.hostname);
+  const isSupabase = /\.supabase\.co$/i.test(url.hostname);
   if (!sameOrigin || isSupabase) return;
 
   const isNavigation = request.mode === 'navigate' ||

@@ -1,0 +1,25 @@
+name: Expenses Tracker release smoke tests
+
+on:
+  push:
+    branches:
+      - release/4.1.0-audit-upgrade
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  static-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run release smoke tests
+        run: node --test TESTS/release-smoke.test.js
