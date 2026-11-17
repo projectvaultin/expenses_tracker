@@ -1,13 +1,11 @@
-// ProjectVault Expenses Tracker Service Worker
-//
-// IMPORTANT:
-// Bump CACHE_NAME whenever the website's important static files change.
-// Navigation requests are always network-first so GitHub Pages updates
-// become visible without users remaining permanently stuck on old HTML.
+// ProjectVault Expenses Tracker — release 4.1.0
+// Navigation is network-first to make GitHub Pages releases visible promptly.
+// Same-origin static assets are cache-first; external/CDN requests pass through.
+// Supabase API, auth and storage are never cached by this service worker.
 
-const CACHE_NAME = 'expensestracker-cache-v10';
-
-const FILES_TO_CACHE = [
+const CACHE_NAME = 'projectvault-expenses-cache-v11';
+const APP_SHELL = [
+  './',
   './index.html',
   './manifest.json',
   './icon-192.png',
@@ -16,74 +14,78 @@ const FILES_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_CACHE);
-    })
-  );
-
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(APP_SHELL);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      );
-    })
-  );
-
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
+  if (request.method !== 'GET') return;
 
-  const isNavigation =
-    request.mode === 'navigate' ||
-    request.url.endsWith('/index.html') ||
-    request.url.includes('/index.html?');
+  const url = new URL(request.url);
+  const sameOrigin = url.origin === self.location.origin;
+  const isSupabase = /\\.supabase\\.co$/i.test(url.hostname);
+  if (!sameOrigin || isSupabase) return;
 
-  // HTML/navigation:
-  // Network first -> cache fallback.
+  const isNavigation = request.mode === 'navigate' ||
+    url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/');
+
   if (isNavigation) {
-    event.respondWith(
-      fetch(request, { cache: 'no-store' })
-        .then((response) => {
-          const clone = response.clone();
-
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, clone);
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request, { cache: 'no-store' });
+        if (response && response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (await caches.match(request)) ||
+          (await caches.match('./index.html')) ||
+          new Response('You are offline. Reconnect and try again.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
           });
-
-          return response;
-        })
-        .catch(() => {
-          return caches
-            .match(request)
-            .then((cached) => cached || caches.match('./index.html'));
-        })
-    );
-
+      }
+    })());
     return;
   }
 
-  // Other files:
-  // Cache first -> network fallback.
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
+  // Do not cache opaque or non-success responses.
+  event.respondWith((async () => {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    try {
+      const response = await fetch(request);
+      if (response && response.ok && response.type === 'basic') {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, response.clone());
       }
-
-      return fetch(request).catch(() => {
-        return caches.match('./index.html');
-      });
-    })
-  );
+      return response;
+    } catch (error) {
+      return new Response('', { status: 504, statusText: 'Offline' });
+    }
+  })());
 });
 
-self.addEventListener('message', (event) => { if (event.data?.type === 'PV_REFRESH_CACHE') { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))); } });
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'PV_REFRESH_CACHE') {
+    event.waitUntil((async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+      await self.registration.update();
+    })());
+  }
+});

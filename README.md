@@ -1,22 +1,38 @@
-# ProjectVault Expenses Tracker — WebApp
+# ProjectVault Expenses Tracker
 
-This WebApp is the supplied `index (4).html`, integrated into the complete ProjectVault source package.
+This is the existing ProjectVault Expenses Tracker application, upgraded in place. It remains a static single-page web app hosted from this repository and uses the existing Supabase project configured in `index.html`.
 
-## Included
-- Supabase Auth client integration already present in the supplied app
-- Existing expenses, accounts, debts, reminders, budgets, sync and admin functionality
-- Social Money / connection / shared-debt UI already present in the supplied app
-- Events & Media layer added for festivals, birthdays, festival media and sponsored media
-- Admin event/media controls using the existing `pv-media` Supabase Storage bucket
-- PWA manifest + service worker
+## Release 4.1.0 candidate
 
-## Supabase
-The WebApp uses the Supabase project configured in `index.html`. The browser uses the publishable/anon key only; no service-role key is included.
+- Existing single application and route model retained.
+- Supabase Auth client and existing Supabase table/API calls retained.
+- No database migrations, table drops, data deletes, or Supabase writes are part of this GitHub release.
+- PWA manifest icon paths corrected to the PNG assets already present in the repository.
+- Service-worker cache version incremented and caching narrowed to same-origin static resources. Supabase API/auth/storage traffic is never cached.
+- Static release smoke tests added.
 
-The live project was checked during packaging: the feature tables for festivals, festival media, advertisements and Social Money exist, RLS is enabled on the public tables, and the `pv-media` storage bucket exists.
+## Deploy
 
-## Run
-Serve this folder from a static HTTP server (not `file://`). For example, use GitHub Pages, Netlify, Vercel static hosting, or any local static server.
+GitHub Pages can serve this repository as a static site. Do not replace or recreate the Supabase project. Publish by merging the reviewed release branch into `main` after the existing GitHub Pages workflow/configuration is confirmed.
 
-## Admin media
-An authenticated admin can open **Events & Media** from the drawer to create festivals/campaigns and upload supported JPG/PNG/GIF/MP4/WebM media to Supabase Storage.
+## Important existing architecture
+
+The current app is a hybrid client:
+- Supabase Auth is used for account authentication.
+- Several tables (including Android transactions, debts and profile-related features) have explicit Supabase read/write/sync operations.
+- Some app state and user-facing records also use per-user browser `localStorage`.
+
+This update does not silently migrate local records or change their cloud ownership. Full local/cloud reconciliation requires a separate, schema-verified compatibility pass and should not be done using destructive SQL.
+
+## Manual release validation
+
+1. Open the deployed site in a fresh browser profile and confirm the manifest loads.
+2. Confirm both icon paths return HTTP 200.
+3. Confirm the service worker activates with cache `projectvault-expenses-cache-v11`.
+4. Sign in with an existing test account; check dashboard, add/edit/delete transaction, debts, history, settings, profile and logout.
+5. Confirm Supabase Auth session and existing data still load.
+6. Confirm network requests to the Supabase hostname are not served from Cache Storage.
+7. Test offline shell fallback and online revalidation.
+8. Test Android Chrome install/update and an existing installed PWA after refreshing site data.
+
+Do not treat this candidate as production-certified until the real hosted app and actual Supabase session/RLS flows have been exercised.
