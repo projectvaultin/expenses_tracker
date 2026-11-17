@@ -45,6 +45,10 @@ test('service worker identifies Supabase hosts correctly', () => {
   assert.equal(hostPattern.test('example.com'), false);
 });
 
+test('service worker only deletes caches owned by this app', () => {
+  assert.ok(sw.includes("key.startsWith('expensestracker-cache-v') || key.startsWith('projectvault-expenses-cache-v')"));
+});
+
 test('service worker never intercepts cross-origin or Supabase traffic', () => {
   assert.ok(sw.includes('if (!sameOrigin || isSupabase) return;'));
 });
