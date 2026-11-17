@@ -3,14 +3,16 @@
 // Same-origin static assets are cache-first; external/CDN requests pass through.
 // Supabase API, auth and storage are never cached by this service worker.
 
-const CACHE_NAME = 'projectvault-expenses-cache-v11';
+const CACHE_NAME = 'projectvault-expenses-cache-v12';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './brand-logo.png'
+  './brand-logo.png',
+  './android-download.html',
+  './android-release.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -37,6 +39,11 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isSupabase = /\.supabase\.co$/i.test(url.hostname);
   if (!sameOrigin || isSupabase) return;
+  // Release metadata must always be fetched fresh; never serve a cached APK URL or status.
+  if (url.pathname.endsWith('/latest.json')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
 
   const isNavigation = request.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
